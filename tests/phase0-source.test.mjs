@@ -97,3 +97,27 @@ test('CI uses a supported Node and pnpm toolchain', async () => {
    assert.match(workflow, /pnpm\/action-setup@v4/);
    assert.match(workspaceConfig, /allowBuilds:\s+sharp: true/);
 });
+
+test('settings routes use one dynamic dispatcher without losing supported sections', async () => {
+   const router = await readSource('app/[orgId]/settings/[section]/page.tsx');
+
+   for (const section of [
+      'agent-personalization',
+      'ai',
+      'code-and-reviews',
+      'connected-accounts',
+      'integrations',
+      'issue-labels',
+      'issue-templates',
+      'notifications',
+      'preferences',
+      'profile',
+      'project-statuses',
+      'security',
+   ]) {
+      assert.match(router, new RegExp(`['"]${section}['"]`));
+   }
+
+   assert.match(router, /PLACEHOLDER_SECTIONS\[section\]/);
+   assert.match(router, /notFound\(\)/);
+});
