@@ -431,37 +431,6 @@ export function CommandPalette() {
                            </CommandItem>
                            <CommandItem onSelect={() => go('/initiatives')}>
                               <Compass className="text-muted-foreground" /> Initiatives
-                        </>
-                  )}
-
-                  {route === 'root' && !issue && (
-                     <>
-                        <CommandGroup heading="Actions">
-                           <CommandItem
-                              onSelect={() => {
-                                 openModal();
-                                 close();
-                              }}
-                           >
-                              <SquarePen className="text-muted-foreground" />
-                              Create new issue
-                              <Keys keys={['C']} />
-                           </CommandItem>
-                        </CommandGroup>
-                        <CommandGroup heading="Go to">
-                           <CommandItem onSelect={() => go('/inbox')}>
-                              <Inbox className="text-muted-foreground" /> Inbox
-                              <Keys keys={['G', 'I']} />
-                           </CommandItem>
-                           <CommandItem onSelect={() => go('/my-issues')}>
-                              <ClipboardList className="text-muted-foreground" /> My issues
-                              <Keys keys={['G', 'M']} />
-                           </CommandItem>
-                           <CommandItem onSelect={() => go('/reviews')}>
-                              <GitBranch className="text-muted-foreground" /> Reviews
-                           </CommandItem>
-                           <CommandItem onSelect={() => go('/initiatives')}>
-                              <Compass className="text-muted-foreground" /> Initiatives
                            </CommandItem>
                            <CommandItem onSelect={() => go('/projects')}>
                               <Box className="text-muted-foreground" /> Projects

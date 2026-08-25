@@ -479,4 +479,465 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             id: 'f1',
             actor: users[3],
             event: 'created',
-            text: 'c
+            text: 'created the issue',
+            timeAgo: '7d ago',
+         },
+         {
+            kind: 'event',
+            id: 'f2',
+            actor: users[3],
+            event: 'blocked',
+            text: 'marked this issue as blocked by ADI-707',
+            timeAgo: '6d ago',
+         },
+         {
+            kind: 'comment',
+            id: 'f3',
+            actor: users[3],
+            timeAgo: '3d ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'Blocked on the positioning refactor because the error rows change the palette height and the old positioning code jumps.',
+               },
+            ],
+         },
+      ],
+      blockedByIds: ['ADI-707'],
+      relatedIds: ['ADI-728'],
+   },
+   {
+      identifier: 'ADI-712',
+      description: [
+         {
+            type: 'paragraph',
+            text: 'Card and Table need first-class skeleton variants so loading states stop being hand-rolled in every app.',
+         },
+         {
+            type: 'checklist',
+            items: [
+               { text: '`CardSkeleton` — header, media slot, two text lines', checked: false },
+               { text: '`TableSkeleton` — configurable rows × columns', checked: false },
+               { text: 'Shimmer respects `prefers-reduced-motion`', checked: false },
+            ],
+         },
+         {
+            type: 'image',
+            alt: 'Skeleton variants design mock',
+            caption: 'Design mock — card and table skeletons, light & dark',
+            aspect: 'video',
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'g1',
+            actor: users[5],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '12d ago',
+         },
+         {
+            kind: 'event',
+            id: 'g2',
+            actor: users[5],
+            event: 'cycle',
+            text: 'added issue to Cycle 21',
+            timeAgo: '12d ago',
+         },
+      ],
+   },
+   {
+      identifier: 'ADI-718',
+      description: [
+         {
+            type: 'paragraph',
+            text: 'The Badge docs page should embed an **interactive playground**: variant, size, and color pickers with live code output users can copy.',
+         },
+         {
+            type: 'image',
+            alt: 'Playground layout wireframe',
+            caption: 'Wireframe — controls on the left, live preview + code on the right',
+            aspect: 'wide',
+         },
+         {
+            type: 'image',
+            alt: 'Mobile layout of the playground',
+            caption: 'On mobile the controls collapse into a bottom sheet',
+            aspect: 'square',
+         },
+         {
+            type: 'bullet-list',
+            items: [
+               'Controls are generated from the component prop table (single source of truth)',
+               'Code output stays in sync and is copy-pastable',
+               'Playground state is encoded in the URL for sharing',
+            ],
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'h1',
+            actor: users[15],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '7d ago',
+         },
+         {
+            kind: 'comment',
+            id: 'h2',
+            actor: users[9],
+            timeAgo: '5d ago',
+            body: [
+               {
+                  type: 'paragraph',
+                  text: 'URL-encoded state pairs nicely with the docs search indexing work — shared playground links become deep links into the docs.',
+               },
+            ],
+         },
+      ],
+      relatedIds: ['ADI-731', 'ADI-815'],
+   },
+   {
+      identifier: 'ADI-722',
+      description: [
+         {
+            type: 'paragraph',
+            text: 'Our categorical chart palette fails for deuteranopia: series 2 and 4 are indistinguishable. We need a colorblind-safe scale that still matches the brand.',
+         },
+         {
+            type: 'image',
+            alt: 'Current vs proposed palette under CVD simulation',
+            caption: 'Simulation — top: current palette, bottom: proposal under deuteranopia',
+            aspect: 'wide',
+         },
+         { type: 'heading', text: 'Constraints' },
+         {
+            type: 'bullet-list',
+            items: [
+               'Minimum 8 distinguishable categorical steps',
+               'Each step readable against both `--background` values (light/dark)',
+               'Sequential and diverging ramps derived from the same anchors',
+            ],
+         },
+         {
+            type: 'quote',
+            text: 'Color should never be the only channel encoding a data series.',
+            author: 'a11y guidelines, charts section',
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'i1',
+            actor: users[19],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '3d ago',
+         },
+         {
+            kind: 'event',
+            id: 'i2',
+            actor: users[19],
+            event: 'label',
+            text: 'added labels Accessibility, Design',
+            timeAgo: '3d ago',
+         },
+      ],
+      relatedIds: ['ADI-727'],
+   },
+   {
+      identifier: 'ADI-726',
+      description: [
+         {
+            type: 'paragraph',
+            text: 'Every keystroke in the table filter re-rendered **all** visible rows. Wrapping the row renderer in `memo` with a custom comparator cut re-renders by ~60%.',
+         },
+         {
+            type: 'code',
+            language: 'tsx',
+            code: `const TableRow = memo(TableRowImpl, (prev, next) =>
+   prev.row.id === next.row.id &&
+   prev.row.version === next.row.version &&
+   prev.isSelected === next.isSelected
+);`,
+         },
+         {
+            type: 'paragraph',
+            text: 'Measured on the 1k-row demo: keystroke latency went from 96ms to **34ms** (p95).',
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'j1',
+            actor: users[4],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '11d ago',
+         },
+         {
+            kind: 'event',
+            id: 'j2',
+            actor: users[4],
+            event: 'pr',
+            text: 'linked pull request #196',
+            timeAgo: '10d ago',
+         },
+         {
+            kind: 'event',
+            id: 'j3',
+            actor: users[4],
+            event: 'status',
+            text: 'moved from In Progress to Done',
+            timeAgo: '9d ago',
+         },
+         {
+            kind: 'comment',
+            id: 'j4',
+            actor: users[8],
+            timeAgo: '9d ago',
+            body: [{ type: 'paragraph', text: 'Nice one — the filter feels instant now. 🎉' }],
+            reactions: [{ emoji: '🎉', count: 5 }],
+         },
+      ],
+      prLinks: [{ id: '#196', title: 'perf(table): memoize row renderer', status: 'merged' }],
+   },
+   {
+      identifier: 'ADI-735',
+      description: [
+         {
+            type: 'paragraph',
+            text: 'The **Empty State** component ships with three illustration slots (no-data, error, first-use) and composable actions.',
+         },
+         {
+            type: 'image',
+            alt: 'Empty state component preview',
+            caption: 'Preview — no-data variant with primary + secondary actions',
+            aspect: 'video',
+         },
+         { type: 'heading', text: 'Release notes' },
+         {
+            type: 'bullet-list',
+            items: [
+               '`<EmptyState />` with `illustration`, `title`, `description`, `actions` slots',
+               'Ships with 3 neutral SVG illustrations, tree-shaken when unused',
+               'Docs page with usage guidelines and do/don’t examples',
+            ],
+         },
+         {
+            type: 'quote',
+            text: 'An empty state is the first screen most users see — treat it as a landing page, not an afterthought.',
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'k1',
+            actor: users[3],
+            event: 'created',
+            text: 'created the issue',
+            timeAgo: '9d ago',
+         },
+         {
+            kind: 'event',
+            id: 'k2',
+            actor: users[3],
+            event: 'pr',
+            text: 'linked pull request #205',
+            timeAgo: '5d ago',
+         },
+         {
+            kind: 'event',
+            id: 'k3',
+            actor: users[3],
+            event: 'status',
+            text: 'moved from Technical Review to Shipped',
+            timeAgo: '2d ago',
+         },
+      ],
+      prLinks: [{ id: '#205', title: 'feat(empty-state): new component + docs', status: 'merged' }],
+   },
+   {
+      identifier: 'ADI-819',
+      description: [
+         { type: 'heading', text: 'Repro' },
+         {
+            type: 'numbered-list',
+            items: [
+               'Pass an option group with an empty `options` array',
+               'Open the Combobox',
+               'Crash on first keystroke',
+            ],
+         },
+         {
+            type: 'code',
+            language: 'text',
+            code: `TypeError: Cannot read properties of undefined (reading 'value')
+   at getFirstOption (combobox.tsx:88)
+   at handleKeyDown (combobox.tsx:203)`,
+         },
+         {
+            type: 'paragraph',
+            text: 'Reported through the docs feedback widget. Needs triage: either skip empty groups at render time or guard `getFirstOption`.',
+         },
+      ],
+      activity: [
+         {
+            kind: 'event',
+            id: 'l1',
+            actor: users[16],
+            event: 'created',
+            text: 'created the issue from docs feedback',
+            timeAgo: '2d ago',
+         },
+      ],
+      relatedIds: ['ADI-701'],
+   },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                     Deterministic fallback generation                      */
+/* -------------------------------------------------------------------------- */
+
+const hashString = (value: string): number => {
+   let hash = 0;
+   for (let i = 0; i < value.length; i++) {
+      hash = (hash * 31 + value.charCodeAt(i)) % 100003;
+   }
+   return hash;
+};
+
+/**
+ * Builds a plausible detail for issues without a handcrafted one.
+ * Deterministic (seeded by the identifier) so SSR and client match.
+ */
+const buildFallbackDetail = (issue: Issue): IssueDetail => {
+   const seed = hashString(issue.identifier);
+   const author = issue.assignee ?? users[seed % users.length];
+   const reporter = users[(seed + 7) % users.length];
+
+   const intro: ContentBlock = {
+      type: 'paragraph',
+      text: `${issue.title}. Scoped for the ${issue.project ? `**${issue.project.name}**` : 'component library'} work — implementation notes below.`,
+   };
+
+   const variants: ContentBlock[][] = [
+      [
+         intro,
+         {
+            type: 'checklist',
+            items: [
+               { text: 'Align on the API surface in the team channel', checked: seed % 2 === 0 },
+               { text: 'Implementation + unit tests', checked: false },
+               { text: 'Docs page updated with an example', checked: false },
+            ],
+         },
+      ],
+      [
+         intro,
+         {
+            type: 'bullet-list',
+            items: [
+               'Keep the public API backward compatible',
+               'No new runtime dependency',
+               'Follow the existing Tailwind token conventions',
+            ],
+         },
+         {
+            type: 'paragraph',
+            text: 'Edge cases and browser quirks should be captured as test cases before closing.',
+         },
+      ],
+      [
+         { type: 'heading', text: 'Context' },
+         intro,
+         { type: 'heading', text: 'Plan' },
+         {
+            type: 'numbered-list',
+            items: [
+               'Spike and validate the approach on the docs demo',
+               'Implement behind the existing component API',
+               'Review with design before merging',
+            ],
+         },
+      ],
+      [
+         intro,
+         {
+            type: 'quote',
+            text: 'Small, composable primitives beat configurable monoliths.',
+            author: 'library design principles',
+         },
+         {
+            type: 'paragraph',
+            text: 'Ping the maintainers before changing anything exported from the package root.',
+         },
+      ],
+   ];
+
+   const activity: ActivityItem[] = [
+      {
+         kind: 'event',
+         id: `${issue.id}-created`,
+         actor: reporter,
+         event: 'created',
+         text: 'created the issue',
+         timeAgo: `${(seed % 12) + 2}d ago`,
+      },
+   ];
+
+   if (issue.cycleId !== '') {
+      activity.push({
+         kind: 'event',
+         id: `${issue.id}-cycle`,
+         actor: reporter,
+         event: 'cycle',
+         text: `added issue to Cycle ${issue.cycleId}`,
+         timeAgo: `${(seed % 10) + 1}d ago`,
+      });
+   }
+
+   if (issue.status.category === 'started' || issue.status.category === 'completed') {
+      activity.push({
+         kind: 'event',
+         id: `${issue.id}-status`,
+         actor: author,
+         event: 'status',
+         text: `moved from Todo to ${issue.status.name}`,
+         timeAgo: `${(seed % 6) + 1}d ago`,
+      });
+   }
+
+   if (seed % 3 === 0) {
+      activity.push({
+         kind: 'comment',
+         id: `${issue.id}-comment`,
+         actor: users[(seed + 3) % users.length],
+         timeAgo: `${(seed % 4) + 1}d ago`,
+         body: [
+            {
+               type: 'paragraph',
+               text: 'Taking a look this week — will post findings here before opening a PR.',
+            },
+         ],
+      });
+   }
+
+   return {
+      identifier: issue.identifier,
+      description: variants[seed % variants.length],
+      activity,
+   };
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                   Access                                   */
+/* -------------------------------------------------------------------------- */
+
+const detailByIdentifier = new Map(details.map((detail) => [detail.identifier, detail]));
+
+export function getIssueDetail(issue: Issue): IssueDetail {
+   return detailByIdentifier.get(issue.identifier) ?? buildFallbackDetail(issue);
+}
