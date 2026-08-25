@@ -7,7 +7,13 @@ import {
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { DarkVariant, LightVariant, ThemeMode, useThemeStore } from '@/store/theme-store';
+import {
+   customThemeSchema,
+   DarkVariant,
+   LightVariant,
+   ThemeMode,
+   useThemeStore,
+} from '@/store/theme-store';
 import { Check, ChevronDown, Pipette } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -189,9 +195,11 @@ export function ThemePreferences() {
 
    const importTheme = async () => {
       try {
-         const parsed = JSON.parse(await navigator.clipboard.readText());
-         if (typeof parsed !== 'object' || parsed === null) throw new Error('invalid');
-         setCustom(parsed);
+         const parsed = customThemeSchema.safeParse(
+            JSON.parse(await navigator.clipboard.readText())
+         );
+         if (!parsed.success) throw new Error('invalid');
+         setCustom(parsed.data);
          setMode('custom');
          toast.success('Theme imported from clipboard');
       } catch {

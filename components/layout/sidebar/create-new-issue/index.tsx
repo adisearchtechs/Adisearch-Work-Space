@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Heart } from 'lucide-react';
@@ -21,6 +21,24 @@ import { ProjectSelector } from './project-selector';
 import { LabelSelector } from './label-selector';
 import { ranks } from '@/mock-data/issues';
 import { DialogTitle } from '@radix-ui/react-dialog';
+
+export function CreateIssueTrigger() {
+   const openModal = useCreateIssueStore((state) => state.openModal);
+
+   return (
+      <Button
+         type="button"
+         className="size-8 shrink-0"
+         variant="secondary"
+         size="icon"
+         aria-label="Create issue"
+         title="Create issue"
+         onClick={() => openModal()}
+      >
+         <RiEditLine aria-hidden="true" />
+      </Button>
+   );
+}
 
 export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState<boolean>(false);
@@ -80,11 +98,6 @@ export function CreateNewIssue() {
 
    return (
       <Dialog open={isOpen} onOpenChange={(value) => (value ? openModal() : closeModal())}>
-         <DialogTrigger asChild>
-            <Button className="size-8 shrink-0" variant="secondary" size="icon">
-               <RiEditLine />
-            </Button>
-         </DialogTrigger>
          <DialogContent className="w-full sm:max-w-[750px] p-0 shadow-xl top-[30%]">
             <DialogHeader>
                <DialogTitle>

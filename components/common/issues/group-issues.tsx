@@ -73,6 +73,7 @@ export function GroupIssues({ group, issues, count }: GroupIssuesProps) {
                   className="size-6"
                   size="icon"
                   variant="ghost"
+                  aria-label={`Create issue in ${group.name}`}
                   onClick={(e) => {
                      e.stopPropagation();
                      openModal(group.status);
@@ -104,8 +105,8 @@ const IssueGridList: FC<{ issues: Issue[]; status?: Status }> = ({ issues, statu
    const [{ isOver }, drop] = useDrop(() => ({
       accept: IssueDragType,
       canDrop: () => status !== undefined,
-      drop(item: Issue, monitor) {
-         if (status && monitor.didDrop() && item.status.id !== status.id) {
+      drop(item: Issue) {
+         if (status && item.status.id !== status.id) {
             updateIssueStatus(item.id, status);
          }
       },

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { z } from 'zod';
 
 export type ThemeMode = 'system' | 'light' | 'dark' | 'custom';
 export type LightVariant = 'light' | 'pure-light';
@@ -16,6 +17,29 @@ export interface CustomTheme {
    sidebarBackground: string;
    sidebarContrast: number;
 }
+
+const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i, 'Expected a six-digit hex color');
+
+export const customThemeSchema: z.ZodType<CustomTheme> = z
+   .object({
+      accent: hexColorSchema,
+      background: hexColorSchema,
+      contrast: z.number().min(0).max(100),
+      sidebar: z.boolean(),
+      sidebarAccent: hexColorSchema,
+      sidebarBackground: hexColorSchema,
+      sidebarContrast: z.number().min(0).max(100),
+   })
+   .strict();
+
+const persistedThemeSchema = z
+   .object({
+      mode: z.enum(['system', 'light', 'dark', 'custom']),
+      lightVariant: z.enum(['light', 'pure-light']),
+      darkVariant: z.enum(['dark', 'magic-blue', 'classic-dark']),
+      custom: customThemeSchema,
+   })
+   .strict();
 
 interface ThemeState {
    /** What the "Interface theme" select points at. */
@@ -60,6 +84,13 @@ export const useThemeStore = create<ThemeState>()(
          setDarkVariant: (darkVariant) => set({ darkVariant }),
          setCustom: (patch) => set((state) => ({ custom: { ...state.custom, ...patch } })),
       }),
-      { name: 'theme-settings' }
+      {
+         name: 'theme-settings:v1',
+         version: 1,
+         merge: (persistedState, currentState) => {
+            const parsed = persistedThemeSchema.safeParse(persistedState);
+            return parsed.success ? { ...currentState, ...parsed.data } : currentState;
+         },
+      }
    )
 );
