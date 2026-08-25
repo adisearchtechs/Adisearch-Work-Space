@@ -89,9 +89,11 @@ test('baseline response security headers remain configured', async () => {
 test('CI uses a supported Node and pnpm toolchain', async () => {
    const manifest = JSON.parse(await readSource('package.json'));
    const workflow = await readSource('.github/workflows/ci.yml');
+   const workspaceConfig = await readSource('pnpm-workspace.yaml');
 
    assert.match(manifest.packageManager, /^pnpm@11\./);
    assert.equal(manifest.engines.node, '>=22.0.0');
    assert.match(workflow, /node-version: 22/);
    assert.match(workflow, /pnpm\/action-setup@v4/);
+   assert.match(workspaceConfig, /allowBuilds:\s+sharp: true/);
 });
