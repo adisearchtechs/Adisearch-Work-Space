@@ -16,13 +16,22 @@ interface FilterOptions {
    statusType?: string[];
 }
 
+interface IssuePersistenceAdapter {
+   update: (id: string, changes: Partial<Issue>) => Promise<void>;
+   delete: (id: string) => Promise<void>;
+   onError: (message: string) => void;
+}
+
 interface IssuesState {
    // Data
    issues: Issue[];
    issuesByStatus: Record<string, Issue[]>;
+   persistenceAdapter: IssuePersistenceAdapter | null;
 
    //
    getAllIssues: () => Issue[];
+   replaceIssues: (issues: Issue[]) => void;
+   setPersistenceAdapter: (adapter: IssuePersistenceAdapter | null) => void;
 
    // Actions
    addIssue: (issue: Issue) => void;
@@ -65,9 +74,15 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    // Initial state
    issues: initialIssues,
    issuesByStatus: groupIssuesByStatus(initialIssues),
+   persistenceAdapter: null,
 
    //
    getAllIssues: () => get().issues,
+   replaceIssues: (issues) => {
+      const sortedIssues = [...issues].sort((a, b) => b.rank.localeCompare(a.rank));
+      set({ issues: sortedIssues, issuesByStatus: groupIssuesByStatus(sortedIssues) });
+   },
+   setPersistenceAdapter: (persistenceAdapter) => set({ persistenceAdapter }),
 
    // Actions
    addIssue: (issue: Issue) => {
@@ -81,6 +96,7 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    },
 
    updateIssue: (id: string, updatedIssue: Partial<Issue>) => {
+      const previousIssue = get().issues.find((issue) => issue.id === id);
       set((state) => {
          const newIssues = state.issues.map((issue) =>
             issue.id === id ? { ...issue, ...updatedIssue } : issue
@@ -91,9 +107,26 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
             issuesByStatus: groupIssuesByStatus(newIssues),
          };
       });
+
+      const adapter = get().persistenceAdapter;
+      if (adapter && previousIssue) {
+         void adapter.update(id, updatedIssue).catch(() => {
+            set((state) => {
+               const restoredIssues = state.issues.map((issue) =>
+                  issue.id === id ? previousIssue : issue
+               );
+               return {
+                  issues: restoredIssues,
+                  issuesByStatus: groupIssuesByStatus(restoredIssues),
+               };
+            });
+            adapter.onError('The issue update was not saved. Your change was reverted.');
+         });
+      }
    },
 
    deleteIssue: (id: string) => {
+      const previousIssues = get().issues;
       set((state) => {
          const newIssues = state.issues.filter((issue) => issue.id !== id);
          return {
@@ -101,6 +134,14 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
             issuesByStatus: groupIssuesByStatus(newIssues),
          };
       });
+
+      const adapter = get().persistenceAdapter;
+      if (adapter) {
+         void adapter.delete(id).catch(() => {
+            set({ issues: previousIssues, issuesByStatus: groupIssuesByStatus(previousIssues) });
+            adapter.onError('The issue could not be deleted. It has been restored.');
+         });
+      }
    },
 
    // Filters

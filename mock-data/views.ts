@@ -32,7 +32,7 @@ export interface View {
    filter: ViewFilter;
 }
 
-/** Saved views of the workspace (Views page). Fake data, LNDev UI storyline. */
+/** Saved views of the workspace (Views page). Fake data, Adisearch Workspace storyline. */
 export const views: View[] = [
    /* --------------------------------- issues -------------------------------- */
    {
@@ -203,7 +203,7 @@ export const views: View[] = [
       id: 'roadmap-core',
       teamId: 'CORE',
       name: 'Roadmap — Core components',
-      description: 'Projects accessible to the LNDev Core team',
+      description: 'Projects accessible to the Adisearch Core team',
       icon: '🛠️',
       type: 'project',
       owner: users[2],

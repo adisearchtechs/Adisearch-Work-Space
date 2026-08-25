@@ -21,6 +21,9 @@ import { ProjectSelector } from './project-selector';
 import { LabelSelector } from './label-selector';
 import { ranks } from '@/mock-data/issues';
 import { DialogTitle } from '@radix-ui/react-dialog';
+import { useWorkspace } from '@/components/providers/workspace-provider';
+import type { IssueDto } from '@/lib/issues/contracts';
+import { issueDtoToIssue } from '@/lib/issues/mapper';
 
 export function CreateIssueTrigger() {
    const openModal = useCreateIssueStore((state) => state.openModal);
@@ -42,6 +45,8 @@ export function CreateIssueTrigger() {
 
 export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState<boolean>(false);
+   const [submitting, setSubmitting] = useState(false);
+   const workspace = useWorkspace();
    const { isOpen, defaultStatus, openModal, closeModal } = useCreateIssueStore();
    const { addIssue, getAllIssues } = useIssuesStore();
 
@@ -83,13 +88,46 @@ export function CreateNewIssue() {
       setAddIssueForm(createDefaultData());
    }, [createDefaultData]);
 
-   const createIssue = () => {
+   const createIssue = async () => {
       if (!addIssueForm.title) {
          toast.error('Title is required');
          return;
       }
+
+      setSubmitting(true);
+      try {
+         if (workspace.configured) {
+            const response = await fetch('/api/issues', {
+               method: 'POST',
+               credentials: 'same-origin',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  organizationSlug: workspace.organization.slug,
+                  teamKey: 'CORE',
+                  title: addIssueForm.title,
+                  description: addIssueForm.description,
+                  statusSlug: addIssueForm.status.id,
+                  priority: addIssueForm.priority.id,
+               }),
+            });
+
+            if (!response.ok) {
+               throw new Error(`Issue creation failed with ${response.status}.`);
+            }
+
+            const { issue } = (await response.json()) as { issue: IssueDto };
+            addIssue(issueDtoToIssue(issue));
+         } else {
+            addIssue(addIssueForm);
+         }
+      } catch {
+         toast.error('Issue could not be created. Try again.');
+         return;
+      } finally {
+         setSubmitting(false);
+      }
+
       toast.success('Issue created');
-      addIssue(addIssueForm);
       if (!createMore) {
          closeModal();
       }
@@ -171,13 +209,8 @@ export function CreateNewIssue() {
                      <Label htmlFor="create-more">Create more</Label>
                   </div>
                </div>
-               <Button
-                  size="sm"
-                  onClick={() => {
-                     createIssue();
-                  }}
-               >
-                  Create issue
+               <Button size="sm" disabled={submitting} onClick={() => void createIssue()}>
+                  {submitting ? 'Creating…' : 'Create issue'}
                </Button>
             </div>
          </DialogContent>

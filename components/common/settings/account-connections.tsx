@@ -39,7 +39,7 @@ export default function AccountConnections() {
                <SettingsRow
                   icon={<GoogleCalendarLogo className="size-4" />}
                   title="Google Calendar"
-                  description="Sync your calendar out-of-office status to LNDev UI"
+                  description="Sync your calendar out-of-office status to Adisearch Workspace"
                   trailing={<ConnectedTrailing />}
                />
             </SettingsCard>
@@ -63,14 +63,14 @@ export default function AccountConnections() {
                      <>
                         GitHub
                         <span className="text-xs text-muted-foreground font-normal">
-                           · @ln-dev7
+                           · @adisearchtechs
                         </span>
                      </>
                   }
                />
                <SettingsRow
                   title="octo-relay"
-                  description="Review code in LNDev UI and sync attribution of your git-related actions"
+                  description="Review code in Adisearch Workspace and sync attribution of your git-related actions"
                   trailing={<ConnectedTrailing />}
                />
             </SettingsCard>

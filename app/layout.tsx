@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
+import { brand, getSiteUrl } from '@/lib/brand';
 import './globals.css';
 
 const geistSans = Geist({
@@ -13,44 +14,41 @@ const geistMono = Geist_Mono({
    subsets: ['latin'],
 });
 
-const siteUrl = 'https://circle.lndev.me';
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
    title: {
-      template: '%s | Circle by lndev-ui',
-      default: 'Circle by lndev-ui',
+      template: `%s | ${brand.name}`,
+      default: brand.name,
    },
-   description:
-      'Project management interface inspired by Linear. Built with Next.js and shadcn/ui, this application allows tracking of issues, projects and teams with a modern, responsive UI.',
+   description: brand.description,
    openGraph: {
       type: 'website',
       locale: 'en_US',
       url: siteUrl,
-      siteName: 'Circle',
+      siteName: brand.name,
       images: [
          {
             url: `${siteUrl}/banner.png`,
             width: 2560,
             height: 1440,
-            alt: 'lndev/ui',
+            alt: brand.name,
          },
       ],
    },
    twitter: {
       card: 'summary_large_image',
-      site: '@ln_dev7',
-      creator: '@ln_dev7',
       images: [
          {
             url: `${siteUrl}/banner.png`,
             width: 2560,
             height: 1440,
-            alt: 'Circle',
+            alt: brand.name,
          },
       ],
    },
-   authors: [{ name: 'Leonel NGOYA', url: 'https://lndev.me/' }],
-   keywords: ['ui', 'lndev', 'components', 'template'],
+   authors: [{ name: brand.organization }],
+   keywords: ['project management', 'issue tracking', 'team collaboration', 'SaaS'],
 };
 
 export const viewport: Viewport = {

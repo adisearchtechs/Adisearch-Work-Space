@@ -64,7 +64,7 @@ export interface ProjectDetail {
 /* -------------------------------------------------------------------------- */
 
 const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
-   // LNDev UI - Core Components
+   // Adisearch Workspace - Core Components
    '1': {
       summary:
          'Rebuild the core primitives (Button, Input, Dialog, Menu) on a shared behavior layer. Goal: one accessibility contract, fewer bundle bytes, no visual regressions.',
@@ -89,7 +89,7 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
          {
             type: 'bullet-list',
             items: [
-               'Extract `useDismissable`, `useFocusScope` and `useAnchorPosition` into `@lndev-ui/behaviors`.',
+               'Extract `useDismissable`, `useFocusScope` and `useAnchorPosition` into `@adisearch-workspace/behaviors`.',
                'Rewrite Dialog, Menu, Popover and Tooltip on top of the shared hooks.',
                'Ship codemods and a visual-regression suite before flipping the default export.',
             ],
@@ -140,13 +140,23 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
          },
       ],
       activity: [
-         { id: 'a1', user: users[4], date: '2026-07-24', text: 'commented “Tested on the staging playground — focus return works across nested portals.”' },
+         {
+            id: 'a1',
+            user: users[4],
+            date: '2026-07-24',
+            text: 'commented “Tested on the staging playground — focus return works across nested portals.”',
+         },
          { id: 'a2', user: users[7], date: '2026-07-17', text: 'added themselves as a member' },
-         { id: 'a3', user: users[0], date: '2026-07-10', text: 'changed the target date to Sep 25' },
+         {
+            id: 'a3',
+            user: users[0],
+            date: '2026-07-10',
+            text: 'changed the target date to Sep 25',
+         },
       ],
    },
 
-   // LNDev UI - Theming
+   // Adisearch Workspace - Theming
    '2': {
       summary:
          'Token pipeline v2: OKLCH palettes, semantic aliases and per-brand theme packages generated from a single source of truth.',
@@ -205,7 +215,7 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
       ],
    },
 
-   // LNDev UI - Data Tables
+   // Adisearch Workspace - Data Tables
    '10': {
       summary:
          'Data grid GA: virtualization to 100k rows, column pinning, row grouping and a headless sorting/filtering core shared with the docs examples.',
@@ -256,8 +266,18 @@ const detailsById: Record<string, Omit<ProjectDetail, 'projectId'>> = {
          },
       ],
       activity: [
-         { id: 'a1', user: users[10], date: '2026-07-22', text: 'commented “Grouping API looks great with aggregate footers.”' },
-         { id: 'a2', user: users[4], date: '2026-07-15', text: 'created the milestone “Row grouping + GA”' },
+         {
+            id: 'a1',
+            user: users[10],
+            date: '2026-07-22',
+            text: 'commented “Grouping API looks great with aggregate footers.”',
+         },
+         {
+            id: 'a2',
+            user: users[4],
+            date: '2026-07-15',
+            text: 'created the milestone “Row grouping + GA”',
+         },
       ],
    },
 };
