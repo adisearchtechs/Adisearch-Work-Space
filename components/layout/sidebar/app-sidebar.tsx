@@ -53,13 +53,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                </p>
                {open && (
                   <div className="group/sidebar relative flex flex-col gap-2 rounded-lg border p-4 text-sm w-full">
-                     <div
-                        className="absolute top-2.5 right-2 z-10 cursor-pointer"
+                     <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-1.5 right-1.5 z-10 size-7"
                         onClick={() => setOpen(!open)}
-                        role="button"
+                        aria-label="Dismiss promotion"
                      >
-                        <X className="size-4" />
-                     </div>
+                        <X className="size-4" aria-hidden="true" />
+                     </Button>
                      <div className="text-balance text-lg font-semibold leading-tight group-hover/sidebar:underline">
                         Open-source layouts by lndev-ui
                      </div>
@@ -67,15 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         Collection of beautifully crafted open-source layouts UI built with
                         shadcn/ui.
                      </div>
-                     <Link
-                        target="_blank"
-                        rel="noreferrer"
-                        className="absolute inset-0"
-                        href="https://square.lndev.me"
-                     >
-                        <span className="sr-only">Square by lndev-ui</span>
-                     </Link>
-                     <Button size="sm" className="w-full">
+                     <Button size="sm" className="w-full" asChild>
                         <Link
                            href="https://square.lndev.me"
                            target="_blank"
@@ -96,8 +91,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         href="https://github.com/ln-dev7/circle"
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="Open Circle repository on GitHub"
                      >
-                        <RiGithubLine className="size-4" />
+                        <RiGithubLine className="size-4" aria-hidden="true" />
                      </Link>
                   </Button>
                </div>

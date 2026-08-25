@@ -34,6 +34,12 @@ export default function MainLayout({ children, header, headersNumber = 2 }: Main
    };
    return (
       <SidebarProvider>
+         <a
+            href="#main-content"
+            className="sr-only z-[100] rounded-md bg-background px-3 py-2 text-sm font-medium shadow-lg focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
+         >
+            Skip to main content
+         </a>
          <CreateIssueModalProvider />
          <CommandPalette />
          <AppSidebar />
@@ -41,6 +47,8 @@ export default function MainLayout({ children, header, headersNumber = 2 }: Main
             <div className="lg:border lg:rounded-md overflow-hidden flex flex-col items-center justify-start bg-container h-full w-full">
                {header}
                <div
+                  id="main-content"
+                  tabIndex={-1}
                   className={cn(
                      'overflow-auto w-full',
                      isEmptyHeader(header) ? 'h-full' : height[headersNumber as keyof typeof height]

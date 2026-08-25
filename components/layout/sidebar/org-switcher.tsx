@@ -18,7 +18,7 @@ import {
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { CreateNewIssue } from './create-new-issue';
+import { CreateIssueTrigger } from './create-new-issue';
 import { ThemeToggle } from '../theme-toggle';
 import Link from 'next/link';
 
@@ -45,7 +45,7 @@ export function OrgSwitcher() {
 
                   <ThemeToggle />
 
-                  <CreateNewIssue />
+                  <CreateIssueTrigger />
                </div>
                <DropdownMenuContent
                   className="w-[--radix-dropdown-menu-trigger-width] min-w-60 rounded-lg"

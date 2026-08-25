@@ -151,14 +151,26 @@ function ItemSection({ section, items }: { section: SidebarSection; items: ItemC
                         'bg-accent/50'
                   )}
                >
-                  <span
+                  <button
+                     type="button"
                      onMouseDown={() => (dragFromGrip.current = true)}
                      onMouseUp={() => (dragFromGrip.current = false)}
-                     className="cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground shrink-0"
-                     aria-label={`Reorder ${item.label}`}
+                     onBlur={() => (dragFromGrip.current = false)}
+                     onKeyDown={(event) => {
+                        if (event.key === 'ArrowUp' && index > 0) {
+                           event.preventDefault();
+                           moveItem(section, index, index - 1);
+                        }
+                        if (event.key === 'ArrowDown' && index < ordered.length - 1) {
+                           event.preventDefault();
+                           moveItem(section, index, index + 1);
+                        }
+                     }}
+                     className="cursor-grab rounded-sm text-muted-foreground/50 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                     aria-label={`Reorder ${item.label}. Use Arrow Up or Arrow Down.`}
                   >
-                     <GripVertical className="size-3.5" />
-                  </span>
+                     <GripVertical className="size-3.5" aria-hidden="true" />
+                  </button>
                   <item.icon
                      className={cn(
                         'size-4 shrink-0',
