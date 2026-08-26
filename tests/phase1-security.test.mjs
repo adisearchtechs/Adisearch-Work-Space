@@ -70,11 +70,40 @@ test('unsafe issue mutations validate origin, content type, size, and input shap
 
 test('browser bundles use a publishable Supabase key and never reference service-role secrets', async () => {
    const browserClient = await readSource('lib/supabase/client.ts');
-   const env = await readSource('.env.example');
+   const envExample = await readSource('.env.example');
+   const productionEnv = await readSource('.env.production');
+   const deployedPublicConfiguration = `${browserClient}\n${productionEnv}`;
 
    assert.match(browserClient, /publishableKey/);
-   assert.match(env, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
-   assert.doesNotMatch(`${browserClient}\n${env}`, /service[_-]?role\s*=/i);
+   assert.match(envExample, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+   assert.match(productionEnv, /^NEXT_PUBLIC_SUPABASE_URL=https:\/\//m);
+   assert.match(productionEnv, /^NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_/m);
+   assert.doesNotMatch(deployedPublicConfiguration, /service[_-]?role|sb_secret_/i);
+});
+
+test('tenant foreign keys are indexed and RLS caches authenticated user lookups', async () => {
+   const schema = await readSource('supabase/schema.sql');
+   const tenantForeignKeyIndexes = [
+      'organizations_created_by_idx',
+      'team_members_team_organization_idx',
+      'projects_team_organization_idx',
+      'projects_lead_organization_idx',
+      'cycles_team_organization_idx',
+      'issues_team_organization_idx',
+      'issues_status_organization_idx',
+      'issues_assignee_organization_idx',
+      'issues_project_organization_idx',
+      'issues_cycle_organization_idx',
+      'issues_creator_organization_idx',
+      'issue_labels_issue_organization_idx',
+      'issue_labels_label_organization_idx',
+   ];
+
+   tenantForeignKeyIndexes.forEach((index) => {
+      assert.match(schema, new RegExp(`create index ${index}`, 'i'));
+   });
+   assert.match(schema, /\(select auth\.uid\(\)\)/);
+   assert.doesNotMatch(schema, /(?<!select )auth\.uid\(\)/);
 });
 
 test('production response hardening includes CSP, HSTS, and cross-origin isolation headers', async () => {

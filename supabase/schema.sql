@@ -180,12 +180,17 @@ create table public.issue_labels (
 );
 
 create index organization_members_user_id_idx on public.organization_members (user_id, organization_id);
+create index organizations_created_by_idx on public.organizations (created_by);
 create index teams_organization_id_idx on public.teams (organization_id, key);
 create index team_members_user_id_idx on public.team_members (user_id, organization_id);
+create index team_members_team_organization_idx on public.team_members (team_id, organization_id);
 create index statuses_organization_position_idx on public.statuses (organization_id, position);
 create index projects_organization_team_idx on public.projects (organization_id, team_id);
 create index projects_lead_id_idx on public.projects (lead_id) where lead_id is not null;
+create index projects_team_organization_idx on public.projects (team_id, organization_id);
+create index projects_lead_organization_idx on public.projects (lead_id, organization_id);
 create index cycles_organization_team_dates_idx on public.cycles (organization_id, team_id, starts_at, ends_at);
+create index cycles_team_organization_idx on public.cycles (team_id, organization_id);
 create index labels_organization_id_idx on public.labels (organization_id);
 create index issues_organization_team_rank_idx on public.issues (organization_id, team_id, rank desc);
 create index issues_organization_status_rank_idx on public.issues (organization_id, status_id, rank desc);
@@ -193,7 +198,15 @@ create index issues_assignee_id_idx on public.issues (assignee_id) where assigne
 create index issues_project_id_idx on public.issues (project_id) where project_id is not null;
 create index issues_cycle_id_idx on public.issues (cycle_id) where cycle_id is not null;
 create index issues_creator_id_idx on public.issues (creator_id);
+create index issues_team_organization_idx on public.issues (team_id, organization_id);
+create index issues_status_organization_idx on public.issues (status_id, organization_id);
+create index issues_assignee_organization_idx on public.issues (assignee_id, organization_id);
+create index issues_project_organization_idx on public.issues (project_id, organization_id);
+create index issues_cycle_organization_idx on public.issues (cycle_id, organization_id);
+create index issues_creator_organization_idx on public.issues (creator_id, organization_id);
 create index issue_labels_organization_label_idx on public.issue_labels (organization_id, label_id);
+create index issue_labels_issue_organization_idx on public.issue_labels (issue_id, organization_id);
+create index issue_labels_label_organization_idx on public.issue_labels (label_id, organization_id);
 
 create or replace function private.is_org_member(target_organization_id uuid)
 returns boolean
@@ -202,11 +215,11 @@ stable
 security definer
 set search_path = ''
 as $$
-   select auth.uid() is not null and exists (
+   select (select auth.uid()) is not null and exists (
       select 1
       from public.organization_members
       where organization_id = target_organization_id
-        and user_id = auth.uid()
+        and user_id = (select auth.uid())
    );
 $$;
 
@@ -217,11 +230,11 @@ stable
 security definer
 set search_path = ''
 as $$
-   select auth.uid() is not null and exists (
+   select (select auth.uid()) is not null and exists (
       select 1
       from public.organization_members
       where organization_id = target_organization_id
-        and user_id = auth.uid()
+        and user_id = (select auth.uid())
         and role in ('owner', 'admin', 'member')
    );
 $$;
@@ -233,11 +246,11 @@ stable
 security definer
 set search_path = ''
 as $$
-   select auth.uid() is not null and exists (
+   select (select auth.uid()) is not null and exists (
       select 1
       from public.organization_members
       where organization_id = target_organization_id
-        and user_id = auth.uid()
+        and user_id = (select auth.uid())
         and role in ('owner', 'admin')
    );
 $$;
@@ -249,12 +262,12 @@ stable
 security definer
 set search_path = ''
 as $$
-   select auth.uid() is not null and exists (
+   select (select auth.uid()) is not null and exists (
       select 1
       from public.organization_members viewer
       join public.organization_members target
         on target.organization_id = viewer.organization_id
-      where viewer.user_id = auth.uid()
+      where viewer.user_id = (select auth.uid())
         and target.user_id = target_user_id
    );
 $$;
@@ -438,18 +451,18 @@ alter table public.issue_labels enable row level security;
 
 create policy profiles_select_shared_org on public.profiles
 for select to authenticated
-using (id = auth.uid() or private.shares_org(id));
+using (id = (select auth.uid()) or private.shares_org(id));
 create policy profiles_update_self on public.profiles
 for update to authenticated
-using (id = auth.uid())
-with check (id = auth.uid());
+using (id = (select auth.uid()))
+with check (id = (select auth.uid()));
 
 create policy organizations_select_members on public.organizations
 for select to authenticated
 using (private.is_org_member(id));
 create policy organizations_insert_authenticated on public.organizations
 for insert to authenticated
-with check (created_by = auth.uid());
+with check (created_by = (select auth.uid()));
 create policy organizations_update_admins on public.organizations
 for update to authenticated
 using (private.is_org_admin(id))
@@ -458,7 +471,9 @@ create policy organizations_delete_owners on public.organizations
 for delete to authenticated
 using (exists (
    select 1 from public.organization_members
-   where organization_id = id and user_id = auth.uid() and role = 'owner'
+   where organization_id = organizations.id
+     and user_id = (select auth.uid())
+     and role = 'owner'
 ));
 
 create policy organization_members_select_members on public.organization_members
@@ -541,14 +556,14 @@ create policy issues_select_members on public.issues
 for select to authenticated using (private.is_org_member(organization_id));
 create policy issues_insert_writers on public.issues
 for insert to authenticated
-with check (private.can_write_org(organization_id) and creator_id = auth.uid());
+with check (private.can_write_org(organization_id) and creator_id = (select auth.uid()));
 create policy issues_update_writers on public.issues
 for update to authenticated
 using (private.can_write_org(organization_id))
 with check (private.can_write_org(organization_id));
 create policy issues_delete_creator_or_admin on public.issues
 for delete to authenticated
-using (creator_id = auth.uid() or private.is_org_admin(organization_id));
+using (creator_id = (select auth.uid()) or private.is_org_admin(organization_id));
 
 create policy issue_labels_select_members on public.issue_labels
 for select to authenticated using (private.is_org_member(organization_id));
