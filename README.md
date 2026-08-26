@@ -40,7 +40,14 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 Do not expose or prefix a Supabase service-role key with `NEXT_PUBLIC_`.
 
 In Supabase Auth URL Configuration, set the site URL to the production domain and allow the local
-and Vercel preview callback origins that you intend to test.
+and Vercel preview callback origins that you intend to test. Then update the **Confirm signup**
+email template link so the server can exchange the token hash for a cookie-backed session:
+
+```html
+<a href="{{ .RedirectTo }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">
+   Confirm email address
+</a>
+```
 
 ## Verification
 

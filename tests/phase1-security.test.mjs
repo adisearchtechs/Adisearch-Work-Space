@@ -9,6 +9,8 @@ const readSource = (relativePath) => readFile(path.join(repositoryRoot, relative
 
 test('Supabase authentication refresh trusts verified claims, not an unverified session', async () => {
    const proxy = await readSource('lib/supabase/proxy.ts');
+   const loginActions = await readSource('app/login/actions.ts');
+   const confirmRoute = await readSource('app/auth/confirm/route.ts');
    const serverRoutes = await Promise.all([
       readSource('app/api/issues/route.ts'),
       readSource('app/api/issues/[issueId]/route.ts'),
@@ -18,6 +20,8 @@ test('Supabase authentication refresh trusts verified claims, not an unverified 
    assert.match(proxy, /auth\.getClaims\(\)/);
    assert.doesNotMatch(proxy, /auth\.getSession\(\)/);
    serverRoutes.forEach((source) => assert.match(source, /auth\.getClaims\(\)/));
+   assert.match(loginActions, /emailRedirectTo: getSiteUrl\(\)/);
+   assert.match(confirmRoute, /verifyOtp\(\{ type, token_hash: tokenHash \}\)/);
 });
 
 test('every tenant table explicitly enables row-level security', async () => {

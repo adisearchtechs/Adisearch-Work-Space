@@ -65,14 +65,11 @@ export async function signUpAction(
    }
 
    const supabase = await createClient();
-   const next = safeRedirectPath(parsed.data.next);
-   const confirmUrl = new URL('/auth/confirm', getSiteUrl());
-   confirmUrl.searchParams.set('next', next);
 
    const { error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: { emailRedirectTo: confirmUrl.toString() },
+      options: { emailRedirectTo: getSiteUrl() },
    });
 
    if (error) {
