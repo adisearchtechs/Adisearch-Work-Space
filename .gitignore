@@ -32,9 +32,14 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!.env.production
 
 # vercel
 .vercel
+
+# supabase cli
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo

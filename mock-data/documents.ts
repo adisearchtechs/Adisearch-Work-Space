@@ -19,7 +19,7 @@ export interface DocumentFolder {
 
 /**
  * Team documents grouped by folder (project or theme), Linear-style.
- * All content is fake data for the LNDev UI component library.
+ * All content is fake data for the Adisearch Workspace component library.
  */
 export const documentFolders: DocumentFolder[] = [
    {
@@ -29,7 +29,7 @@ export const documentFolders: DocumentFolder[] = [
       documents: [
          {
             id: 'doc-1',
-            name: 'LNDev UI Team Calendar',
+            name: 'Adisearch Workspace Team Calendar',
             icon: '📆',
             creator: users[0],
             createdAt: '2026-07-08',

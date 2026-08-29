@@ -1,7 +1,7 @@
 /**
  * Mock data of the Reviews feature (Linear-style PR reviews): list tabs
  * ("For you" / "Created"), and per-review Overview / Guide / Diff content.
- * Everything is fake and deterministic, on the LNDev UI storyline; the
+ * Everything is fake and deterministic, on the Adisearch Workspace storyline; the
  * `resolves` identifiers reference real issues from mock-data/issues.ts.
  */
 
@@ -118,13 +118,13 @@ const seeds: ReviewSeed[] = [
    /* ------------------------------- For you ------------------------------- */
    {
       id: 'fix-sheet-header-truncation-with-long-titles',
-      title: 'fix(sheet): header truncation with long titles [LNUI-903]',
+      title: 'fix(sheet): header truncation with long titles [ADI-903]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '1h',
       prNumber: 412,
       branch: 'fix/lnui-903-sheet-header-truncation',
-      resolves: ['LNUI-903', 'Fix Sheet header truncation with long titles'],
+      resolves: ['ADI-903', 'Fix Sheet header truncation with long titles'],
       files: [
          ['sheet.tsx', 'components/ui/sheet', 31, 6, 'implementation'],
          ['sheet-header.tsx', 'components/ui/sheet', 12, 2, 'implementation'],
@@ -150,13 +150,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-dialog-title-id-collision-with-multiple-instances',
-      title: 'fix(dialog): title id collision with multiple instances [LNUI-909]',
+      title: 'fix(dialog): title id collision with multiple instances [ADI-909]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '6h',
       prNumber: 409,
       branch: 'fix/lnui-909-dialog-title-id',
-      resolves: ['LNUI-909', 'Fix Dialog title id collision with multiple instances'],
+      resolves: ['ADI-909', 'Fix Dialog title id collision with multiple instances'],
       files: [
          ['dialog.tsx', 'components/ui/dialog', 18, 9, 'implementation'],
          ['use-stable-id.ts', 'hooks', 14, 0, 'implementation'],
@@ -178,13 +178,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-pagination-compound-component-api',
-      title: 'feat(pagination): compound component API [LNUI-622]',
+      title: 'feat(pagination): compound component API [ADI-622]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '7h',
       prNumber: 405,
       branch: 'feat/lnui-622-pagination-compound',
-      resolves: ['LNUI-622', 'Ship Pagination compound component'],
+      resolves: ['ADI-622', 'Ship Pagination compound component'],
       files: [
          ['pagination.tsx', 'components/ui/pagination', 96, 0, 'implementation'],
          ['use-pagination-range.ts', 'hooks', 38, 0, 'implementation'],
@@ -207,13 +207,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-docs-search-by-prop-name-and-enum-values',
-      title: 'feat(docs): search by prop name and enum values [LNUI-911]',
+      title: 'feat(docs): search by prop name and enum values [ADI-911]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '1d',
       prNumber: 398,
       branch: 'feat/lnui-911-docs-prop-search',
-      resolves: ['LNUI-911', 'Search docs by prop name and enum values'],
+      resolves: ['ADI-911', 'Search docs by prop name and enum values'],
       files: [
          ['search-index.ts', 'docs/lib', 52, 11, 'implementation'],
          ['prop-table.tsx', 'docs/components', 24, 5, 'implementation'],
@@ -235,13 +235,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-combobox-multi-select-chips-inside-the-trigger',
-      title: 'feat(combobox): multi-select chips inside the trigger [LNUI-920]',
+      title: 'feat(combobox): multi-select chips inside the trigger [ADI-920]',
       status: 'open',
       list: 'for-you',
       timeAgo: '30m',
       prNumber: 415,
       branch: 'feat/lnui-920-combobox-chips',
-      resolves: ['LNUI-920', 'Combobox: multi-select chips inside the trigger'],
+      resolves: ['ADI-920', 'Combobox: multi-select chips inside the trigger'],
       files: [
          ['combobox.tsx', 'components/ui/combobox', 74, 18, 'implementation'],
          ['chip-list.tsx', 'components/ui/combobox', 42, 0, 'implementation'],
@@ -264,13 +264,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-form-async-validators-with-debounce-and-abort',
-      title: 'feat(form): async validators with debounce and abort [LNUI-777]',
+      title: 'feat(form): async validators with debounce and abort [ADI-777]',
       status: 'open',
       list: 'for-you',
       timeAgo: '45m',
       prNumber: 414,
       branch: 'feat/lnui-777-async-validators',
-      resolves: ['LNUI-777', 'Form: async validators with debounce and abort'],
+      resolves: ['ADI-777', 'Form: async validators with debounce and abort'],
       files: [
          ['form.tsx', 'components/ui/form', 39, 11, 'implementation'],
          ['use-async-validator.ts', 'hooks', 58, 0, 'implementation'],
@@ -292,13 +292,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-progress-label-rounding-at-99-5-percent',
-      title: 'fix(progress): label rounding at 99.5 percent [LNUI-912]',
+      title: 'fix(progress): label rounding at 99.5 percent [ADI-912]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '1d',
       prNumber: 410,
       branch: 'fix/lnui-912-progress-rounding',
-      resolves: ['LNUI-912', 'Fix Progress label rounding at 99.5 percent'],
+      resolves: ['ADI-912', 'Fix Progress label rounding at 99.5 percent'],
       files: [
          ['progress.tsx', 'components/ui/progress', 12, 5, 'implementation'],
          ['format-percent.ts', 'lib', 14, 0, 'implementation'],
@@ -315,13 +315,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-spinner-size-and-stroke-tokens',
-      title: 'feat(spinner): size and stroke tokens [LNUI-914]',
+      title: 'feat(spinner): size and stroke tokens [ADI-914]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '2d',
       prNumber: 413,
       branch: 'feat/lnui-914-spinner-tokens',
-      resolves: ['LNUI-914', 'Ship Spinner with size and stroke tokens'],
+      resolves: ['ADI-914', 'Ship Spinner with size and stroke tokens'],
       files: [
          ['spinner.tsx', 'components/ui/spinner', 46, 0, 'implementation'],
          ['tokens.css', 'app', 9, 0, 'implementation'],
@@ -342,13 +342,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-dialog-inert-background-instead-of-aria-hidden',
-      title: 'feat(dialog): inert background instead of the aria-hidden walker [LNUI-780]',
+      title: 'feat(dialog): inert background instead of the aria-hidden walker [ADI-780]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '2d',
       prNumber: 407,
       branch: 'feat/lnui-780-dialog-inert',
-      resolves: ['LNUI-780', 'Dialog: inert background instead of the aria-hidden walker'],
+      resolves: ['ADI-780', 'Dialog: inert background instead of the aria-hidden walker'],
       files: [
          ['dialog.tsx', 'components/ui/dialog', 21, 34, 'implementation'],
          ['use-inert-others.ts', 'hooks', 32, 0, 'implementation'],
@@ -373,13 +373,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-combobox-popover-width-in-grid-cells',
-      title: 'fix(combobox): popover width when the trigger sits in a grid cell [LNUI-796]',
+      title: 'fix(combobox): popover width when the trigger sits in a grid cell [ADI-796]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '3d',
       prNumber: 406,
       branch: 'fix/lnui-796-combobox-popover-width',
-      resolves: ['LNUI-796', 'Fix Combobox popover width when the trigger sits in a grid cell'],
+      resolves: ['ADI-796', 'Fix Combobox popover width when the trigger sits in a grid cell'],
       files: [
          ['combobox.tsx', 'components/ui/combobox', 11, 6, 'implementation'],
          ['combobox.test.tsx', 'components/ui/__tests__', 17, 0, 'tests'],
@@ -397,13 +397,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-toast-region-announces-politely',
-      title: 'fix(toast): announce politely instead of assertively [LNUI-798]',
+      title: 'fix(toast): announce politely instead of assertively [ADI-798]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '3d',
       prNumber: 404,
       branch: 'fix/lnui-798-toast-polite',
-      resolves: ['LNUI-798', 'Toast region announces politely instead of assertively'],
+      resolves: ['ADI-798', 'Toast region announces politely instead of assertively'],
       files: [
          ['toast.tsx', 'components/ui/toast', 9, 7, 'implementation'],
          ['toast.test.tsx', 'components/ui/__tests__', 15, 2, 'tests'],
@@ -420,13 +420,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-button-loading-prop-with-spinner-replacement',
-      title: 'feat(button): loading prop with spinner replacement [LNUI-750]',
+      title: 'feat(button): loading prop with spinner replacement [ADI-750]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '4d',
       prNumber: 403,
       branch: 'feat/lnui-750-button-loading',
-      resolves: ['LNUI-750', 'Add loading prop to Button with spinner replacement'],
+      resolves: ['ADI-750', 'Add loading prop to Button with spinner replacement'],
       files: [
          ['button.tsx', 'components/ui/button', 26, 4, 'implementation'],
          ['button.test.tsx', 'components/ui/__tests__', 31, 0, 'tests'],
@@ -447,13 +447,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-avatar-fallback-gradient-from-user-id-hash',
-      title: 'feat(avatar): fallback gradient derived from the user id hash [LNUI-763]',
+      title: 'feat(avatar): fallback gradient derived from the user id hash [ADI-763]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '5d',
       prNumber: 401,
       branch: 'feat/lnui-763-avatar-gradient',
-      resolves: ['LNUI-763', 'Avatar: fallback gradient derived from the user id hash'],
+      resolves: ['ADI-763', 'Avatar: fallback gradient derived from the user id hash'],
       files: [
          ['avatar.tsx', 'components/ui/avatar', 18, 3, 'implementation'],
          ['gradient-hash.ts', 'lib', 22, 0, 'implementation'],
@@ -470,13 +470,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-popover-opt-in-modal-mode-with-focus-containment',
-      title: 'feat(popover): opt-in modal mode with focus containment [LNUI-766]',
+      title: 'feat(popover): opt-in modal mode with focus containment [ADI-766]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '5d',
       prNumber: 400,
       branch: 'feat/lnui-766-popover-modal',
-      resolves: ['LNUI-766', 'Popover: opt-in modal mode with focus containment'],
+      resolves: ['ADI-766', 'Popover: opt-in modal mode with focus containment'],
       files: [
          ['popover.tsx', 'components/ui/popover', 24, 8, 'implementation'],
          ['popover.test.tsx', 'components/ui/__tests__', 29, 0, 'tests'],
@@ -492,13 +492,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-scroll-area-shadows-via-scroll-driven-animations',
-      title: 'feat(scroll-area): scroll shadows via scroll-driven animations [LNUI-760]',
+      title: 'feat(scroll-area): scroll shadows via scroll-driven animations [ADI-760]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '6d',
       prNumber: 399,
       branch: 'feat/lnui-760-scroll-shadows',
-      resolves: ['LNUI-760', 'Scroll area: scroll shadows via scroll-driven animations'],
+      resolves: ['ADI-760', 'Scroll area: scroll shadows via scroll-driven animations'],
       files: [
          ['scroll-area.tsx', 'components/ui/scroll-area', 16, 2, 'implementation'],
          ['scroll-shadows.css', 'components/ui/scroll-area', 34, 0, 'implementation'],
@@ -518,13 +518,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'chore-replace-lodash-debounce-with-in-house-scheduler',
-      title: 'chore(lib): replace lodash.debounce with an in-house scheduler [LNUI-782]',
+      title: 'chore(lib): replace lodash.debounce with an in-house scheduler [ADI-782]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '1w',
       prNumber: 397,
       branch: 'chore/lnui-782-debounce-scheduler',
-      resolves: ['LNUI-782', 'Replace lodash.debounce with an in-house scheduler'],
+      resolves: ['ADI-782', 'Replace lodash.debounce with an in-house scheduler'],
       files: [
          ['scheduler.ts', 'lib', 41, 0, 'implementation'],
          ['use-debounced-value.ts', 'hooks', 8, 12, 'implementation'],
@@ -545,13 +545,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-button-gap-with-conditional-icon-only-child',
-      title: 'fix(button): gap collapses when an icon-only child is conditional [LNUI-797]',
+      title: 'fix(button): gap collapses when an icon-only child is conditional [ADI-797]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '1w',
       prNumber: 394,
       branch: 'fix/lnui-797-button-gap',
-      resolves: ['LNUI-797', 'Button: gap collapses when an icon-only child is conditional'],
+      resolves: ['ADI-797', 'Button: gap collapses when an icon-only child is conditional'],
       files: [
          ['button.tsx', 'components/ui/button', 7, 4, 'implementation'],
          ['button.test.tsx', 'components/ui/__tests__', 13, 0, 'tests'],
@@ -565,13 +565,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-table-monospace-numeric-cell-variant',
-      title: 'feat(table): monospace numeric cell variant [LNUI-761]',
+      title: 'feat(table): monospace numeric cell variant [ADI-761]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '8d',
       prNumber: 393,
       branch: 'feat/lnui-761-table-numeric-cells',
-      resolves: ['LNUI-761', 'Add a monospace numeric variant to Table cells'],
+      resolves: ['ADI-761', 'Add a monospace numeric variant to Table cells'],
       files: [
          ['table.tsx', 'components/ui/table', 15, 2, 'implementation'],
          ['table.test.tsx', 'components/ui/__tests__', 12, 0, 'tests'],
@@ -588,13 +588,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-skip-to-content-link-helper-for-app-shells',
-      title: 'feat(a11y): skip-to-content link helper for app shells [LNUI-765]',
+      title: 'feat(a11y): skip-to-content link helper for app shells [ADI-765]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '10d',
       prNumber: 391,
       branch: 'feat/lnui-765-skip-link',
-      resolves: ['LNUI-765', 'Add a skip-to-content link helper for app shells'],
+      resolves: ['ADI-765', 'Add a skip-to-content link helper for app shells'],
       files: [
          ['skip-link.tsx', 'components/layout', 29, 0, 'implementation'],
          ['skip-link.test.tsx', 'components/layout/__tests__', 18, 0, 'tests'],
@@ -612,13 +612,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-tabs-lazy-mount-panels-with-keep-mounted-opt-in',
-      title: 'feat(tabs): lazy mount panels with a keepMounted opt-in [LNUI-751]',
+      title: 'feat(tabs): lazy mount panels with a keepMounted opt-in [ADI-751]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '12d',
       prNumber: 390,
       branch: 'feat/lnui-751-tabs-lazy-mount',
-      resolves: ['LNUI-751', 'Tabs: lazy mount panels with a keepMounted opt-in'],
+      resolves: ['ADI-751', 'Tabs: lazy mount panels with a keepMounted opt-in'],
       files: [
          ['tabs.tsx', 'components/ui/tabs', 23, 6, 'implementation'],
          ['tabs.test.tsx', 'components/ui/__tests__', 26, 0, 'tests'],
@@ -637,13 +637,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-toolbar-overflow-priority-api',
-      title: 'feat(toolbar): overflow priority API [LNUI-916]',
+      title: 'feat(toolbar): overflow priority API [ADI-916]',
       status: 'merged',
       list: 'for-you',
       timeAgo: '2w',
       prNumber: 389,
       branch: 'feat/lnui-916-toolbar-overflow',
-      resolves: ['LNUI-916', 'Ship the Toolbar overflow priority API'],
+      resolves: ['ADI-916', 'Ship the Toolbar overflow priority API'],
       files: [
          ['toolbar.tsx', 'components/ui/toolbar', 55, 9, 'implementation'],
          ['use-overflow-priority.ts', 'hooks', 44, 0, 'implementation'],
@@ -664,13 +664,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'chore-custom-scrollbar-styling-fallback-for-firefox',
-      title: 'chore(scroll-area): custom scrollbar styling fallback for Firefox [LNUI-919]',
+      title: 'chore(scroll-area): custom scrollbar styling fallback for Firefox [ADI-919]',
       status: 'closed',
       list: 'for-you',
       timeAgo: '9d',
       prNumber: 387,
       branch: 'chore/lnui-919-scrollbar-fallback',
-      resolves: ['LNUI-919', 'Custom scrollbar styling fallback for Firefox'],
+      resolves: ['ADI-919', 'Custom scrollbar styling fallback for Firefox'],
       files: [
          ['scroll-area.tsx', 'components/ui/scroll-area', 19, 5, 'implementation'],
          ['scrollbar-fallback.css', 'components/ui/scroll-area', 26, 0, 'implementation'],
@@ -684,13 +684,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'chore-migrate-the-docs-playground-to-sandpack-3',
-      title: 'chore(docs): migrate the playground to Sandpack 3 [LNUI-772]',
+      title: 'chore(docs): migrate the playground to Sandpack 3 [ADI-772]',
       status: 'closed',
       list: 'for-you',
       timeAgo: '2w',
       prNumber: 385,
       branch: 'chore/lnui-772-sandpack-3',
-      resolves: ['LNUI-772', 'Migrate the docs playground to Sandpack 3'],
+      resolves: ['ADI-772', 'Migrate the docs playground to Sandpack 3'],
       files: [
          ['playground.tsx', 'docs/components', 48, 37, 'implementation'],
          ['sandpack-theme.ts', 'docs/lib', 22, 14, 'implementation'],
@@ -708,13 +708,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'experiment-inline-critical-css-for-the-docs-home',
-      title: 'experiment(docs): inline critical CSS for the docs home [LNUI-918]',
+      title: 'experiment(docs): inline critical CSS for the docs home [ADI-918]',
       status: 'closed',
       list: 'for-you',
       timeAgo: '3w',
       prNumber: 384,
       branch: 'experiment/lnui-918-critical-css',
-      resolves: ['LNUI-918', 'Inline critical CSS experiment for the docs home'],
+      resolves: ['ADI-918', 'Inline critical CSS experiment for the docs home'],
       files: [
          ['critical-css.ts', 'docs/lib', 61, 0, 'implementation'],
          ['layout.tsx', 'app', 12, 3, 'implementation'],
@@ -731,13 +731,13 @@ const seeds: ReviewSeed[] = [
    /* ------------------------------- Created ------------------------------- */
    {
       id: 'fix-slider-keyboard-step-with-fractional-precision',
-      title: 'fix(slider): keyboard step with fractional precision [LNUI-900]',
+      title: 'fix(slider): keyboard step with fractional precision [ADI-900]',
       status: 'merged',
       list: 'created',
       timeAgo: '2h',
       prNumber: 411,
       branch: 'fix/lnui-900-slider-fractional-step',
-      resolves: ['LNUI-900', 'Fix Slider keyboard step with fractional precision'],
+      resolves: ['ADI-900', 'Fix Slider keyboard step with fractional precision'],
       files: [
          ['slider.tsx', 'components/ui/slider', 22, 8, 'implementation'],
          ['decimal.ts', 'lib', 16, 0, 'implementation'],
@@ -759,13 +759,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-dropdown-checkbox-item-icon-alignment-in-rtl',
-      title: 'fix(dropdown): checkbox item icon alignment in RTL [LNUI-901]',
+      title: 'fix(dropdown): checkbox item icon alignment in RTL [ADI-901]',
       status: 'merged',
       list: 'created',
       timeAgo: '6h',
       prNumber: 408,
       branch: 'fix/lnui-901-dropdown-rtl',
-      resolves: ['LNUI-901', 'Dropdown: checkbox item icon alignment in RTL'],
+      resolves: ['ADI-901', 'Dropdown: checkbox item icon alignment in RTL'],
       files: [
          ['dropdown-menu.tsx', 'components/ui/dropdown-menu', 14, 7, 'implementation'],
          ['dropdown-menu.test.tsx', 'components/ui/__tests__', 19, 0, 'tests'],
@@ -779,13 +779,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-theme-reduce-hydration-payload-of-the-theme-script',
-      title: 'feat(theme): reduce hydration payload of the theme script [LNUI-905]',
+      title: 'feat(theme): reduce hydration payload of the theme script [ADI-905]',
       status: 'merged',
       list: 'created',
       timeAgo: '1d',
       prNumber: 402,
       branch: 'feat/lnui-905-theme-script-payload',
-      resolves: ['LNUI-905', 'Reduce the hydration payload of the theme script by inlining'],
+      resolves: ['ADI-905', 'Reduce the hydration payload of the theme script by inlining'],
       files: [
          ['theme-script.ts', 'lib/theme', 28, 41, 'implementation'],
          ['theme-provider.tsx', 'components/layout', 9, 12, 'implementation'],
@@ -806,13 +806,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-calendar-disabled-matcher-for-date-ranges',
-      title: 'fix(calendar): disabled matcher for date ranges [LNUI-906]',
+      title: 'fix(calendar): disabled matcher for date ranges [ADI-906]',
       status: 'merged',
       list: 'created',
       timeAgo: '4d',
       prNumber: 396,
       branch: 'fix/lnui-906-calendar-disabled-ranges',
-      resolves: ['LNUI-906', 'Fix Calendar disabled matcher for date ranges'],
+      resolves: ['ADI-906', 'Fix Calendar disabled matcher for date ranges'],
       files: [
          ['calendar.tsx', 'components/ui/calendar', 17, 10, 'implementation'],
          ['date-matchers.ts', 'lib', 21, 4, 'implementation'],
@@ -829,13 +829,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-tabs-home-and-end-keys-jump-to-first-and-last-tab',
-      title: 'feat(tabs): Home and End keys jump to first and last tab [LNUI-908]',
+      title: 'feat(tabs): Home and End keys jump to first and last tab [ADI-908]',
       status: 'merged',
       list: 'created',
       timeAgo: '4d',
       prNumber: 395,
       branch: 'feat/lnui-908-tabs-home-end',
-      resolves: ['LNUI-908', 'Tabs: Home and End keys jump to the first and last tab'],
+      resolves: ['ADI-908', 'Tabs: Home and End keys jump to the first and last tab'],
       files: [
          ['tabs.tsx', 'components/ui/tabs', 15, 3, 'implementation'],
          ['tabs.test.tsx', 'components/ui/__tests__', 22, 0, 'tests'],
@@ -849,13 +849,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-command-escape-closes-nested-pages-before-the-dialog',
-      title: 'fix(command): Escape closes nested pages before the dialog [LNUI-910]',
+      title: 'fix(command): Escape closes nested pages before the dialog [ADI-910]',
       status: 'merged',
       list: 'created',
       timeAgo: '5d',
       prNumber: 392,
       branch: 'fix/lnui-910-command-escape',
-      resolves: ['LNUI-910', 'Command menu: Escape closes nested pages before the dialog'],
+      resolves: ['ADI-910', 'Command menu: Escape closes nested pages before the dialog'],
       files: [
          ['command.tsx', 'components/ui/command', 19, 6, 'implementation'],
          ['command.test.tsx', 'components/ui/__tests__', 25, 0, 'tests'],
@@ -869,13 +869,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'feat-skeleton-match-the-line-height-rhythm-of-text-presets',
-      title: 'feat(skeleton): match the line-height rhythm of Text presets [LNUI-907]',
+      title: 'feat(skeleton): match the line-height rhythm of Text presets [ADI-907]',
       status: 'merged',
       list: 'created',
       timeAgo: '1w',
       prNumber: 388,
       branch: 'feat/lnui-907-skeleton-rhythm',
-      resolves: ['LNUI-907', 'Skeleton: match the line-height rhythm of Text presets'],
+      resolves: ['ADI-907', 'Skeleton: match the line-height rhythm of Text presets'],
       files: [
          ['skeleton.tsx', 'components/ui/skeleton', 26, 9, 'implementation'],
          ['skeleton.stories.tsx', 'stories', 18, 0, 'tests'],
@@ -889,13 +889,13 @@ const seeds: ReviewSeed[] = [
    },
    {
       id: 'fix-accordion-animate-height-with-css-grid-rows',
-      title: 'fix(accordion): animate height with CSS grid rows [LNUI-560]',
+      title: 'fix(accordion): animate height with CSS grid rows [ADI-560]',
       status: 'merged',
       list: 'created',
       timeAgo: '1w',
       prNumber: 386,
       branch: 'fix/lnui-560-accordion-grid-rows',
-      resolves: ['LNUI-560', 'Accordion: animate height with CSS grid rows instead of max-height'],
+      resolves: ['ADI-560', 'Accordion: animate height with CSS grid rows instead of max-height'],
       files: [
          ['accordion.tsx', 'components/ui/accordion', 12, 18, 'implementation'],
          ['accordion.test.tsx', 'components/ui/__tests__', 16, 2, 'tests'],
@@ -915,7 +915,7 @@ const seeds: ReviewSeed[] = [
       timeAgo: '12d',
       prNumber: 371,
       branch: 'chore/preview-design-tokens-dry-run',
-      resolves: ['LNUI-807', 'High-contrast theme preset'],
+      resolves: ['ADI-807', 'High-contrast theme preset'],
       files: [
          ['tokens.css', 'app', 210, 0, 'implementation'],
          ['tokens-preview.tsx', 'docs/components', 44, 0, 'implementation'],
@@ -923,7 +923,7 @@ const seeds: ReviewSeed[] = [
       commits: [['5f3310a', 'chore(preview): generate the token sheet for review', '12d ago']],
       summary: [
          'Throwaway branch to preview the generated high-contrast token sheet on staging — opened only to get a deploy link for the design review.',
-         'Closed without merging once the review was done; the real work lands with LNUI-807.',
+         'Closed without merging once the review was done; the real work lands with ADI-807.',
       ],
       testPlan: [['Preview deployment only — not meant to land', false]],
    },
@@ -1142,7 +1142,7 @@ export const reviews: Review[] = seeds.map((seed) => {
       status: seed.status,
       list: seed.list,
       timeAgo: seed.timeAgo,
-      repo: 'lndev-ui',
+      repo: 'adisearch-workspace',
       prNumber: seed.prNumber,
       targetBranch: 'main',
       sourceBranch: seed.branch,
@@ -1162,7 +1162,7 @@ export const reviews: Review[] = seeds.map((seed) => {
       summary: seed.summary,
       testPlan: seed.testPlan.map(([text, checked]) => ({ text, checked })),
       deployment: {
-         project: 'lndev-ui-docs',
+         project: 'adisearch-workspace-docs',
          state: seed.status === 'closed' ? 'Skipped' : 'Ready',
          action: 'Preview',
       },

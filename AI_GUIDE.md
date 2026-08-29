@@ -1,32 +1,37 @@
-# Circle — AI Guide
+# Adisearch Workspace — AI Guide
+
+> Production note: the repository now includes Supabase authentication, organization membership
+> enforcement, PostgreSQL row-level security, and a persistent issue vertical slice. Sections
+> below that describe fake tenancy or entirely local state document the inherited demo dataset.
+> See `README.md`, `lib/supabase/`, `app/api/issues/`, and `supabase/schema.sql` for the production
+> boundary.
 
 > This document is written for AI assistants (and humans) working on this codebase.
 > It explains how the project is structured, where every kind of logic lives, how to
 > plug a real API behind the UI, and how to extract a single feature into another project.
 
-Circle is a **Linear-inspired project management interface**: issues, projects, teams,
-cycles, members, documents and notifications — built as a **pure front-end template**.
-There is **no backend, no API, no database and no authentication**: every piece of data
-is fake, defined in TypeScript files under `mock-data/`, and all mutations happen
-in-memory through Zustand stores.
+Adisearch Workspace is a **Linear-inspired project management SaaS**: issues, projects, teams,
+cycles, members, documents and notifications. Supabase-backed deployments authenticate users,
+enforce organization isolation in PostgreSQL, and persist issue CRUD. Without Supabase variables,
+the inherited TypeScript dataset under `mock-data/` remains available as a development demo.
 
 ## Tech stack
 
-| Concern | Choice | Notes |
-| --- | --- | --- |
-| Framework | Next.js 15 (App Router) | `app/` directory, React 19, Turbopack in dev |
-| Language | TypeScript (strict) | Path alias `@/*` → repo root (see `tsconfig.json`) |
-| Styling | Tailwind CSS v4 | Theme tokens in `app/globals.css` (`--background`, `--container`, …) |
-| UI kit | shadcn/ui (Radix primitives) | Generated components in `components/ui/` — treat as vendored |
-| State | Zustand 5 + nuqs | UI state in Zustand (`store/`), filters/sorting synced to the URL via nuqs hooks |
-| Charts | Recharts | Burn-up chart + insights bar chart |
-| Drag & drop | react-dnd (HTML5 backend) | Board view, drop = change status |
-| Animation | motion (Framer Motion) | Layout animations on issue lines/cards |
-| Dates | date-fns | Formatting only |
-| Ordering | LexoRank (`@kayron013/lexorank`) | Issue `rank` field, re-exported from `lib/utils.ts` |
-| Icons | lucide-react, @remixicon/react | Plus hand-written SVGs for statuses/priorities |
-| Toasts | sonner | `<Toaster />` mounted in `app/layout.tsx` |
-| URL state | nuqs 2 | `NuqsAdapter` wraps the app in `app/layout.tsx`; filter "stores" are nuqs hooks |
+| Concern     | Choice                           | Notes                                                                            |
+| ----------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| Framework   | Next.js 16 (App Router)          | `app/` directory, React 19, Turbopack in dev                                     |
+| Language    | TypeScript (strict)              | Path alias `@/*` → repo root (see `tsconfig.json`)                               |
+| Styling     | Tailwind CSS v4                  | Theme tokens in `app/globals.css` (`--background`, `--container`, …)             |
+| UI kit      | shadcn/ui (Radix primitives)     | Generated components in `components/ui/` — treat as vendored                     |
+| State       | Zustand 5 + nuqs                 | UI state in Zustand (`store/`), filters/sorting synced to the URL via nuqs hooks |
+| Charts      | Recharts                         | Burn-up chart + insights bar chart                                               |
+| Drag & drop | react-dnd (HTML5 backend)        | Board view, drop = change status                                                 |
+| Animation   | motion (Framer Motion)           | Layout animations on issue lines/cards                                           |
+| Dates       | date-fns                         | Formatting only                                                                  |
+| Ordering    | LexoRank (`@kayron013/lexorank`) | Issue `rank` field, re-exported from `lib/utils.ts`                              |
+| Icons       | lucide-react, @remixicon/react   | Plus hand-written SVGs for statuses/priorities                                   |
+| Toasts      | sonner                           | `<Toaster />` mounted in `app/layout.tsx`                                        |
+| URL state   | nuqs 2                           | `NuqsAdapter` wraps the app in `app/layout.tsx`; filter "stores" are nuqs hooks  |
 
 Formatting: Prettier with **3-space indentation**, single quotes, 100-col width
 (`.prettierrc`). Husky + lint-staged run Prettier/ESLint on commit.
@@ -76,7 +81,9 @@ import Example from '@/components/common/example/example';
 
 export default function ExamplePage() {
    return (
-      <MainLayout header={<Header />}>   {/* headersNumber={1|2} = header row count */}
+      <MainLayout header={<Header />}>
+         {' '}
+         {/* headersNumber={1|2} = header row count */}
          <Example />
       </MainLayout>
    );
@@ -90,22 +97,22 @@ content area whose height depends on `headersNumber` (1 or 2 header rows of 40px
 
 All domain **interfaces live next to their fake data**. Import types from these files.
 
-| File | Types | Notable fields |
-| --- | --- | --- |
-| `mock-data/status.tsx` | `Status`, `StatusCategory` | 13 workflow statuses with SVG icon components and a `category` (`triage` \| `backlog` \| `unstarted` \| `started` \| `completed` \| `canceled`). Also exports `workflowOrderedStatus`, `displayOrderedStatus`, `getStatusesByCategory()`, `StatusIcon`, and reusable icon builders (`StatusPieIcon`, `StatusGearIcon`, …). ⚠️ The first six entries keep historical array indexes — `inbox.ts` and `projects.ts` reference `status[0..5]`. |
-| `mock-data/issues.ts` | `Issue` | Generated from a compact `seeds` array (**291 unique issues**). `cycleId` links to a cycle ('' = no cycle). `rank` uses LexoRank. Helpers: `groupIssuesByStatus`, `sortIssuesByPriority`, `filterIssuesByCycle`, `filterIssuesByCategories`, `issueCreatorIndex` (deterministic pseudo-author for the profile "Created" tab). |
-| `mock-data/cycles.ts` | `Cycle`, `CycleStatus`, `CycleBurnupPoint` | `status` (`planned`/`upcoming`/`current`/`completed`), capacity, scope/started/completed, `burnup` chart points (deterministically generated). Helpers: `getCurrentCycle`, `getUpcomingCycle`, `getCyclesByTeam`, `formatCycleDateRange`. |
-| `mock-data/priorities.tsx` | `Priority` | 5 levels with SVG icon components |
-| `mock-data/labels.ts` | `LabelInterface` | id, name, CSS color keyword |
-| `mock-data/projects.ts` | `Project`, `Health` | percentComplete, startDate/`targetDate`, lead (User), priority, health (gray/green/yellow/red palette), `teamId`, `labels`, `initiative`, `healthUpdatedAgoDays`. Base entries are enriched deterministically at module load. Helpers: `getProjectById`, `getProjectsByTeam`. |
-| `mock-data/teams.ts` | `Team` | members (User[]), projects (Project[]), `joined` |
-| `mock-data/users.ts` | `User` | status (online/offline/away), role, teamIds, `timezone` (IANA — powers "Local time" on member profiles) |
-| `mock-data/documents.ts` | `TeamDocument`, `DocumentFolder` | Docs grouped in folders, creator, timestamps, `pinned` |
-| `mock-data/issue-details.ts` | `IssueDetail`, `ContentBlock`, `ActivityItem`, `PrLink` | Rich issue-page content: structured description blocks (headings, lists, checklists, code, image/video placeholders, quotes, issue refs), activity events + comments, relations, PR links. ~12 handcrafted details + a **deterministic fallback generator** (`getIssueDetail(issue)`) for every other issue. |
-| `mock-data/project-details.ts` | `ProjectDetail`, `ProjectUpdate`, `ProjectMilestone`, `ProjectActivityEvent`, `ProjectResource` | Rich project-page content: summary, `ContentBlock[]` description (reuses the issue-details block types), resources, milestones, health-tagged updates and an activity feed. 3 handcrafted details + `getProjectDetail(projectId)` deterministic fallback. |
-| `mock-data/agent.ts` | `AgentExample` | Agent page mock: example prompt cards, skills list, `getAgentReply(input)` (deterministic keyword-matched canned answers) and `chatTitleFrom(input)`. |
-| `mock-data/inbox.ts` | `InboxItem`, `NotificationType` | Issue-shaped + notification fields (read, user, content) |
-| `mock-data/side-bar-nav.ts` | — | Static nav items for sidebar/settings |
+| File                           | Types                                                                                           | Notable fields                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mock-data/status.tsx`         | `Status`, `StatusCategory`                                                                      | 13 workflow statuses with SVG icon components and a `category` (`triage` \| `backlog` \| `unstarted` \| `started` \| `completed` \| `canceled`). Also exports `workflowOrderedStatus`, `displayOrderedStatus`, `getStatusesByCategory()`, `StatusIcon`, and reusable icon builders (`StatusPieIcon`, `StatusGearIcon`, …). ⚠️ The first six entries keep historical array indexes — `inbox.ts` and `projects.ts` reference `status[0..5]`. |
+| `mock-data/issues.ts`          | `Issue`                                                                                         | Generated from a compact `seeds` array (**291 unique issues**). `cycleId` links to a cycle ('' = no cycle). `rank` uses LexoRank. Helpers: `groupIssuesByStatus`, `sortIssuesByPriority`, `filterIssuesByCycle`, `filterIssuesByCategories`, `issueCreatorIndex` (deterministic pseudo-author for the profile "Created" tab).                                                                                                              |
+| `mock-data/cycles.ts`          | `Cycle`, `CycleStatus`, `CycleBurnupPoint`                                                      | `status` (`planned`/`upcoming`/`current`/`completed`), capacity, scope/started/completed, `burnup` chart points (deterministically generated). Helpers: `getCurrentCycle`, `getUpcomingCycle`, `getCyclesByTeam`, `formatCycleDateRange`.                                                                                                                                                                                                  |
+| `mock-data/priorities.tsx`     | `Priority`                                                                                      | 5 levels with SVG icon components                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `mock-data/labels.ts`          | `LabelInterface`                                                                                | id, name, CSS color keyword                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `mock-data/projects.ts`        | `Project`, `Health`                                                                             | percentComplete, startDate/`targetDate`, lead (User), priority, health (gray/green/yellow/red palette), `teamId`, `labels`, `initiative`, `healthUpdatedAgoDays`. Base entries are enriched deterministically at module load. Helpers: `getProjectById`, `getProjectsByTeam`.                                                                                                                                                              |
+| `mock-data/teams.ts`           | `Team`                                                                                          | members (User[]), projects (Project[]), `joined`                                                                                                                                                                                                                                                                                                                                                                                           |
+| `mock-data/users.ts`           | `User`                                                                                          | status (online/offline/away), role, teamIds, `timezone` (IANA — powers "Local time" on member profiles)                                                                                                                                                                                                                                                                                                                                    |
+| `mock-data/documents.ts`       | `TeamDocument`, `DocumentFolder`                                                                | Docs grouped in folders, creator, timestamps, `pinned`                                                                                                                                                                                                                                                                                                                                                                                     |
+| `mock-data/issue-details.ts`   | `IssueDetail`, `ContentBlock`, `ActivityItem`, `PrLink`                                         | Rich issue-page content: structured description blocks (headings, lists, checklists, code, image/video placeholders, quotes, issue refs), activity events + comments, relations, PR links. ~12 handcrafted details + a **deterministic fallback generator** (`getIssueDetail(issue)`) for every other issue.                                                                                                                               |
+| `mock-data/project-details.ts` | `ProjectDetail`, `ProjectUpdate`, `ProjectMilestone`, `ProjectActivityEvent`, `ProjectResource` | Rich project-page content: summary, `ContentBlock[]` description (reuses the issue-details block types), resources, milestones, health-tagged updates and an activity feed. 3 handcrafted details + `getProjectDetail(projectId)` deterministic fallback.                                                                                                                                                                                  |
+| `mock-data/agent.ts`           | `AgentExample`                                                                                  | Agent page mock: example prompt cards, skills list, `getAgentReply(input)` (deterministic keyword-matched canned answers) and `chatTitleFrom(input)`.                                                                                                                                                                                                                                                                                      |
+| `mock-data/inbox.ts`           | `InboxItem`, `NotificationType`                                                                 | Issue-shaped + notification fields (read, user, content)                                                                                                                                                                                                                                                                                                                                                                                   |
+| `mock-data/side-bar-nav.ts`    | —                                                                                               | Static nav items for sidebar/settings                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 ## State management (`store/`)
 
@@ -115,19 +122,19 @@ Two flavors live side by side and expose hook-shaped APIs:
 - **nuqs hooks** (state lives in the URL query string) — they kept the historical
   `useXxxStore()` names so consumers didn't change when they were migrated
 
-| Store | Kind | Role | Mutates data? |
-| --- | --- | --- | --- |
-| `issues-store.ts` | Zustand | Holds the issues array + `issuesByStatus`; CRUD (`addIssue`, `updateIssue`, `deleteIssue`, `updateIssueStatus/Priority/Assignee/Project`, label add/remove); read filters (`filterByStatus/Priority/Assignee/Label/Project/Cycle`, `searchIssues`, `filterIssues` — supports status/assignee/priority/labels/project/cycle/statusType) | ✅ the main mutable store |
-| `notifications-store.ts` | Zustand | Inbox items, selection, read/unread | ✅ |
-| `filter-store.ts` | **nuqs** | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like *is not* / *exclude* survive in shareable URLs | URL state |
-| `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs** | Per-page filters + sorting in the URL (`?sort=…`) | URL state |
-| `display-settings-store.ts` | Zustand (persisted) | Linear-style "Display" options: grouping (status/assignee/priority/project/none), ordering (priority/created/title), completed-issue visibility, show empty groups, per-row display properties (ID, status, priority, labels, project, due date, created, assignee, cycle) | UI state |
-| `project-updates-store.ts` | Zustand | Project updates posted from the Activity tab composer (merged with the mock updates from `project-details.ts` when rendering) | ✅ |
-| `agent-chat-store.ts` | Zustand | Agent conversations: multi-chat, send → canned reply streamed word-by-word via `appendToMessage`/`finishMessage` | ✅ |
-| `view-store.ts` | Zustand (persisted) | List vs Board | UI state |
-| `search-store.ts` | Zustand | Search open/query | UI state |
-| `create-issue-store.ts` | Zustand | Create-issue modal open state + default status | UI state |
-| `right-panel-store.ts` | Zustand | Right side panel on issue/cycle pages (`'insights'` \| `'cycle-details'` \| null) | UI state |
+| Store                                                                         | Kind                | Role                                                                                                                                                                                                                                                                                                                                   | Mutates data?             |
+| ----------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `issues-store.ts`                                                             | Zustand             | Holds the issues array + `issuesByStatus`; CRUD (`addIssue`, `updateIssue`, `deleteIssue`, `updateIssueStatus/Priority/Assignee/Project`, label add/remove); read filters (`filterByStatus/Priority/Assignee/Label/Project/Cycle`, `searchIssues`, `filterIssues` — supports status/assignee/priority/labels/project/cycle/statusType) | ✅ the main mutable store |
+| `notifications-store.ts`                                                      | Zustand             | Inbox items, selection, read/unread                                                                                                                                                                                                                                                                                                    | ✅                        |
+| `filter-store.ts`                                                             | **nuqs**            | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like _is not_ / _exclude_ survive in shareable URLs                                                                                                                        | URL state                 |
+| `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs**            | Per-page filters + sorting in the URL (`?sort=…`)                                                                                                                                                                                                                                                                                      | URL state                 |
+| `display-settings-store.ts`                                                   | Zustand (persisted) | Linear-style "Display" options: grouping (status/assignee/priority/project/none), ordering (priority/created/title), completed-issue visibility, show empty groups, per-row display properties (ID, status, priority, labels, project, due date, created, assignee, cycle)                                                             | UI state                  |
+| `project-updates-store.ts`                                                    | Zustand             | Project updates posted from the Activity tab composer (merged with the mock updates from `project-details.ts` when rendering)                                                                                                                                                                                                          | ✅                        |
+| `agent-chat-store.ts`                                                         | Zustand             | Agent conversations: multi-chat, send → canned reply streamed word-by-word via `appendToMessage`/`finishMessage`                                                                                                                                                                                                                       | ✅                        |
+| `view-store.ts`                                                               | Zustand (persisted) | List vs Board                                                                                                                                                                                                                                                                                                                          | UI state                  |
+| `search-store.ts`                                                             | Zustand             | Search open/query                                                                                                                                                                                                                                                                                                                      | UI state                  |
+| `create-issue-store.ts`                                                       | Zustand             | Create-issue modal open state + default status                                                                                                                                                                                                                                                                                         | UI state                  |
+| `right-panel-store.ts`                                                        | Zustand             | Right side panel on issue/cycle pages (`'insights'` \| `'cycle-details'` \| null)                                                                                                                                                                                                                                                      | UI state                  |
 
 ⚠️ Truly mutable state: **issues**, **notifications**, **project updates** and
 **agent chats**. The Projects, Teams and Members tables read directly from
@@ -141,18 +148,18 @@ Each feature is self-contained under `components/common/<feature>` + its header 
 `components/ui/*`, `lib/utils.ts` and Tailwind.
 
 - **Filter bar** (`components/common/issues/issue-filter-bar.tsx` + `issue-filter-columns.tsx`
-  + vendored `components/data-table-filter/`) — Linear-style filter chips
-  (subject / operator / values / remove) built on [bazza/ui data-table-filter]
-  (vendored, Radix + shadcn, lint-exempted in `eslint.config.mjs`). Column configs are
-  built from mock-data via `createColumnConfigHelper<Issue>()`; `applyIssueFilters()`
-  applies a `FiltersState` to any issue list using bazza's filter functions.
-  To add a filterable field: add one entry in `issue-filter-columns.tsx`.
-  The entry point is `issue-filter-trigger.tsx` (the "Filter" button in the header
-  toolbars); the chips row (`issue-filter-bar.tsx`) only renders once a filter is
-  active. `use-panel-filter.ts` powers the exclusive click-to-filter of the right-side
-  panels (one panel filter at a time, re-click clears). When filters hide issues,
-  `grouped-issues-view.tsx` shows a "hidden by filters" footer and, on the board,
-  collapses emptied columns into a "Hidden columns" section (`0 / total`).
+   - vendored `components/data-table-filter/`) — Linear-style filter chips
+     (subject / operator / values / remove) built on [bazza/ui data-table-filter]
+     (vendored, Radix + shadcn, lint-exempted in `eslint.config.mjs`). Column configs are
+     built from mock-data via `createColumnConfigHelper<Issue>()`; `applyIssueFilters()`
+     applies a `FiltersState` to any issue list using bazza's filter functions.
+     To add a filterable field: add one entry in `issue-filter-columns.tsx`.
+     The entry point is `issue-filter-trigger.tsx` (the "Filter" button in the header
+     toolbars); the chips row (`issue-filter-bar.tsx`) only renders once a filter is
+     active. `use-panel-filter.ts` powers the exclusive click-to-filter of the right-side
+     panels (one panel filter at a time, re-click clears). When filters hide issues,
+     `grouped-issues-view.tsx` shows a "hidden by filters" footer and, on the board,
+     collapses emptied columns into a "Hidden columns" section (`0 / total`).
 - **Issues views** (`components/common/issues/`) — `all-issues.tsx` (accepts
   `categories?: StatusCategory[]` for the Active/Backlog tabs), `grouped-issues-view.tsx`
   (grouping/ordering-aware list/board + DnD), `group-issues.tsx` (generic
@@ -175,7 +182,7 @@ Each feature is self-contained under `components/common/<feature>` + its header 
   `components/common/issues/`) renders a cycle-scoped issue view. Needs:
   `mock-data/cycles.ts`, recharts, the issues feature.
 - **Team Home** (`components/common/teams/team-{overview,documents,members}.tsx`
-  + `components/layout/headers/team/`) — needs `mock-data/{teams,documents}`.
+   - `components/layout/headers/team/`) — needs `mock-data/{teams,documents}`.
 - **Inbox** (`components/common/inbox/`) — resizable two-pane notifications (single-pane
   with back navigation on mobile). Notifications reference REAL issues by identifier
   (`InboxItem extends Issue`) and the preview pane renders the actual issue (live store
@@ -326,16 +333,16 @@ store actions, and delete nothing else — the UI will keep working.
 ## Statuses & workflow logic
 
 - A status belongs to a `StatusCategory`; views are category-driven:
-  - **Active tab** (`/team/[teamId]/active`) → categories `unstarted` + `started`
-  - **Backlog tab** (`/team/[teamId]/backlog`) → categories `backlog` + `triage`
-  - **All issues** (`/team/[teamId]/all`) → everything
+   - **Active tab** (`/team/[teamId]/active`) → categories `unstarted` + `started`
+   - **Backlog tab** (`/team/[teamId]/backlog`) → categories `backlog` + `triage`
+   - **All issues** (`/team/[teamId]/all`) → everything
 - Board/list groups render in `displayOrderedStatus` order and **skip empty groups**.
 - The insights panel table uses `workflowOrderedStatus` order.
 - Cycle progress (`completed` stats, details-panel breakdowns) counts issues whose
   `status.category === 'completed'`.
 - To add a status: add one entry to `status` in `mock-data/status.tsx` (append at the
   end — don't reorder the first six), pick an icon builder (`StatusPieIcon(color,
-  fraction)`, `StatusGearIcon`, `StatusCheckIcon`, `StatusXIcon`, …) and a category.
+fraction)`, `StatusGearIcon`, `StatusCheckIcon`, `StatusXIcon`, …) and a category.
   Everything else (views, filters, selectors, insights) picks it up automatically.
 
 ## Conventions & gotchas

@@ -14,14 +14,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { RiBox3Fill, RiLinkedinFill, RiThreadsFill, RiTwitterXFill } from '@remixicon/react';
+import { RiGithubFill, RiMailFill } from '@remixicon/react';
+import { brand } from '@/lib/brand';
 
 export function HelpButton() {
    return (
       <DropdownMenu>
          <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="outline">
-               <HelpCircle className="size-4" />
+            <Button size="icon" variant="outline" aria-label="Open help menu">
+               <HelpCircle className="size-4" aria-hidden="true" />
             </Button>
          </DropdownMenuTrigger>
          <DropdownMenuContent align="end" className="w-60">
@@ -39,63 +40,42 @@ export function HelpButton() {
                <span className="ml-auto text-xs text-muted-foreground">⌘/</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Follow me</DropdownMenuLabel>
+            <DropdownMenuLabel>Support</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-               <Link href="https://x.com/ln_dev7" target="_blank">
-                  <RiTwitterXFill className="mr-2 h-4 w-4" />
-                  <span>X - Twitter</span>
+               <Link href={`mailto:${brand.supportEmail}`}>
+                  <RiMailFill className="mr-2 h-4 w-4" />
+                  <span>Email support</span>
                   <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground" />
                </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-               <Link href="https://threads.net/@ln_dev7" target="_blank">
-                  <RiThreadsFill className="mr-2 h-4 w-4" />
-                  <span>Threads</span>
+               <Link href={brand.repositoryUrl} target="_blank" rel="noopener noreferrer">
+                  <RiGithubFill className="mr-2 h-4 w-4" />
+                  <span>GitHub repository</span>
                   <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground" />
-               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-               <Link href="https://linkedin.com/in/lndev" target="_blank">
-                  <RiLinkedinFill className="mr-2 h-4 w-4" />
-                  <span>LinkedIn</span>
-                  <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground" />
-               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-               <Link href="https://lndev.mychariow.shop/prd_3cu1s0" target="_blank">
-                  <RiBox3Fill className="mr-2 h-4 w-4" />
-                  <span>Support project</span>
                </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>What&apos;s new</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-               <Link href="https://ui.lndev.me" target="_blank" className="flex items-center">
+               <Link href="/setup" className="flex items-center">
                   <div className="mr-2 flex h-4 w-4 items-center justify-center">
                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
                   </div>
-                  <span>Launch lndev-ui</span>
-               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-               <Link href="https://lndev.me" target="_blank" className="flex items-center">
-                  <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                     <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                  </div>
-                  <span>New portfolio</span>
+                  <span>SaaS foundation status</span>
                </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
                <Link
-                  href="https://github.com/ln-dev7/circle"
+                  href={brand.repositoryUrl}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center"
                >
                   <div className="mr-2 flex h-4 w-4 items-center justify-center">
                      <div className="h-1.5 w-1.5 rounded-full bg-transparent"></div>
                   </div>
-                  <span>GitHub</span>
+                  <span>Release notes on GitHub</span>
                   <ExternalLink className="ml-2 h-3 w-3 text-muted-foreground" />
                </Link>
             </DropdownMenuItem>

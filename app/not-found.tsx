@@ -11,7 +11,7 @@ export default function NotFound() {
                The page may have moved, or you may not have access to this workspace view.
             </p>
             <Button className="mt-6" asChild>
-               <Link href="/lndev-ui/team/CORE/all">Back to issues</Link>
+               <Link href="/">Back to workspace</Link>
             </Button>
          </div>
       </main>

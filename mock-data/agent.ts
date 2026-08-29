@@ -56,7 +56,7 @@ A ⌘K palette for the documentation site: fuzzy search across components, props
 2. Palette UI on the shared Dialog primitive (1 week)
 3. Recents, shortcuts and analytics (3 days)
 
-**Suggested issues** — 6 issues across LNDev Core, lead **leonel.ngoya**, target date in 3 weeks.
+**Suggested issues** — 6 issues across Adisearch Core, lead **leonel.ngoya**, target date in 3 weeks.
 
 Want me to create the project with these milestones and assign the first issues?`,
    },
@@ -65,13 +65,13 @@ Want me to create the project with these milestones and assign the first issues?
       reply: `I looked across the backlog — here's what stands out:
 
 **Combobox accessibility — 7 related issues**
-- **LNUI-633** aria-live announcements for async results (Done, cycle 18)
-- **LNUI-856** filter breaks with diacritics in options (Triage)
-- **LNUI-783** windowed list rendering above 1k options (Technical Review)
-- **LNUI-746** creatable option row pinned to the list bottom (Todo)
+- **ADI-633** aria-live announcements for async results (Done, cycle 18)
+- **ADI-856** filter breaks with diacritics in options (Triage)
+- **ADI-783** windowed list rendering above 1k options (Technical Review)
+- **ADI-746** creatable option row pinned to the list bottom (Todo)
 
 **Signals**
-Screen-reader support improved in cycle 18, but virtualized lists still skip focus for windowed options — that's the main open risk, tracked in LNUI-783.
+Screen-reader support improved in cycle 18, but virtualized lists still skip focus for windowed options — that's the main open risk, tracked in ADI-783.
 
 **Suggestion** — group the three open issues under a "Combobox a11y" label so they land in the same cycle. Want me to do that?`,
    },
@@ -84,9 +84,9 @@ Screen-reader support improved in cycle 18, but virtualized lists still skip foc
 - **Assess** — suggest a priority and an owner based on similar past issues
 - **Report** — post a summary in the team channel and flag anything urgent
 
-Last week this would have processed **16 issues** and flagged 2 as urgent (LNUI-794, LNUI-795).
+Last week this would have processed **16 issues** and flagged 2 as urgent (ADI-794, ADI-795).
 
-Should I activate it for the LNDev Core team?`,
+Should I activate it for the Adisearch Core team?`,
    },
    {
       keywords: ['cycle', 'progress', 'status'],
@@ -96,7 +96,7 @@ Should I activate it for the LNDev Core team?`,
 - **Completed** 34 (31%) · **Started** 33 (30%)
 - Todo is still heavy (38 issues) — at the current pace ~19 will roll over to Cycle 22.
 
-**Risks** — LNUI-787 and LNUI-789 are blocked on upstream fixes; LNUI-710 has been blocked for 9 days.
+**Risks** — ADI-787 and ADI-789 are blocked on upstream fixes; ADI-710 has been blocked for 9 days.
 
 Want a breakdown by assignee or a draft plan for what to move to Cycle 22?`,
    },

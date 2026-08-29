@@ -20,10 +20,7 @@ export interface Initiative {
    createdAt: string;
 }
 
-export const INITIATIVE_STATUS_META: Record<
-   InitiativeStatus,
-   { label: string; color: string }
-> = {
+export const INITIATIVE_STATUS_META: Record<InitiativeStatus, { label: string; color: string }> = {
    active: { label: 'Active', color: '#f2c94c' },
    planned: { label: 'Planned', color: '#95a2b3' },
    completed: { label: 'Completed', color: '#5e6ad2' },
@@ -34,7 +31,7 @@ const byId = (id: string): Health => health.find((entry) => entry.id === id) ?? 
 
 /**
  * Workspace initiatives (Linear "Initiatives" page). Fake data around the
- * LNDev UI component-library storyline; projects reference mock-data/projects.
+ * Adisearch Workspace component-library storyline; projects reference mock-data/projects.
  */
 export const initiatives: Initiative[] = [
    {
@@ -152,7 +149,7 @@ export const initiatives: Initiative[] = [
    },
    {
       id: 'v2-launch',
-      name: 'Q2 — Launch LNDev UI v2',
+      name: 'Q2 — Launch Adisearch Workspace v2',
       description: 'Rebrand, new website and the v2 breaking-changes migration guide.',
       icon: '🚀',
       status: 'completed',

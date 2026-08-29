@@ -69,7 +69,7 @@ export interface IssueDetail {
 
 const details: IssueDetail[] = [
    {
-      identifier: 'LNUI-703',
+      identifier: 'ADI-703',
       description: [
          { type: 'heading', text: 'Context' },
          {
@@ -108,7 +108,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
          { type: 'divider' },
          {
             type: 'issue-ref',
-            identifier: 'LNUI-643',
+            identifier: 'ADI-643',
             note: 'previous scrollbar layout-shift fix touches the same overlay code',
          },
       ],
@@ -163,13 +163,13 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             ],
          },
       ],
-      relatedIds: ['LNUI-643', 'LNUI-744'],
+      relatedIds: ['ADI-643', 'ADI-744'],
       prLinks: [
          { id: '#212', title: 'fix(dialog): portal-aware focus containment', status: 'open' },
       ],
    },
    {
-      identifier: 'LNUI-704',
+      identifier: 'ADI-704',
       description: [
          {
             type: 'paragraph',
@@ -244,12 +244,12 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             ],
          },
       ],
-      subIssueIds: ['LNUI-726'],
-      relatedIds: ['LNUI-685'],
+      subIssueIds: ['ADI-726'],
+      relatedIds: ['ADI-685'],
       prLinks: [{ id: '#198', title: 'perf(table): windowed row rendering', status: 'merged' }],
    },
    {
-      identifier: 'LNUI-701',
+      identifier: 'ADI-701',
       description: [
          { type: 'heading', text: 'Steps to reproduce' },
          {
@@ -308,10 +308,10 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             reactions: [{ emoji: '👀', count: 2 }],
          },
       ],
-      relatedIds: ['LNUI-819'],
+      relatedIds: ['ADI-819'],
    },
    {
-      identifier: 'LNUI-702',
+      identifier: 'ADI-702',
       description: [
          {
             type: 'quote',
@@ -375,7 +375,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
       ],
    },
    {
-      identifier: 'LNUI-706',
+      identifier: 'ADI-706',
       description: [
          { type: 'heading', text: 'Goals' },
          {
@@ -418,7 +418,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             ],
          },
          { type: 'divider' },
-         { type: 'issue-ref', identifier: 'LNUI-729', note: 'theme switcher must re-read tokens' },
+         { type: 'issue-ref', identifier: 'ADI-729', note: 'theme switcher must re-read tokens' },
       ],
       activity: [
          {
@@ -451,11 +451,11 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             reactions: [{ emoji: '🎨', count: 2 }],
          },
       ],
-      subIssueIds: ['LNUI-729', 'LNUI-734'],
+      subIssueIds: ['ADI-729', 'ADI-734'],
       milestone: 'Design Tokens v2',
    },
    {
-      identifier: 'LNUI-710',
+      identifier: 'ADI-710',
       description: [
          {
             type: 'paragraph',
@@ -487,7 +487,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             id: 'f2',
             actor: users[3],
             event: 'blocked',
-            text: 'marked this issue as blocked by LNUI-707',
+            text: 'marked this issue as blocked by ADI-707',
             timeAgo: '6d ago',
          },
          {
@@ -503,11 +503,11 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             ],
          },
       ],
-      blockedByIds: ['LNUI-707'],
-      relatedIds: ['LNUI-728'],
+      blockedByIds: ['ADI-707'],
+      relatedIds: ['ADI-728'],
    },
    {
-      identifier: 'LNUI-712',
+      identifier: 'ADI-712',
       description: [
          {
             type: 'paragraph',
@@ -548,7 +548,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
       ],
    },
    {
-      identifier: 'LNUI-718',
+      identifier: 'ADI-718',
       description: [
          {
             type: 'paragraph',
@@ -597,10 +597,10 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             ],
          },
       ],
-      relatedIds: ['LNUI-731', 'LNUI-815'],
+      relatedIds: ['ADI-731', 'ADI-815'],
    },
    {
-      identifier: 'LNUI-722',
+      identifier: 'ADI-722',
       description: [
          {
             type: 'paragraph',
@@ -645,10 +645,10 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             timeAgo: '3d ago',
          },
       ],
-      relatedIds: ['LNUI-727'],
+      relatedIds: ['ADI-727'],
    },
    {
-      identifier: 'LNUI-726',
+      identifier: 'ADI-726',
       description: [
          {
             type: 'paragraph',
@@ -705,7 +705,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
       prLinks: [{ id: '#196', title: 'perf(table): memoize row renderer', status: 'merged' }],
    },
    {
-      identifier: 'LNUI-735',
+      identifier: 'ADI-735',
       description: [
          {
             type: 'paragraph',
@@ -760,7 +760,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
       prLinks: [{ id: '#205', title: 'feat(empty-state): new component + docs', status: 'merged' }],
    },
    {
-      identifier: 'LNUI-819',
+      identifier: 'ADI-819',
       description: [
          { type: 'heading', text: 'Repro' },
          {
@@ -793,7 +793,7 @@ export function useDialogPortalRoot(node: HTMLElement | null) {
             timeAgo: '2d ago',
          },
       ],
-      relatedIds: ['LNUI-701'],
+      relatedIds: ['ADI-701'],
    },
 ];
 

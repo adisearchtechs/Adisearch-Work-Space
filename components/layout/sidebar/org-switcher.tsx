@@ -21,8 +21,17 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui
 import { CreateIssueTrigger } from './create-new-issue';
 import { ThemeToggle } from '../theme-toggle';
 import Link from 'next/link';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 
 export function OrgSwitcher() {
+   const { organization, user, configured } = useWorkspace();
+   const initials = organization.name
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+
    return (
       <SidebarMenu>
          <SidebarMenuItem>
@@ -34,10 +43,10 @@ export function OrgSwitcher() {
                         className="h-8 p-1 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                      >
                         <div className="flex aspect-square size-6 items-center justify-center rounded bg-orange-500 text-sidebar-primary-foreground">
-                           LN
+                           {initials}
                         </div>
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                           <span className="truncate font-semibold">lndev-ui</span>
+                           <span className="truncate font-semibold">{organization.name}</span>
                         </div>
                         <ChevronsUpDown className="ml-auto" />
                      </SidebarMenuButton>
@@ -55,7 +64,7 @@ export function OrgSwitcher() {
                >
                   <DropdownMenuGroup>
                      <DropdownMenuItem asChild>
-                        <Link href="/lndev-ui/settings">
+                        <Link href={`/${organization.slug}/settings`}>
                            Settings
                            <DropdownMenuShortcut>G then S</DropdownMenuShortcut>
                         </Link>
@@ -71,13 +80,13 @@ export function OrgSwitcher() {
                      <DropdownMenuSubTrigger>Switch Workspace</DropdownMenuSubTrigger>
                      <DropdownMenuPortal>
                         <DropdownMenuSubContent>
-                           <DropdownMenuLabel>leonelngoya@gmail.com</DropdownMenuLabel>
+                           <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                            <DropdownMenuSeparator />
                            <DropdownMenuItem>
                               <div className="flex aspect-square size-6 items-center justify-center rounded bg-orange-500 text-sidebar-primary-foreground">
-                                 LN
+                                 {initials}
                               </div>
-                              lndev-ui
+                              {organization.name}
                            </DropdownMenuItem>
                            <DropdownMenuSeparator />
                            <DropdownMenuItem>Create or join workspace</DropdownMenuItem>
@@ -85,10 +94,16 @@ export function OrgSwitcher() {
                         </DropdownMenuSubContent>
                      </DropdownMenuPortal>
                   </DropdownMenuSub>
-                  <DropdownMenuItem>
-                     Log out
-                     <DropdownMenuShortcut>⌥⇧Q</DropdownMenuShortcut>
-                  </DropdownMenuItem>
+                  {configured && (
+                     <DropdownMenuItem asChild>
+                        <form action="/auth/signout" method="post" className="w-full">
+                           <button type="submit" className="flex w-full items-center text-left">
+                              Log out
+                              <DropdownMenuShortcut>⌥⇧Q</DropdownMenuShortcut>
+                           </button>
+                        </form>
+                     </DropdownMenuItem>
+                  )}
                </DropdownMenuContent>
             </DropdownMenu>
          </SidebarMenuItem>

@@ -18,6 +18,7 @@ import {
 } from '@/store/sidebar-prefs-store';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 const ITEM_KEYS: Record<string, SidebarItemKey> = {
    'Inbox': 'inbox',
@@ -27,6 +28,7 @@ const ITEM_KEYS: Record<string, SidebarItemKey> = {
 };
 
 export function NavInbox() {
+   const { orgId } = useParams<{ orgId: string }>();
    const { visibility, badgeStyle, order } = useSidebarPrefsStore();
    const { getUnreadCount } = useNotificationsStore();
    const [mounted, setMounted] = useState(false);
@@ -35,13 +37,8 @@ export function NavInbox() {
    const unread = mounted ? getUnreadCount() : 0;
 
    const orderedItems = mounted
-      ? resolveOrder(
-           order.personal,
-           inboxItems.map((item) => ITEM_KEYS[item.name]).filter(Boolean)
-        )
-           .map((key) =>
-              inboxItems.find((item) => ITEM_KEYS[item.name] === key)
-           )
+      ? resolveOrder(order.personal, inboxItems.map((item) => ITEM_KEYS[item.name]).filter(Boolean))
+           .map((key) => inboxItems.find((item) => ITEM_KEYS[item.name] === key))
            .filter((item): item is (typeof inboxItems)[number] => Boolean(item))
       : inboxItems;
 
@@ -59,7 +56,7 @@ export function NavInbox() {
             {items.map((item) => (
                <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton asChild>
-                     <Link href={item.url}>
+                     <Link href={`/${orgId}${item.url}`}>
                         <item.icon />
                         <span>{item.name}</span>
                      </Link>

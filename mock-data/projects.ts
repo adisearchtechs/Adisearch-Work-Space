@@ -88,7 +88,7 @@ export const health: Health[] = [
 const baseProjects: BaseProject[] = [
    {
       id: '1',
-      name: 'LNDev UI - Core Components',
+      name: 'Adisearch Workspace - Core Components',
       status: status[0],
       icon: Cuboid,
       percentComplete: 80,
@@ -99,7 +99,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '2',
-      name: 'LNDev UI - Theming',
+      name: 'Adisearch Workspace - Theming',
       status: status[1],
       icon: Blocks,
       percentComplete: 50,
@@ -110,7 +110,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '3',
-      name: 'LNDev UI - Modals',
+      name: 'Adisearch Workspace - Modals',
       status: status[2],
       icon: Vault,
       percentComplete: 0,
@@ -121,7 +121,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '4',
-      name: 'LNDev UI - Navigation',
+      name: 'Adisearch Workspace - Navigation',
       status: status[3],
       icon: BrickWall,
       percentComplete: 0,
@@ -132,7 +132,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '5',
-      name: 'LNDev UI - Layout',
+      name: 'Adisearch Workspace - Layout',
       status: status[4],
       icon: Wallpaper,
       percentComplete: 0,
@@ -143,7 +143,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '6',
-      name: 'LNDev UI - Sidebar',
+      name: 'Adisearch Workspace - Sidebar',
       status: status[5],
       icon: TrafficCone,
       percentComplete: 0,
@@ -154,7 +154,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '7',
-      name: 'LNDev UI - Cards',
+      name: 'Adisearch Workspace - Cards',
       status: status[1],
       icon: Grid2X2,
       percentComplete: 0,
@@ -165,7 +165,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '8',
-      name: 'LNDev UI - Tooltip',
+      name: 'Adisearch Workspace - Tooltip',
       status: status[2],
       icon: Bomb,
       percentComplete: 0,
@@ -176,7 +176,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '9',
-      name: 'LNDev UI - Dropdown',
+      name: 'Adisearch Workspace - Dropdown',
       status: status[3],
       icon: Shapes,
       percentComplete: 50,
@@ -187,7 +187,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '10',
-      name: 'LNDev UI - Data Tables',
+      name: 'Adisearch Workspace - Data Tables',
       status: status[0],
       icon: Table,
       percentComplete: 65,
@@ -198,7 +198,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '11',
-      name: 'LNDev UI - Form Controls',
+      name: 'Adisearch Workspace - Form Controls',
       status: status[2],
       icon: FormInput,
       percentComplete: 30,
@@ -209,7 +209,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '12',
-      name: 'LNDev UI - Notifications',
+      name: 'Adisearch Workspace - Notifications',
       status: status[1],
       icon: Bell,
       percentComplete: 45,
@@ -220,7 +220,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '13',
-      name: 'LNDev UI - Authentication Flow',
+      name: 'Adisearch Workspace - Authentication Flow',
       status: status[0],
       icon: Lock,
       percentComplete: 75,
@@ -231,7 +231,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '14',
-      name: 'LNDev UI - User Preferences',
+      name: 'Adisearch Workspace - User Preferences',
       status: status[3],
       icon: Settings,
       percentComplete: 10,
@@ -242,7 +242,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '15',
-      name: 'LNDev UI - Dashboard Widgets',
+      name: 'Adisearch Workspace - Dashboard Widgets',
       status: status[1],
       icon: LayoutDashboard,
       percentComplete: 55,
@@ -253,7 +253,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '16',
-      name: 'LNDev UI - Onboarding Guide',
+      name: 'Adisearch Workspace - Onboarding Guide',
       status: status[2],
       icon: HelpCircle,
       percentComplete: 25,
@@ -264,7 +264,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '17',
-      name: 'LNDev UI - Progress Indicators',
+      name: 'Adisearch Workspace - Progress Indicators',
       status: status[4],
       icon: Loader,
       percentComplete: 40,
@@ -275,7 +275,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '18',
-      name: 'LNDev UI - Internationalization',
+      name: 'Adisearch Workspace - Internationalization',
       status: status[5],
       icon: Globe,
       percentComplete: 15,
@@ -286,7 +286,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '19',
-      name: 'LNDev UI - Accessibility Features',
+      name: 'Adisearch Workspace - Accessibility Features',
       status: status[0],
       icon: Accessibility,
       percentComplete: 60,
@@ -297,7 +297,7 @@ const baseProjects: BaseProject[] = [
    },
    {
       id: '20',
-      name: 'LNDev UI - Media Player',
+      name: 'Adisearch Workspace - Media Player',
       status: status[3],
       icon: Play,
       percentComplete: 20,
