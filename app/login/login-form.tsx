@@ -20,8 +20,14 @@ function SubmitButton({ label }: { label: string }) {
    );
 }
 
-export function LoginForm({ next = '/' }: { next?: string }) {
-   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+export function LoginForm({
+   next = '/',
+   initialMode = 'signin',
+}: {
+   next?: string;
+   initialMode?: 'signin' | 'signup';
+}) {
+   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
    const [signInState, signInFormAction] = useActionState(signInAction, initialState);
    const [signUpState, signUpFormAction] = useActionState(signUpAction, initialState);
    const state = mode === 'signin' ? signInState : signUpState;

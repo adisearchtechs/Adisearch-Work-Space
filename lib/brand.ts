@@ -17,8 +17,13 @@ export function getSiteUrl() {
       return configuredUrl.replace(/\/$/, '');
    }
 
-   if (process.env.VERCEL_URL) {
-      return `https://${process.env.VERCEL_URL}`;
+   const vercelHostname =
+      process.env.VERCEL_ENV === 'production'
+         ? (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)
+         : (process.env.VERCEL_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL);
+
+   if (vercelHostname) {
+      return `https://${vercelHostname}`;
    }
 
    return 'http://localhost:3000';

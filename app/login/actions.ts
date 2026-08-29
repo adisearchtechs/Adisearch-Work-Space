@@ -76,5 +76,12 @@ export async function signUpAction(
       return { message: 'Unable to create the account. Try again in a moment.' };
    }
 
-   return { message: 'Check your email to confirm your account.' };
+   const redirectParams = new URLSearchParams({ status: 'check-email' });
+   const next = safeRedirectPath(parsed.data.next);
+
+   if (next !== '/') {
+      redirectParams.set('next', next);
+   }
+
+   redirect(`/login?${redirectParams.toString()}`);
 }

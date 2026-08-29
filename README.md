@@ -28,8 +28,17 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Create a dedicated Supabase project and apply [`supabase/schema.sql`](supabase/schema.sql). Then
-set these variables locally and in Vercel:
+Create a dedicated Supabase project, link it with the Supabase CLI, and apply the tracked migration
+history:
+
+```shell
+supabase link --project-ref your-project-ref
+supabase db push
+```
+
+The files in `supabase/migrations` mirror the applied production history, while
+[`supabase/schema.sql`](supabase/schema.sql) is the current schema snapshot. Then set these
+variables locally and in Vercel:
 
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
