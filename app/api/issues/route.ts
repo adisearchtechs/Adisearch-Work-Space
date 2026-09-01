@@ -67,7 +67,11 @@ export async function GET(request: NextRequest) {
 
    if (!organization) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
 
-   const [{ data: teams }, { data: statuses }, { data: issues, error }] = await Promise.all([
+   const [
+      { data: teams, error: teamsError },
+      { data: statuses, error: statusesError },
+      { data: issues, error: issuesError },
+   ] = await Promise.all([
       supabase.from('teams').select('id, issue_prefix').eq('organization_id', organization.id),
       supabase.from('statuses').select('id, slug').eq('organization_id', organization.id),
       supabase
@@ -80,7 +84,9 @@ export async function GET(request: NextRequest) {
          .limit(500),
    ]);
 
-   if (error) return NextResponse.json({ error: 'Unable to load issues.' }, { status: 500 });
+   if (teamsError || statusesError || issuesError) {
+      return NextResponse.json({ error: 'Unable to load issues.' }, { status: 500 });
+   }
 
    const statusById = new Map((statuses ?? []).map((item) => [item.id, item.slug]));
    const prefixByTeamId = new Map((teams ?? []).map((item) => [item.id, item.issue_prefix]));

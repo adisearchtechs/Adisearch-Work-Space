@@ -71,8 +71,14 @@ export async function PATCH(
       ...(parsed.data.dueDate !== undefined && { due_date: parsed.data.dueDate }),
       ...(statusId !== undefined && { status_id: statusId }),
    };
-   const { error } = await supabase.from('issues').update(changes).eq('id', issueId);
+   const { data: updated, error } = await supabase
+      .from('issues')
+      .update(changes)
+      .eq('id', issueId)
+      .select('id')
+      .maybeSingle();
    if (error) return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+   if (!updated) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
 
    return new NextResponse(null, { status: 204 });
 }

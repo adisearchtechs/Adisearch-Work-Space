@@ -36,7 +36,7 @@ interface IssuesState {
    // Actions
    addIssue: (issue: Issue) => void;
    updateIssue: (id: string, updatedIssue: Partial<Issue>) => void;
-   deleteIssue: (id: string) => void;
+   deleteIssue: (id: string) => Promise<void>;
 
    // Filters
    filterByStatus: (statusId: string) => Issue[];
@@ -125,8 +125,10 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
       }
    },
 
-   deleteIssue: (id: string) => {
-      const previousIssues = get().issues;
+   deleteIssue: async (id: string) => {
+      const deletedIssue = get().issues.find((issue) => issue.id === id);
+      if (!deletedIssue) return;
+
       set((state) => {
          const newIssues = state.issues.filter((issue) => issue.id !== id);
          return {
@@ -137,10 +139,25 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
 
       const adapter = get().persistenceAdapter;
       if (adapter) {
-         void adapter.delete(id).catch(() => {
-            set({ issues: previousIssues, issuesByStatus: groupIssuesByStatus(previousIssues) });
-            adapter.onError('The issue could not be deleted. It has been restored.');
-         });
+         try {
+            await adapter.delete(id);
+         } catch (error) {
+            if (get().persistenceAdapter === adapter) {
+               set((state) => {
+                  if (state.issues.some((issue) => issue.id === id)) return state;
+
+                  const restoredIssues = [...state.issues, deletedIssue].sort((a, b) =>
+                     b.rank.localeCompare(a.rank)
+                  );
+                  return {
+                     issues: restoredIssues,
+                     issuesByStatus: groupIssuesByStatus(restoredIssues),
+                  };
+               });
+               adapter.onError('The issue could not be deleted. It has been restored.');
+            }
+            throw error;
+         }
       }
    },
 

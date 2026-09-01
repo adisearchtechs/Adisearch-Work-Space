@@ -42,6 +42,8 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
 
       const controller = new AbortController();
       const store = useIssuesStore.getState();
+      // Never render the previous tenant's in-memory issues while the next tenant loads.
+      store.replaceIssues([]);
       store.setPersistenceAdapter({
          async update(id, changes) {
             const body = supportedChanges(changes);
@@ -65,7 +67,10 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
             if (!response.ok) throw new Error(`Issue load failed with ${response.status}.`);
             return (await response.json()) as { issues: IssueDto[] };
          })
-         .then(({ issues }) => useIssuesStore.getState().replaceIssues(issues.map(issueDtoToIssue)))
+         .then(({ issues }) => {
+            if (controller.signal.aborted) return;
+            useIssuesStore.getState().replaceIssues(issues.map(issueDtoToIssue));
+         })
          .catch((error: unknown) => {
             if (error instanceof DOMException && error.name === 'AbortError') return;
             toast.error('Unable to load workspace issues.');
@@ -73,7 +78,9 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
 
       return () => {
          controller.abort();
-         useIssuesStore.getState().setPersistenceAdapter(null);
+         const currentStore = useIssuesStore.getState();
+         currentStore.setPersistenceAdapter(null);
+         currentStore.replaceIssues([]);
       };
    }, [workspace.configured, workspace.organization.slug]);
 
