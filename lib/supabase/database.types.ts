@@ -118,6 +118,7 @@ export type Database = {
                organization_id: string;
                team_id: string;
                name: string;
+               description: string;
                status: string;
                lead_id: string | null;
                target_date: string | null;
@@ -127,6 +128,7 @@ export type Database = {
                organization_id: string;
                team_id: string;
                name: string;
+               description?: string;
                status?: string;
                lead_id?: string | null;
                target_date?: string | null;
