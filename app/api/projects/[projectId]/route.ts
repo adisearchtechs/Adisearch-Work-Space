@@ -84,6 +84,7 @@ export async function PATCH(
 
    const changes = {
       ...(parsed.data.name !== undefined && { name: parsed.data.name }),
+      ...(parsed.data.description !== undefined && { description: parsed.data.description }),
       ...(parsed.data.status !== undefined && { status: parsed.data.status }),
       ...(parsed.data.targetDate !== undefined && { target_date: parsed.data.targetDate }),
    };
