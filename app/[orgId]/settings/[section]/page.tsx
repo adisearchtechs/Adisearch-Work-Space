@@ -12,6 +12,7 @@ import Preferences from '@/components/common/settings/preferences';
 import Profile from '@/components/common/settings/profile';
 import ProjectStatusesSettings from '@/components/common/settings/project-statuses-settings';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
+import WorkspaceMembersSettings from '@/components/common/settings/workspace-members-settings';
 import MainLayout from '@/components/layout/main-layout';
 import Header from '@/components/layout/headers/settings/header';
 import { notFound } from 'next/navigation';
@@ -25,6 +26,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'integrations': Integrations,
    'issue-labels': IssueLabelsSettings,
    'issue-templates': IssueTemplatesSettings,
+   'members': WorkspaceMembersSettings,
    'notifications': AccountNotifications,
    'preferences': Preferences,
    'profile': Profile,
