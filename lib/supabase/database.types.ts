@@ -158,6 +158,30 @@ export type Database = {
                created_at?: string;
             }
          >;
+         project_milestones: Table<
+            {
+               id: string;
+               organization_id: string;
+               project_id: string;
+               created_by: string | null;
+               name: string;
+               target_date: string | null;
+               completed: boolean;
+               position: number;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               project_id: string;
+               created_by?: string | null;
+               name: string;
+               target_date?: string | null;
+               completed?: boolean;
+               position?: number;
+               created_at?: string;
+            }
+         >;
          cycles: Table<
             Timestamped & {
                id: string;

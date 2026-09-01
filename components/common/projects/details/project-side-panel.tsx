@@ -1,6 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { InsightsPanel } from '@/components/common/issues/insights-panel';
+import { useProjectMilestones } from '@/components/common/projects/details/use-project-milestones';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Issue } from '@/mock-data/issues';
 import { ProjectDetail } from '@/mock-data/project-details';
 import { Project } from '@/mock-data/projects';
@@ -26,7 +29,21 @@ export function ProjectSidePanel({
    issues,
    insightsIssues,
 }: ProjectSidePanelProps) {
+   const workspace = useWorkspace();
    const { openPanel } = useRightPanelStore();
+   const { milestones } = useProjectMilestones(project.id);
+   const panelDetail = useMemo<ProjectDetail>(() => {
+      if (!workspace.configured) return detail;
+      return {
+         ...detail,
+         milestones: milestones.map((milestone) => ({
+            id: milestone.id,
+            name: milestone.name,
+            targetDate: milestone.targetDate ?? undefined,
+            completed: milestone.completed,
+         })),
+      };
+   }, [detail, milestones, workspace.configured]);
 
    if (openPanel === 'hidden') return null;
 
@@ -35,7 +52,7 @@ export function ProjectSidePanel({
          {openPanel === 'insights' ? (
             <InsightsPanel issues={insightsIssues ?? issues} />
          ) : (
-            <ProjectPropertiesPanel project={project} detail={detail} issues={issues} />
+            <ProjectPropertiesPanel project={project} detail={panelDetail} issues={issues} />
          )}
       </aside>
    );

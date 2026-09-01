@@ -14,6 +14,7 @@ import { useParams, usePathname } from 'next/navigation';
 const PROJECT_TABS = [
    { label: 'Overview', segment: 'overview' },
    { label: 'Activity', segment: 'activity' },
+   { label: 'Milestones', segment: 'milestones' },
    { label: 'Issues', segment: 'issues' },
 ];
 
