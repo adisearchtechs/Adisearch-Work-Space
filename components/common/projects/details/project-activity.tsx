@@ -10,29 +10,65 @@ import {
    DropdownMenuItem,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import type { ContentBlock } from '@/mock-data/issue-details';
 import {
    getProjectDetail,
-   ProjectUpdate,
-   ProjectUpdateHealth,
    projectUpdateHealthColor,
    projectUpdateHealthLabel,
 } from '@/mock-data/project-details';
+import type {
+   ProjectUpdateDto,
+   ProjectUpdateHealth,
+   ProjectUpdateKind,
+} from '@/lib/project-updates/contracts';
+import { cn } from '@/lib/utils';
 import { useIssuesStore } from '@/store/issues-store';
 import { useProjectUpdatesStore } from '@/store/project-updates-store';
 import { useProjectsStore } from '@/store/projects-store';
 import { format, parseISO } from 'date-fns';
 import { Paperclip, Sparkles } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { ProjectSidePanel } from './project-side-panel';
 
 interface ProjectActivityProps {
    projectId: string;
 }
 
+type TimelineUpdate = {
+   id: string;
+   authorName: string;
+   authorAvatarUrl: string | null;
+   createdAt: string;
+   kind: ProjectUpdateKind;
+   health: ProjectUpdateHealth | null;
+   blocks: ContentBlock[];
+};
+
+const EMPTY_UPDATES: ProjectUpdateDto[] = [];
+
+function bodyToBlocks(body: string): ContentBlock[] {
+   return body
+      .split(/\n{2,}/)
+      .filter((paragraph) => paragraph.trim() !== '')
+      .map((paragraph) => ({ type: 'paragraph', text: paragraph.trim() }));
+}
+
+function dtoToTimelineUpdate(update: ProjectUpdateDto): TimelineUpdate {
+   return {
+      id: update.id,
+      authorName: update.author.displayName,
+      authorAvatarUrl: update.author.avatarUrl,
+      createdAt: update.createdAt,
+      kind: update.kind,
+      health: update.health,
+      blocks: bodyToBlocks(update.body),
+   };
+}
+
 function HealthBadge({ health }: { health: ProjectUpdateHealth }) {
    return (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium rounded-full border px-2 py-0.5">
+      <span className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium">
          <span
             className="size-2 rounded-full"
             style={{ backgroundColor: projectUpdateHealthColor[health] }}
@@ -42,20 +78,26 @@ function HealthBadge({ health }: { health: ProjectUpdateHealth }) {
    );
 }
 
-function UpdateCard({ update }: { update: ProjectUpdate }) {
+function UpdateCard({ update }: { update: TimelineUpdate }) {
    return (
-      <div className="border rounded-lg p-4">
+      <div className="rounded-lg border p-4">
          <div className="flex items-center gap-2 text-sm">
             <Avatar className="size-5">
-               <AvatarImage src={update.author.avatarUrl} alt={update.author.name} />
-               <AvatarFallback>{update.author.name[0]}</AvatarFallback>
+               <AvatarImage src={update.authorAvatarUrl ?? undefined} alt={update.authorName} />
+               <AvatarFallback>{update.authorName[0]?.toUpperCase() ?? '?'}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">{update.author.name}</span>
+            <span className="font-medium">{update.authorName}</span>
             <span className="text-xs text-muted-foreground">
-               {format(parseISO(update.date), 'MMM d')}
+               {format(parseISO(update.createdAt), 'MMM d')}
             </span>
             <span className="ml-auto">
-               <HealthBadge health={update.health} />
+               {update.kind === 'update' && update.health ? (
+                  <HealthBadge health={update.health} />
+               ) : (
+                  <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                     Comment
+                  </span>
+               )}
             </span>
          </div>
          <div className="mt-2 text-sm leading-relaxed">
@@ -65,7 +107,7 @@ function UpdateCard({ update }: { update: ProjectUpdate }) {
    );
 }
 
-/** Project "Activity" tab: update composer + monthly timeline. */
+/** Project "Activity" tab: persistent update composer + monthly timeline. */
 export default function ProjectActivity({ projectId }: ProjectActivityProps) {
    const workspace = useWorkspace();
    const storedProject = useProjectsStore((state) =>
@@ -79,25 +121,89 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
       () => allIssues.filter((issue) => issue.project?.id === projectId),
       [allIssues, projectId]
    );
-   const { postedUpdates, postUpdate } = useProjectUpdatesStore();
-   const [mode, setMode] = useState<'comment' | 'update'>('update');
+   const storedUpdates = useProjectUpdatesStore(
+      (state) => state.updatesByProject[projectId] ?? EMPTY_UPDATES
+   );
+   const replaceProjectUpdates = useProjectUpdatesStore((state) => state.replaceProjectUpdates);
+   const prependProjectUpdate = useProjectUpdatesStore((state) => state.prependProjectUpdate);
+   const postLocalUpdate = useProjectUpdatesStore((state) => state.postLocalUpdate);
+   const [mode, setMode] = useState<ProjectUpdateKind>('update');
    const [health, setHealth] = useState<ProjectUpdateHealth>('on-track');
    const [text, setText] = useState('');
+   const [updatesLoading, setUpdatesLoading] = useState(false);
+   const [posting, setPosting] = useState(false);
    const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
    const project = workspaceReady ? storedProject : undefined;
 
-   const updates = useMemo<ProjectUpdate[]>(
-      () => [...(postedUpdates[projectId] ?? []), ...detail.updates],
-      [postedUpdates, projectId, detail.updates]
-   );
+   useEffect(() => {
+      if (!workspace.configured) return;
+
+      const controller = new AbortController();
+      replaceProjectUpdates(projectId, []);
+      setUpdatesLoading(true);
+
+      void fetch(
+         `/api/projects/${encodeURIComponent(projectId)}/updates?organization=${encodeURIComponent(workspace.organization.slug)}`,
+         {
+            credentials: 'same-origin',
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+         }
+      )
+         .then(async (response) => {
+            if (!response.ok) {
+               throw new Error(`Project updates load failed with ${response.status}.`);
+            }
+            return (await response.json()) as { updates: ProjectUpdateDto[] };
+         })
+         .then(({ updates }) => {
+            if (controller.signal.aborted) return;
+            replaceProjectUpdates(projectId, updates);
+            setUpdatesLoading(false);
+         })
+         .catch((error: unknown) => {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            setUpdatesLoading(false);
+            toast.error('Unable to load project updates.');
+         });
+
+      return () => controller.abort();
+   }, [
+      projectId,
+      replaceProjectUpdates,
+      workspace.configured,
+      workspace.organization.slug,
+   ]);
+
+   const updates = useMemo<TimelineUpdate[]>(() => {
+      const runtimeUpdates = storedUpdates.map(dtoToTimelineUpdate);
+      if (workspace.configured) return runtimeUpdates;
+
+      const demoUpdates: TimelineUpdate[] = detail.updates.map((update) => ({
+         id: update.id,
+         authorName: update.author.name,
+         authorAvatarUrl: update.author.avatarUrl,
+         createdAt: update.date,
+         kind: 'update',
+         health: update.health,
+         blocks: update.blocks,
+      }));
+      return [...runtimeUpdates, ...demoUpdates];
+   }, [detail.updates, storedUpdates, workspace.configured]);
 
    const updatesByMonth = useMemo(() => {
-      const groups = new Map<string, ProjectUpdate[]>();
+      const groups = new Map<string, { label: string; updates: TimelineUpdate[] }>();
       for (const update of updates) {
-         const month = format(parseISO(update.date), 'MMMM');
-         groups.set(month, [...(groups.get(month) ?? []), update]);
+         const date = parseISO(update.createdAt);
+         const key = format(date, 'yyyy-MM');
+         const existing = groups.get(key);
+         if (existing) {
+            existing.updates.push(update);
+         } else {
+            groups.set(key, { label: format(date, 'MMMM yyyy'), updates: [update] });
+         }
       }
-      return [...groups.entries()];
+      return [...groups.values()];
    }, [updates]);
 
    const completedPercent =
@@ -120,18 +226,50 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
       );
    }
 
-   const handlePost = () => {
-      if (text.trim() === '') return;
-      postUpdate(project.id, health, text);
-      setText('');
+   const handlePost = async () => {
+      const body = text.trim();
+      if (!body || posting) return;
+
+      if (!workspace.configured) {
+         postLocalUpdate(project.id, mode, mode === 'update' ? health : null, body);
+         setText('');
+         return;
+      }
+
+      setPosting(true);
+      try {
+         const response = await fetch(
+            `/api/projects/${encodeURIComponent(project.id)}/updates?organization=${encodeURIComponent(workspace.organization.slug)}`,
+            {
+               method: 'POST',
+               credentials: 'same-origin',
+               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+               body: JSON.stringify({
+                  kind: mode,
+                  health: mode === 'update' ? health : null,
+                  body,
+               }),
+            }
+         );
+         if (!response.ok) {
+            throw new Error(`Project update post failed with ${response.status}.`);
+         }
+
+         const { update } = (await response.json()) as { update: ProjectUpdateDto };
+         prependProjectUpdate(project.id, update);
+         setText('');
+      } catch {
+         toast.error(`Unable to post project ${mode}.`);
+      } finally {
+         setPosting(false);
+      }
    };
 
    return (
-      <div className="w-full h-full flex overflow-hidden">
-         <div className="flex-1 min-w-0 h-full overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-6 lg:px-10 py-8">
-               {/* Composer */}
-               <div className="border rounded-lg p-4">
+      <div className="flex h-full w-full overflow-hidden">
+         <div className="h-full min-w-0 flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-3xl px-6 py-8 lg:px-10">
+               <div className="rounded-lg border p-4">
                   <div className="flex items-center gap-2">
                      <div className="flex items-center rounded-md border p-0.5 text-xs">
                         {(['comment', 'update'] as const).map((value) => (
@@ -140,7 +278,7 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
                               type="button"
                               onClick={() => setMode(value)}
                               className={cn(
-                                 'px-2 py-1 rounded-[5px] capitalize transition-colors',
+                                 'rounded-[5px] px-2 py-1 capitalize transition-colors',
                                  mode === value
                                     ? 'bg-accent text-foreground'
                                     : 'text-muted-foreground hover:text-foreground'
@@ -180,11 +318,12 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
                      placeholder={
                         mode === 'update' ? 'Write a project update…' : 'Leave a comment…'
                      }
-                     className="mt-3 w-full min-h-24 resize-y bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                     maxLength={10000}
+                     className="mt-3 min-h-24 w-full resize-y bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                   />
 
                   {mode === 'update' && (
-                     <div className="mt-1 border-l-2 pl-4 py-1 flex flex-col gap-1.5 text-xs text-muted-foreground">
+                     <div className="mt-1 flex flex-col gap-1.5 border-l-2 py-1 pl-4 text-xs text-muted-foreground">
                         <div className="flex gap-6">
                            <span className="w-20">Priority</span>
                            <span>
@@ -231,24 +370,31 @@ export default function ProjectActivity({ projectId }: ProjectActivityProps) {
                         >
                            <Paperclip className="size-4" />
                         </Button>
-                        <Button size="xs" onClick={handlePost} disabled={text.trim() === ''}>
-                           Post {mode === 'update' ? 'update' : 'comment'}
+                        <Button
+                           size="xs"
+                           onClick={() => void handlePost()}
+                           disabled={text.trim() === '' || posting}
+                        >
+                           {posting ? 'Posting…' : `Post ${mode}`}
                         </Button>
                      </div>
                   </div>
                </div>
 
-               {/* Timeline */}
-               {updatesByMonth.length === 0 ? (
-                  <p className="mt-10 text-sm text-muted-foreground text-center">
+               {workspace.configured && updatesLoading ? (
+                  <p className="mt-10 text-center text-sm text-muted-foreground" role="status">
+                     Loading project updates…
+                  </p>
+               ) : updatesByMonth.length === 0 ? (
+                  <p className="mt-10 text-center text-sm text-muted-foreground">
                      No updates yet — post the first one to keep the team in the loop.
                   </p>
                ) : (
-                  updatesByMonth.map(([month, monthUpdates]) => (
-                     <div key={month} className="mt-8">
-                        <h3 className="text-lg font-semibold mb-3">{month}</h3>
+                  updatesByMonth.map((group) => (
+                     <div key={group.label} className="mt-8">
+                        <h3 className="mb-3 text-lg font-semibold">{group.label}</h3>
                         <div className="flex flex-col gap-3">
-                           {monthUpdates.map((update) => (
+                           {group.updates.map((update) => (
                               <UpdateCard key={update.id} update={update} />
                            ))}
                         </div>

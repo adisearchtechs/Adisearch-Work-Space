@@ -136,6 +136,28 @@ export type Database = {
                updated_at?: string;
             }
          >;
+         project_updates: Table<
+            {
+               id: string;
+               organization_id: string;
+               project_id: string;
+               author_id: string | null;
+               kind: 'update' | 'comment';
+               health: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               project_id: string;
+               author_id?: string | null;
+               kind?: 'update' | 'comment';
+               health?: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at?: string;
+            }
+         >;
          cycles: Table<
             Timestamped & {
                id: string;
