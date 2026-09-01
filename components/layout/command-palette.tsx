@@ -13,13 +13,13 @@ import { cycles, formatCycleDateRange } from '@/mock-data/cycles';
 import { Issue } from '@/mock-data/issues';
 import { labels as allLabels } from '@/mock-data/labels';
 import { priorities } from '@/mock-data/priorities';
-import { projects as allProjects } from '@/mock-data/projects';
 import { status as allStatus } from '@/mock-data/status';
 import { teams } from '@/mock-data/teams';
 import { users } from '@/mock-data/users';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCreateIssueStore } from '@/store/create-issue-store';
 import { useIssuesStore } from '@/store/issues-store';
+import { useProjectsStore } from '@/store/projects-store';
 import {
    Box,
    CalendarPlus,
@@ -96,6 +96,7 @@ export function CommandPalette() {
       updateIssue,
    } = useIssuesStore();
    const { openModal } = useCreateIssueStore();
+   const allProjects = useProjectsStore((state) => state.projects);
 
    const orgId = pathname.split('/')[1] || 'demo';
 

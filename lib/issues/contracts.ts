@@ -22,6 +22,7 @@ export const createIssueSchema = z
          .max(48)
          .regex(/^[a-z0-9-]+$/),
       priority: issuePrioritySchema.default('no-priority'),
+      projectId: z.string().uuid().nullable().optional(),
    })
    .strict();
 
@@ -37,6 +38,7 @@ export const updateIssueSchema = z
          .optional(),
       priority: issuePrioritySchema.optional(),
       dueDate: z.string().date().nullable().optional(),
+      projectId: z.string().uuid().nullable().optional(),
    })
    .strict()
    .refine((value) => Object.keys(value).length > 0, 'No supported changes supplied.');
@@ -52,4 +54,5 @@ export type IssueDto = {
    cycleId: string;
    rank: string;
    dueDate?: string;
+   projectId: string | null;
 };

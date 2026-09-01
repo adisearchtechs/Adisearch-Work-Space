@@ -24,6 +24,7 @@ import { DialogTitle } from '@radix-ui/react-dialog';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import type { IssueDto } from '@/lib/issues/contracts';
 import { issueDtoToIssue } from '@/lib/issues/mapper';
+import { useProjectsStore } from '@/store/projects-store';
 
 export function CreateIssueTrigger() {
    const openModal = useCreateIssueStore((state) => state.openModal);
@@ -49,6 +50,7 @@ export function CreateNewIssue() {
    const workspace = useWorkspace();
    const { isOpen, defaultStatus, openModal, closeModal } = useCreateIssueStore();
    const { addIssue, getAllIssues } = useIssuesStore();
+   const projects = useProjectsStore((state) => state.projects);
 
    const generateUniqueIdentifier = useCallback(() => {
       const identifiers = getAllIssues().map((issue) => issue.identifier);
@@ -108,6 +110,7 @@ export function CreateNewIssue() {
                   description: addIssueForm.description,
                   statusSlug: addIssueForm.status.id,
                   priority: addIssueForm.priority.id,
+                  projectId: addIssueForm.project?.id ?? null,
                }),
             });
 
@@ -116,7 +119,9 @@ export function CreateNewIssue() {
             }
 
             const { issue } = (await response.json()) as { issue: IssueDto };
-            addIssue(issueDtoToIssue(issue));
+            addIssue(
+               issueDtoToIssue(issue, new Map(projects.map((project) => [project.id, project])))
+            );
          } else {
             addIssue(addIssueForm);
          }

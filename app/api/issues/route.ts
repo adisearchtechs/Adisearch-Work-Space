@@ -16,6 +16,7 @@ type IssueRow = {
    rank: string;
    due_date: string | null;
    team_id: string;
+   project_id: string | null;
 };
 
 function unavailable() {
@@ -45,6 +46,7 @@ function toDto(
       cycleId: row.cycle_id ?? '',
       rank: row.rank,
       dueDate: row.due_date ?? undefined,
+      projectId: row.project_id,
    };
 }
 
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
       supabase
          .from('issues')
          .select(
-            'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id'
+            'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id'
          )
          .eq('organization_id', organization.id)
          .order('rank', { ascending: false })
@@ -129,22 +131,39 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
    if (!organization) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
 
-   const [{ data: team }, { data: issueStatus }] = await Promise.all([
-      supabase
-         .from('teams')
-         .select('id, issue_prefix')
-         .eq('organization_id', organization.id)
-         .eq('key', parsed.data.teamKey)
-         .maybeSingle(),
-      supabase
-         .from('statuses')
-         .select('id, slug')
-         .eq('organization_id', organization.id)
-         .eq('slug', parsed.data.statusSlug)
-         .maybeSingle(),
-   ]);
+   const [{ data: team, error: teamError }, { data: issueStatus, error: statusError }] =
+      await Promise.all([
+         supabase
+            .from('teams')
+            .select('id, issue_prefix')
+            .eq('organization_id', organization.id)
+            .eq('key', parsed.data.teamKey)
+            .maybeSingle(),
+         supabase
+            .from('statuses')
+            .select('id, slug')
+            .eq('organization_id', organization.id)
+            .eq('slug', parsed.data.statusSlug)
+            .maybeSingle(),
+      ]);
+   if (teamError || statusError) {
+      return NextResponse.json({ error: 'Unable to create issue.' }, { status: 500 });
+   }
    if (!team || !issueStatus)
       return NextResponse.json({ error: 'Invalid workflow.' }, { status: 400 });
+
+   if (parsed.data.projectId) {
+      const { data: project, error: projectError } = await supabase
+         .from('projects')
+         .select('id')
+         .eq('organization_id', organization.id)
+         .eq('id', parsed.data.projectId)
+         .maybeSingle();
+      if (projectError) {
+         return NextResponse.json({ error: 'Unable to create issue.' }, { status: 500 });
+      }
+      if (!project) return NextResponse.json({ error: 'Invalid project.' }, { status: 400 });
+   }
 
    const { data: issue, error } = await supabase
       .from('issues')
@@ -156,9 +175,10 @@ export async function POST(request: NextRequest) {
          status_id: issueStatus.id,
          priority: parsed.data.priority,
          creator_id: userId,
+         project_id: parsed.data.projectId ?? null,
       })
       .select(
-         'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id'
+         'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id'
       )
       .single();
 

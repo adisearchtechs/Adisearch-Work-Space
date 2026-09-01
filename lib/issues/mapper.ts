@@ -2,10 +2,11 @@
 
 import type { IssueDto } from '@/lib/issues/contracts';
 import type { Issue } from '@/mock-data/issues';
+import type { Project } from '@/mock-data/projects';
 import { priorities } from '@/mock-data/priorities';
 import { status } from '@/mock-data/status';
 
-export function issueDtoToIssue(dto: IssueDto): Issue {
+export function issueDtoToIssue(dto: IssueDto, projectById: ReadonlyMap<string, Project>): Issue {
    return {
       id: dto.id,
       identifier: dto.identifier,
@@ -23,6 +24,7 @@ export function issueDtoToIssue(dto: IssueDto): Issue {
       cycleId: dto.cycleId,
       rank: dto.rank,
       dueDate: dto.dueDate,
+      project: dto.projectId ? projectById.get(dto.projectId) : undefined,
       subissues: [],
    };
 }

@@ -4,7 +4,9 @@ import { DataTableFilter } from '@/components/data-table-filter';
 import { useDataTableFilters } from '@/components/data-table-filter/hooks/use-data-table-filters';
 import { useFilterStore } from '@/store/filter-store';
 import { useIssuesStore } from '@/store/issues-store';
-import { issueFilterColumns } from './issue-filter-columns';
+import { useProjectsStore } from '@/store/projects-store';
+import { createIssueFilterColumns } from './issue-filter-columns';
+import { useMemo } from 'react';
 
 /**
  * Linear-style applied-filters row: filter chips (subject / operator /
@@ -18,7 +20,9 @@ import { issueFilterColumns } from './issue-filter-columns';
  */
 export function IssueFilterBar() {
    const { issues } = useIssuesStore();
+   const projects = useProjectsStore((state) => state.projects);
    const { filters, setFilters } = useFilterStore();
+   const issueFilterColumns = useMemo(() => createIssueFilterColumns(projects), [projects]);
 
    const { columns, actions, strategy } = useDataTableFilters({
       strategy: 'client',

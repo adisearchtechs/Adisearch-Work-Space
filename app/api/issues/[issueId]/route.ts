@@ -45,23 +45,42 @@ export async function PATCH(
    const { supabase, userId } = await getAuthenticatedClient();
    if (!userId) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
 
-   const { data: existing } = await supabase
+   const { data: existing, error: existingError } = await supabase
       .from('issues')
       .select('id, organization_id')
       .eq('id', issueId)
       .maybeSingle();
+   if (existingError) {
+      return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+   }
    if (!existing) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
 
    let statusId: string | undefined;
    if (parsed.data.statusSlug) {
-      const { data: nextStatus } = await supabase
+      const { data: nextStatus, error: statusError } = await supabase
          .from('statuses')
          .select('id')
          .eq('organization_id', existing.organization_id)
          .eq('slug', parsed.data.statusSlug)
          .maybeSingle();
+      if (statusError) {
+         return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+      }
       if (!nextStatus) return NextResponse.json({ error: 'Invalid status.' }, { status: 400 });
       statusId = nextStatus.id;
+   }
+
+   if (parsed.data.projectId) {
+      const { data: project, error: projectError } = await supabase
+         .from('projects')
+         .select('id')
+         .eq('organization_id', existing.organization_id)
+         .eq('id', parsed.data.projectId)
+         .maybeSingle();
+      if (projectError) {
+         return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+      }
+      if (!project) return NextResponse.json({ error: 'Invalid project.' }, { status: 400 });
    }
 
    const changes = {
@@ -70,6 +89,7 @@ export async function PATCH(
       ...(parsed.data.priority !== undefined && { priority: parsed.data.priority }),
       ...(parsed.data.dueDate !== undefined && { due_date: parsed.data.dueDate }),
       ...(statusId !== undefined && { status_id: statusId }),
+      ...(parsed.data.projectId !== undefined && { project_id: parsed.data.projectId }),
    };
    const { data: updated, error } = await supabase
       .from('issues')

@@ -63,12 +63,30 @@ interface IssuesState {
 
    // Project management
    updateIssueProject: (issueId: string, newProject: Project | undefined) => void;
+   clearProjectReferences: (projectId: string) => void;
 
    // Utility functions
    getIssueById: (id: string) => Issue | undefined;
 }
 
 const initialIssues = [...mockIssues].sort((a, b) => b.rank.localeCompare(a.rank));
+
+function restoreRejectedChanges(
+   currentIssue: Issue,
+   previousIssue: Issue,
+   rejectedChanges: Partial<Issue>
+) {
+   const restoredIssue = { ...currentIssue };
+
+   for (const key of Object.keys(rejectedChanges) as (keyof Issue)[]) {
+      // Preserve a newer optimistic edit to the same issue while reverting this request.
+      if (Object.is(currentIssue[key], rejectedChanges[key])) {
+         Object.assign(restoredIssue, { [key]: previousIssue[key] });
+      }
+   }
+
+   return restoredIssue;
+}
 
 export const useIssuesStore = create<IssuesState>((set, get) => ({
    // Initial state
@@ -111,9 +129,13 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
       const adapter = get().persistenceAdapter;
       if (adapter && previousIssue) {
          void adapter.update(id, updatedIssue).catch(() => {
+            if (get().persistenceAdapter !== adapter) return;
+
             set((state) => {
                const restoredIssues = state.issues.map((issue) =>
-                  issue.id === id ? previousIssue : issue
+                  issue.id === id
+                     ? restoreRejectedChanges(issue, previousIssue, updatedIssue)
+                     : issue
                );
                return {
                   issues: restoredIssues,
@@ -298,6 +320,14 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    // Project management
    updateIssueProject: (issueId: string, newProject: Project | undefined) => {
       get().updateIssue(issueId, { project: newProject });
+   },
+   clearProjectReferences: (projectId: string) => {
+      set((state) => {
+         const issues = state.issues.map((issue) =>
+            issue.project?.id === projectId ? { ...issue, project: undefined } : issue
+         );
+         return { issues, issuesByStatus: groupIssuesByStatus(issues) };
+      });
    },
 
    // Utility functions
