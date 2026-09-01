@@ -1,9 +1,10 @@
 # Adisearch Workspace — AI Guide
 
 > Production note: the repository now includes Supabase authentication, organization membership
-> enforcement, PostgreSQL row-level security, and a persistent issue vertical slice. Sections
+> enforcement, PostgreSQL row-level security, and persistent issue and project vertical slices. Sections
 > below that describe fake tenancy or entirely local state document the inherited demo dataset.
-> See `README.md`, `lib/supabase/`, `app/api/issues/`, and `supabase/schema.sql` for the production
+> See `README.md`, `lib/supabase/`, `app/api/issues/`, `app/api/projects/`, and
+> `supabase/schema.sql` for the production
 > boundary.
 
 > This document is written for AI assistants (and humans) working on this codebase.
@@ -12,8 +13,9 @@
 
 Adisearch Workspace is a **Linear-inspired project management SaaS**: issues, projects, teams,
 cycles, members, documents and notifications. Supabase-backed deployments authenticate users,
-enforce organization isolation in PostgreSQL, and persist issue CRUD. Without Supabase variables,
-the inherited TypeScript dataset under `mock-data/` remains available as a development demo.
+enforce organization isolation in PostgreSQL, persist issue CRUD, and persist project reads,
+creation, and deletion. Without Supabase variables, the inherited TypeScript dataset under
+`mock-data/` remains available as a development demo.
 
 ## Tech stack
 
@@ -125,6 +127,7 @@ Two flavors live side by side and expose hook-shaped APIs:
 | Store                                                                         | Kind                | Role                                                                                                                                                                                                                                                                                                                                   | Mutates data?             |
 | ----------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
 | `issues-store.ts`                                                             | Zustand             | Holds the issues array + `issuesByStatus`; CRUD (`addIssue`, `updateIssue`, `deleteIssue`, `updateIssueStatus/Priority/Assignee/Project`, label add/remove); read filters (`filterByStatus/Priority/Assignee/Label/Project/Cycle`, `searchIssues`, `filterIssues` — supports status/assignee/priority/labels/project/cycle/statusType) | ✅ the main mutable store |
+| `projects-store.ts`                                                           | Zustand             | Holds tenant-scoped projects and teams; production hydration replaces demo data, while project creation and rollback-safe deletion update the store                                                                                                                                                                                    | ✅                        |
 | `notifications-store.ts`                                                      | Zustand             | Inbox items, selection, read/unread                                                                                                                                                                                                                                                                                                    | ✅                        |
 | `filter-store.ts`                                                             | **nuqs**            | Issue filters in the URL under a single `?filters=` param — the state is bazza/ui's `FiltersState` (`{ columnId, type, operator, values }[]`), so operators like _is not_ / _exclude_ survive in shareable URLs                                                                                                                        | URL state                 |
 | `projects-filter-store.ts`, `team-filter-store.ts`, `members-filter-store.ts` | **nuqs**            | Per-page filters + sorting in the URL (`?sort=…`)                                                                                                                                                                                                                                                                                      | URL state                 |
@@ -136,10 +139,10 @@ Two flavors live side by side and expose hook-shaped APIs:
 | `create-issue-store.ts`                                                       | Zustand             | Create-issue modal open state + default status                                                                                                                                                                                                                                                                                         | UI state                  |
 | `right-panel-store.ts`                                                        | Zustand             | Right side panel on issue/cycle pages (`'insights'` \| `'cycle-details'` \| null)                                                                                                                                                                                                                                                      | UI state                  |
 
-⚠️ Truly mutable state: **issues**, **notifications**, **project updates** and
-**agent chats**. The Projects, Teams and Members tables read directly from
-`mock-data/` and apply their filter stores in `useMemo` — there is no
-projects/teams/members store to mutate yet.
+⚠️ Truly mutable state: **issues**, **projects**, **notifications**, **project updates** and
+**agent chats**. Production project list/detail surfaces hydrate from `app/api/projects/` through
+`SaasProjectsProvider`; other inherited Teams and Members surfaces still read directly from
+`mock-data/`.
 
 ## Feature inventory (what to grab if you only want one part)
 

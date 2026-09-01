@@ -1,10 +1,10 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { getProjectDetail } from '@/mock-data/project-details';
-import { getProjectById } from '@/mock-data/projects';
-import { teams } from '@/mock-data/teams';
 import { useIssuesStore } from '@/store/issues-store';
+import { useProjectsStore } from '@/store/projects-store';
 import { format, parseISO } from 'date-fns';
 import {
    ArrowRight,
@@ -55,9 +55,16 @@ function Card({ children, className }: { children: React.ReactNode; className?: 
  */
 export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) {
    const { orgId } = useParams<{ orgId: string }>();
+   const workspace = useWorkspace();
    const { issues: allIssues } = useIssuesStore();
 
-   const project = getProjectById(projectId);
+   const storedProject = useProjectsStore((state) =>
+      state.projects.find((item) => item.id === projectId)
+   );
+   const workspaceSlug = useProjectsStore((state) => state.workspaceSlug);
+   const teams = useProjectsStore((state) => state.teams);
+   const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
+   const project = workspaceReady ? storedProject : undefined;
    const detail = getProjectDetail(projectId);
 
    const issues = useMemo(
@@ -86,7 +93,7 @@ export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) 
 
    if (!project) return null;
 
-   const team = teams.find((candidate) => candidate.id === project.teamId);
+   const team = teams.find((candidate) => candidate.key === project.teamId);
    const started = issues.filter((issue) => issue.status.category === 'started').length;
    const completed = issues.filter((issue) => issue.status.category === 'completed').length;
 
@@ -180,7 +187,7 @@ export function ProjectPeekPanel({ projectId, onClose }: ProjectPeekPanelProps) 
                </PropertyRow>
                <PropertyRow label="Teams">
                   <span className="inline-flex items-center gap-1.5">
-                     {team?.icon} {team?.name ?? project.teamId}
+                     {team?.name ?? project.teamId}
                   </span>
                </PropertyRow>
                <PropertyRow label="Slack">
