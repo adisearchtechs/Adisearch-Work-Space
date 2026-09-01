@@ -7,11 +7,12 @@ import { getProjectDetail } from '@/mock-data/project-details';
 import { useIssuesStore } from '@/store/issues-store';
 import { useProjectsStore } from '@/store/projects-store';
 import { format, parseISO } from 'date-fns';
-import { ArrowRight, ChevronDown, PenLine, Plus } from 'lucide-react';
+import { ArrowRight, ChevronDown, PenLine } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useRef } from 'react';
 import { DocumentOutline, getOutlineItems } from './document-outline';
+import { ProjectInitiatives } from './project-initiatives';
 import { ProjectLabels } from './project-labels';
 import { ProjectResources } from './project-resources';
 import { ProjectSidePanel } from './project-side-panel';
@@ -103,18 +104,10 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                         </div>
                      </div>
 
-                     {project.initiative && (
-                        <div className="flex items-center gap-3">
-                           <span className="w-24 text-muted-foreground shrink-0">Initiatives</span>
-                           <span className="inline-flex items-center gap-1.5">
-                              📄 {project.initiative}
-                              <button className="text-muted-foreground hover:text-foreground transition-colors">
-                                 <Plus className="size-3.5" />
-                              </button>
-                           </span>
-                        </div>
-                     )}
-
+                     <ProjectInitiatives
+                        projectId={project.id}
+                        demoInitiative={project.initiative}
+                     />
                      <ProjectLabels projectId={project.id} demoLabels={project.labels} />
                      <ProjectResources projectId={project.id} demoResources={detail.resources} />
                   </div>
