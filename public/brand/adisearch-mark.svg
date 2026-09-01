@@ -1,0 +1,36 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Adisearch</title>
+  <desc id="desc">A blue Adisearch A mark crossed by a digital orbit.</desc>
+  <defs>
+    <linearGradient id="a" x1="146" y1="354" x2="386" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A2A8B"/>
+      <stop offset="0.52" stop-color="#1259E8"/>
+      <stop offset="1" stop-color="#16C7F5"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="72" y1="344" x2="452" y2="212" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#183AB9"/>
+      <stop offset="0.56" stop-color="#1769F5"/>
+      <stop offset="1" stop-color="#11C5EF"/>
+    </linearGradient>
+    <filter id="soft" x="30" y="48" width="454" height="396" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0B2B74" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)">
+    <path d="M143 362L249 105C254 92 264 84 279 84H298L405 362" stroke="url(#a)" stroke-width="68" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M211 273H341" stroke="url(#a)" stroke-width="42" stroke-linecap="round"/>
+    <path d="M74 318C117 287 170 273 226 270C300 266 364 289 418 257C446 240 460 218 455 201" stroke="url(#orbit)" stroke-width="17" stroke-linecap="round"/>
+    <path d="M79 319C128 353 198 356 268 337C319 323 365 298 403 276" stroke="url(#orbit)" stroke-width="17" stroke-linecap="round"/>
+    <circle cx="404" cy="276" r="26" fill="#F8FBFF" stroke="#1769F5" stroke-width="11"/>
+    <circle cx="404" cy="276" r="9" fill="#1769F5"/>
+    <g fill="#1769F5">
+      <rect x="75" y="332" width="9" height="9" rx="1"/>
+      <rect x="88" y="342" width="8" height="8" rx="1"/>
+      <rect x="101" y="336" width="11" height="11" rx="1"/>
+      <rect x="116" y="351" width="7" height="7" rx="1"/>
+      <rect x="129" y="343" width="12" height="12" rx="1"/>
+      <rect x="146" y="355" width="8" height="8" rx="1"/>
+      <rect x="160" y="347" width="7" height="7" rx="1"/>
+    </g>
+  </g>
+</svg>

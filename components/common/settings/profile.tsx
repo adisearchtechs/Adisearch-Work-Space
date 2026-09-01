@@ -3,51 +3,66 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { users } from '@/mock-data/users';
-import { Pencil } from 'lucide-react';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { SettingsCard, SettingsRow, SettingsSection, SettingsShell } from './shared';
 
-/** Personal "Profile" settings. */
+/** Personal "Profile" settings backed by the authenticated workspace session. */
 export default function Profile() {
-   const me = users[0];
+   const { user, organization } = useWorkspace();
+   const displayName = user.displayName || 'Workspace member';
+   const username = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 32);
+   const roleLabel = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+   const fallback = displayName.slice(0, 2).toUpperCase();
 
    return (
-      <SettingsShell title="Profile">
+      <SettingsShell title="My Profile">
          <SettingsSection>
             <SettingsCard>
                <SettingsRow
                   title="Profile picture"
+                  description={`Your identity in ${organization.name}`}
                   trailing={
-                     <Avatar className="size-9">
-                        <AvatarImage src={me.avatarUrl} alt={me.name} />
-                        <AvatarFallback>{me.name[0]}</AvatarFallback>
+                     <Avatar className="size-10 border">
+                        <AvatarImage src={user.avatarUrl ?? undefined} alt={displayName} />
+                        <AvatarFallback>{fallback}</AvatarFallback>
                      </Avatar>
                   }
                />
                <SettingsRow
-                  title="Email"
+                  title="Display name"
+                  description="Shown on projects, updates, and workspace activity"
                   trailing={
-                     <span className="inline-flex items-center gap-2 text-foreground">
-                        {me.email}
-                        <Button size="icon" variant="ghost" className="size-6">
-                           <Pencil className="size-3" />
-                        </Button>
-                     </span>
+                     <Input
+                        value={displayName}
+                        readOnly
+                        aria-label="Display name"
+                        className="h-8 w-44 bg-muted/40"
+                     />
                   }
                />
                <SettingsRow
-                  title="Full name"
-                  trailing={<Input defaultValue="LN" className="h-8 w-44" />}
-               />
-               <SettingsRow
-                  title="Title"
-                  description="Your job title or role"
-                  trailing={<Input placeholder="Software engineer" className="h-8 w-44" />}
-               />
-               <SettingsRow
                   title="Username"
-                  description="One word, like a nickname or first name"
-                  trailing={<Input defaultValue="ln" className="h-8 w-44" />}
+                  description="Your short workspace identity"
+                  trailing={
+                     <Input
+                        value={username || 'member'}
+                        readOnly
+                        aria-label="Username"
+                        className="h-8 w-44 bg-muted/40"
+                     />
+                  }
+               />
+               <SettingsRow
+                  title="Email"
+                  trailing={<span className="text-sm text-foreground">{user.email}</span>}
+               />
+               <SettingsRow
+                  title="Workspace role"
+                  trailing={
+                     <span className="rounded-md border bg-muted/30 px-2 py-1 text-xs font-medium">
+                        {roleLabel}
+                     </span>
+                  }
                />
             </SettingsCard>
          </SettingsSection>
@@ -55,7 +70,8 @@ export default function Profile() {
          <SettingsSection title="Workspace access">
             <SettingsCard>
                <SettingsRow
-                  title="Remove yourself from workspace"
+                  title={organization.name}
+                  description={`Signed in as ${displayName}`}
                   trailing={
                      <Button size="xs" variant="ghost" className="text-red-500 hover:text-red-500">
                         Leave workspace

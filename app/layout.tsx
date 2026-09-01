@@ -22,6 +22,11 @@ export const metadata: Metadata = {
       default: brand.name,
    },
    description: brand.description,
+   icons: {
+      icon: [{ url: brand.logoPath, type: 'image/svg+xml' }],
+      shortcut: [{ url: brand.logoPath, type: 'image/svg+xml' }],
+      apple: [{ url: brand.logoPath }],
+   },
    openGraph: {
       type: 'website',
       locale: 'en_US',
