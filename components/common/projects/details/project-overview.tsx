@@ -7,11 +7,12 @@ import { getProjectDetail } from '@/mock-data/project-details';
 import { useIssuesStore } from '@/store/issues-store';
 import { useProjectsStore } from '@/store/projects-store';
 import { format, parseISO } from 'date-fns';
-import { ArrowRight, ChevronDown, FileText, PenLine, Plus } from 'lucide-react';
+import { ArrowRight, ChevronDown, PenLine, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useRef } from 'react';
 import { DocumentOutline, getOutlineItems } from './document-outline';
+import { ProjectResources } from './project-resources';
 import { ProjectSidePanel } from './project-side-panel';
 
 interface ProjectOverviewProps {
@@ -61,7 +62,6 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
 
    return (
       <div className="w-full h-full flex overflow-hidden">
-         {/* Main column */}
          <div className="flex-1 min-w-0 h-full relative">
             {!workspace.configured && <DocumentOutline items={outlineItems} scrollRef={scrollRef} />}
             <div ref={scrollRef} className="h-full overflow-y-auto">
@@ -74,7 +74,6 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                      <p className="mt-3 text-muted-foreground leading-relaxed">{detail.summary}</p>
                   )}
 
-                  {/* Inline properties */}
                   <div className="mt-6 flex flex-col gap-2.5 text-sm">
                      <div className="flex items-center gap-3">
                         <span className="w-24 text-muted-foreground shrink-0">Properties</span>
@@ -102,9 +101,7 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                               <ArrowRight className="size-3" />
                               {formatDay(project.targetDate)}
                            </span>
-                           {team && (
-                              <span className="inline-flex items-center gap-1.5">{team.name}</span>
-                           )}
+                           {team && <span className="inline-flex items-center gap-1.5">{team.name}</span>}
                         </div>
                      </div>
 
@@ -142,29 +139,9 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                         </div>
                      </div>
 
-                     {detail.resources.length > 0 && (
-                        <div className="flex items-center gap-3">
-                           <span className="w-24 text-muted-foreground shrink-0">Resources</span>
-                           <div className="flex items-center gap-2 flex-wrap">
-                              {detail.resources.map((resource) => (
-                                 <a
-                                    key={resource.label}
-                                    href={resource.url}
-                                    className="inline-flex items-center gap-1.5 text-xs border rounded-md px-2 py-1 hover:bg-accent/50 transition-colors"
-                                 >
-                                    <FileText className="size-3.5 text-muted-foreground" />
-                                    {resource.label}
-                                 </a>
-                              ))}
-                              <button className="text-muted-foreground hover:text-foreground transition-colors">
-                                 <Plus className="size-3.5" />
-                              </button>
-                           </div>
-                        </div>
-                     )}
+                     <ProjectResources projectId={project.id} demoResources={detail.resources} />
                   </div>
 
-                  {/* Update CTA */}
                   <Link
                      href={`/${orgId}/project/${project.id}/activity`}
                      className="mt-8 flex items-center justify-center gap-2 border rounded-lg py-4 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
@@ -173,7 +150,6 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                      Write {detail.updates.length === 0 ? 'first ' : ''}project update
                   </Link>
 
-                  {/* Description */}
                   <div className="mt-10">
                      <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground mb-2">
                         Description
@@ -200,7 +176,6 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
             </div>
          </div>
 
-         {/* Side panel */}
          <ProjectSidePanel project={project} detail={detail} issues={issues} />
       </div>
    );
