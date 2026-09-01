@@ -54,10 +54,10 @@ test('unconfigured development retains a local project update fallback', async (
 
 test('project updates migration is append-only, tenant scoped, indexed, and RLS protected', async () => {
    const migration = await readSource(
-      'supabase/migrations/20260902210000_add_project_updates.sql'
+      'supabase/migrations/20260901211058_add_project_updates.sql'
    );
    const coveringIndex = await readSource(
-      'supabase/migrations/20260902211500_cover_project_updates_foreign_key.sql'
+      'supabase/migrations/20260901211158_cover_project_updates_foreign_key.sql'
    );
    const databaseTypes = await readSource('lib/supabase/database.types.ts');
 
