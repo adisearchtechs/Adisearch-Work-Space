@@ -1,12 +1,14 @@
 export const brand = {
    name: 'Adisearch Workspace',
-   shortName: 'Workspace',
+   shortName: 'Adisearch',
+   organization: 'AdisearchTechs',
    description:
       'A secure, collaborative workspace for planning projects, prioritizing issues, and shipping work.',
-   organization: 'Adisearch Technologies',
    defaultWorkspaceName: 'Adisearch Workspace',
    defaultWorkspaceSlug: 'adisearch',
-   repositoryUrl: 'https://github.com/adisearchtechs/circle',
+   logoPath: '/brand/adisearch-mark.svg',
+   iconPath: '/icon.svg',
+   repositoryUrl: 'https://github.com/adisearchtechs/Adisearch-Work-Space',
    supportEmail: 'support@adisearchtech.com',
 } as const;
 
