@@ -48,6 +48,12 @@ function restoreRejectedProjectUpdate(
       restoredProject.name = previousProject.name;
    }
    if (
+      changes.description !== undefined &&
+      currentProject.description === optimisticProject.description
+   ) {
+      restoredProject.description = previousProject.description;
+   }
+   if (
       changes.targetDate !== undefined &&
       currentProject.targetDate === optimisticProject.targetDate
    ) {
