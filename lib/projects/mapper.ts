@@ -1,7 +1,7 @@
 'use client';
 
 import { Cuboid } from 'lucide-react';
-import type { ProjectDto, ProjectStatus } from '@/lib/projects/contracts';
+import type { ProjectDto, ProjectStatus, ProjectUpdate } from '@/lib/projects/contracts';
 import { health, type Project } from '@/mock-data/projects';
 import { priorities } from '@/mock-data/priorities';
 import { status } from '@/mock-data/status';
@@ -22,6 +22,25 @@ const healthIdByProjectStatus: Record<ProjectStatus, Project['health']['id']> = 
    completed: 'on-track',
    canceled: 'off-track',
 };
+
+const projectStatusByStatusId: Record<string, ProjectStatus> = Object.fromEntries(
+   Object.entries(statusIdByProjectStatus).map(([projectStatus, statusId]) => [
+      statusId,
+      projectStatus,
+   ])
+) as Record<string, ProjectStatus>;
+
+function statusFields(projectStatus: ProjectStatus) {
+   return {
+      status:
+         status.find((item) => item.id === statusIdByProjectStatus[projectStatus]) ??
+         status.find((item) => item.id === 'to-do')!,
+      health:
+         health.find((item) => item.id === healthIdByProjectStatus[projectStatus]) ??
+         health.find((item) => item.id === 'no-update')!,
+      percentComplete: projectStatus === 'completed' ? 100 : 0,
+   };
+}
 
 function projectLead(dto: ProjectDto): User {
    if (!dto.lead) {
@@ -54,21 +73,31 @@ function projectLead(dto: ProjectDto): User {
 }
 
 export function projectDtoToProject(dto: ProjectDto): Project {
-   const mappedStatus = status.find((item) => item.id === statusIdByProjectStatus[dto.status]);
-   const mappedHealth = health.find((item) => item.id === healthIdByProjectStatus[dto.status]);
-
    return {
       id: dto.id,
       name: dto.name,
-      status: mappedStatus ?? status.find((item) => item.id === 'to-do')!,
+      ...statusFields(dto.status),
       icon: Cuboid,
-      percentComplete: dto.status === 'completed' ? 100 : 0,
       startDate: dto.createdAt.slice(0, 10),
       targetDate: dto.targetDate ?? undefined,
       lead: projectLead(dto),
       priority: priorities.find((item) => item.id === 'no-priority')!,
-      health: mappedHealth ?? health.find((item) => item.id === 'no-update')!,
       teamId: dto.teamKey,
       labels: [],
+   };
+}
+
+export function projectToProjectStatus(project: Project): ProjectStatus {
+   return projectStatusByStatusId[project.status.id] ?? 'planned';
+}
+
+export function applyProjectUpdate(project: Project, changes: ProjectUpdate): Project {
+   return {
+      ...project,
+      ...(changes.name !== undefined && { name: changes.name }),
+      ...(changes.targetDate !== undefined && {
+         targetDate: changes.targetDate ?? undefined,
+      }),
+      ...(changes.status !== undefined && statusFields(changes.status)),
    };
 }

@@ -3,10 +3,34 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useWorkspace } from '@/components/providers/workspace-provider';
-import type { ProjectDto, ProjectTeamDto } from '@/lib/projects/contracts';
+import type { ProjectDto, ProjectTeamDto, ProjectUpdate } from '@/lib/projects/contracts';
 import { projectDtoToProject } from '@/lib/projects/mapper';
 import { useProjectsStore } from '@/store/projects-store';
 import { useIssuesStore } from '@/store/issues-store';
+
+function supportedProjectChanges(changes: ProjectUpdate): ProjectUpdate {
+   return {
+      ...(changes.name !== undefined && { name: changes.name }),
+      ...(changes.status !== undefined && { status: changes.status }),
+      ...(changes.targetDate !== undefined && { targetDate: changes.targetDate }),
+   };
+}
+
+async function updateProject(id: string, changes: ProjectUpdate, organizationSlug: string) {
+   const response = await fetch(
+      `/api/projects/${encodeURIComponent(id)}?organization=${encodeURIComponent(organizationSlug)}`,
+      {
+         method: 'PATCH',
+         credentials: 'same-origin',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(supportedProjectChanges(changes)),
+      }
+   );
+
+   if (!response.ok) {
+      throw new Error(`Project update failed with ${response.status}.`);
+   }
+}
 
 async function deleteProject(id: string, organizationSlug: string) {
    const response = await fetch(
@@ -37,6 +61,9 @@ export function SaasProjectsProvider({ children }: { children: React.ReactNode }
       store.replaceWorkspace([], [], workspace.organization.slug);
       store.setLoading(true);
       store.setPersistenceAdapter({
+         update(id, changes) {
+            return updateProject(id, changes, workspace.organization.slug);
+         },
          delete(id) {
             return deleteProject(id, workspace.organization.slug);
          },

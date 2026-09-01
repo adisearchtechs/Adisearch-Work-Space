@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { EditProjectDialog } from '@/components/common/projects/edit-project-dialog';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
@@ -78,6 +79,7 @@ export default function Header({ projectId }: { projectId: string }) {
    );
    const workspaceSlug = useProjectsStore((state) => state.workspaceSlug);
    const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
+   const canWrite = !workspace.configured || workspace.user.role !== 'guest';
    const project = workspaceReady ? storedProject : undefined;
    if (!project) return null;
 
@@ -104,6 +106,7 @@ export default function Header({ projectId }: { projectId: string }) {
                </div>
             </div>
             <div className="flex items-center gap-1">
+               {canWrite && <EditProjectDialog project={project} />}
                <Button variant="ghost" size="icon" className="size-7 text-muted-foreground">
                   <Link2 className="size-4" />
                </Button>

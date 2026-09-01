@@ -24,7 +24,19 @@ export const createProjectSchema = z
    })
    .strict();
 
+export const updateProjectSchema = z
+   .object({
+      name: z.string().trim().min(1).max(160).optional(),
+      status: projectStatusSchema.optional(),
+      targetDate: z.string().date().nullable().optional(),
+   })
+   .strict()
+   .refine((changes) => Object.values(changes).some((value) => value !== undefined), {
+      message: 'At least one project field is required.',
+   });
+
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;
+export type ProjectUpdate = z.infer<typeof updateProjectSchema>;
 
 export type ProjectLeadDto = {
    id: string;
