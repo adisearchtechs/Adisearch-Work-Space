@@ -48,7 +48,7 @@ test('configured team settings use persistent data and admin-only membership con
    assert.match(settings, /\/members\?organization=/);
    assert.match(settings, /method: 'DELETE'/);
    assert.match(settings, /Workspace owners and admins control team membership/);
-   assert.match(settings, /Hard team deletion is intentionally deferred/);
+   assert.match(settings, /does not expose hard team deletion/);
 });
 
 test('Phase 16 reuses existing secured team tables without a production migration', async () => {
