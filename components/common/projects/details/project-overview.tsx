@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useRef } from 'react';
 import { DocumentOutline, getOutlineItems } from './document-outline';
+import { ProjectLabels } from './project-labels';
 import { ProjectResources } from './project-resources';
 import { ProjectSidePanel } from './project-side-panel';
 
@@ -88,10 +89,7 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                            </span>
                            <span className="inline-flex items-center gap-1.5">
                               <Avatar className="size-4">
-                                 <AvatarImage
-                                    src={project.lead.avatarUrl}
-                                    alt={project.lead.name}
-                                 />
+                                 <AvatarImage src={project.lead.avatarUrl} alt={project.lead.name} />
                                  <AvatarFallback>{project.lead.name[0]}</AvatarFallback>
                               </Avatar>
                               {project.lead.name}
@@ -117,28 +115,7 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                         </div>
                      )}
 
-                     <div className="flex items-center gap-3">
-                        <span className="w-24 text-muted-foreground shrink-0">Labels</span>
-                        <div className="flex items-center gap-1.5">
-                           {project.labels.map((label) => (
-                              <span
-                                 key={label.id}
-                                 className="inline-flex items-center gap-1 text-xs border rounded-full px-2 py-0.5"
-                              >
-                                 <span
-                                    className="size-2 rounded-full"
-                                    style={{ backgroundColor: label.color }}
-                                 />
-                                 {label.name}
-                                 <ChevronDown className="size-3 text-muted-foreground" />
-                              </span>
-                           ))}
-                           <button className="text-muted-foreground hover:text-foreground transition-colors">
-                              <Plus className="size-3.5" />
-                           </button>
-                        </div>
-                     </div>
-
+                     <ProjectLabels projectId={project.id} demoLabels={project.labels} />
                      <ProjectResources projectId={project.id} demoResources={detail.resources} />
                   </div>
 
