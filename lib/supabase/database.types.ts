@@ -103,6 +103,10 @@ export type Database = {
             { id: string; organization_id: string; initiative_id: string; author_id: string | null; kind: 'update' | 'comment'; health: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at: string },
             { id?: string; organization_id: string; initiative_id: string; author_id?: string | null; kind?: 'update' | 'comment'; health?: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at?: string }
          >;
+         initiative_resources: Table<
+            { id: string; organization_id: string; initiative_id: string; created_by: string | null; label: string; url: string; position: number; created_at: string },
+            { id?: string; organization_id: string; initiative_id: string; created_by?: string | null; label: string; url: string; position?: number; created_at?: string }
+         >;
          cycles: Table<
             Timestamped & { id: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string },
             { id?: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string; created_at?: string; updated_at?: string }
