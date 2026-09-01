@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { LoginForm } from '@/app/login/login-form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -46,8 +47,16 @@ export default async function LoginPage({
       <main className="flex min-h-svh items-center justify-center bg-background px-4 py-12">
          <section className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl sm:p-8">
             <div className="mb-8 flex items-center gap-3">
-               <div className="flex size-11 items-center justify-center rounded-xl bg-primary font-semibold text-primary-foreground">
-                  AW
+               <div className="flex size-12 items-center justify-center rounded-xl border bg-background/80 p-1.5 shadow-sm">
+                  <Image
+                     src={brand.logoPath}
+                     alt="Adisearch"
+                     width={48}
+                     height={48}
+                     priority
+                     unoptimized
+                     className="size-10 object-contain"
+                  />
                </div>
                <div>
                   <p className="font-semibold">{brand.name}</p>
