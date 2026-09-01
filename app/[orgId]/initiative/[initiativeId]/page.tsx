@@ -1,5 +1,5 @@
 import { InitiativeDetailsRoot } from '@/components/common/initiatives/initiative-details-root';
-import Header from '@/components/layout/headers/initiative/header';
+import { InitiativeHeaderRoot } from '@/components/layout/headers/initiative/header-root';
 import MainLayout from '@/components/layout/main-layout';
 
 export default async function InitiativeDetailsPage({
@@ -9,7 +9,7 @@ export default async function InitiativeDetailsPage({
 }) {
    const { initiativeId } = await params;
    return (
-      <MainLayout header={<Header />} headersNumber={2}>
+      <MainLayout header={<InitiativeHeaderRoot />} headersNumber={2}>
          <InitiativeDetailsRoot initiativeId={initiativeId} />
       </MainLayout>
    );
