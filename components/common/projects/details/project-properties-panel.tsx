@@ -7,9 +7,9 @@ import { Issue } from '@/mock-data/issues';
 import { getCycleById } from '@/mock-data/cycles';
 import { ProjectDetail } from '@/mock-data/project-details';
 import { Project } from '@/mock-data/projects';
-import { teams } from '@/mock-data/teams';
 import { PanelFilterTarget, usePanelFilter } from '@/components/common/issues/use-panel-filter';
 import { cn } from '@/lib/utils';
+import { useProjectsStore } from '@/store/projects-store';
 import { format, parseISO } from 'date-fns';
 import { ProjectProgressChart } from './project-progress-chart';
 import { ArrowRight, Calendar, Check, Compass, Plus, Slack, Tag, UserPlus } from 'lucide-react';
@@ -112,9 +112,10 @@ function PropertyRow({ label, children }: { label: string; children: React.React
  */
 export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPropertiesPanelProps) {
    const panelFilter = usePanelFilter();
+   const teams = useProjectsStore((state) => state.teams);
    const completed = issues.filter(isCompleted).length;
 
-   const team = teams.find((candidate) => candidate.id === project.teamId);
+   const team = teams.find((candidate) => candidate.key === project.teamId);
 
    const started = issues.filter((issue) => issue.status.category === 'started').length;
 
@@ -249,7 +250,7 @@ export function ProjectPropertiesPanel({ project, detail, issues }: ProjectPrope
                </PropertyRow>
                <PropertyRow label="Teams">
                   <span className="inline-flex items-center gap-1.5">
-                     {team?.icon} {team?.name ?? project.teamId}
+                     {team?.name ?? project.teamId}
                   </span>
                </PropertyRow>
                <PropertyRow label="Slack">

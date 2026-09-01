@@ -1,11 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { cn } from '@/lib/utils';
-import { projects as allProjects, Project } from '@/mock-data/projects';
-import { teams } from '@/mock-data/teams';
+import type { Project } from '@/mock-data/projects';
 import { useProjectsFilterStore } from '@/store/projects-filter-store';
 import { useProjectsDisplayStore } from '@/store/projects-display-store';
+import { useProjectsStore } from '@/store/projects-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { BarChart3 } from 'lucide-react';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
@@ -41,6 +42,11 @@ const CLOSED_CATEGORIES = new Set(['completed', 'canceled']);
  * options, views, insights) is scoped to that team's projects.
  */
 export default function Projects({ teamId }: { teamId?: string }) {
+   const workspace = useWorkspace();
+   const allProjects = useProjectsStore((state) => state.projects);
+   const teams = useProjectsStore((state) => state.teams);
+   const workspaceSlug = useProjectsStore((state) => state.workspaceSlug);
+   const loading = useProjectsStore((state) => state.loading);
    const { filters } = useProjectsFilterStore();
    const { viewTypes, grouping, ordering, closedProjects, showEmptyGroups } =
       useProjectsDisplayStore();
@@ -81,7 +87,7 @@ export default function Projects({ teamId }: { teamId?: string }) {
          }
       };
       return list.sort(compare);
-   }, [tab, closedProjects, filters, ordering, teamId]);
+   }, [allProjects, tab, closedProjects, filters, ordering, teamId]);
 
    const groups = useMemo<ProjectGroup[]>(() => {
       if (grouping === 'none') {
@@ -89,13 +95,25 @@ export default function Projects({ teamId }: { teamId?: string }) {
       }
       return teams
          .map((team) => ({
-            id: team.id,
+            id: team.key,
             name: team.name,
-            icon: team.icon,
-            projects: displayed.filter((project) => project.teamId === team.id),
+            projects: displayed.filter((project) => project.teamId === team.key),
          }))
          .filter((group) => showEmptyGroups || group.projects.length > 0);
-   }, [displayed, grouping, showEmptyGroups]);
+   }, [displayed, grouping, showEmptyGroups, teams]);
+
+   const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
+
+   if (loading || !workspaceReady) {
+      return (
+         <div
+            className="flex h-full items-center justify-center text-sm text-muted-foreground"
+            role="status"
+         >
+            Loading projects…
+         </div>
+      );
+   }
 
    return (
       <div className="w-full h-full flex flex-col overflow-hidden">
@@ -137,9 +155,24 @@ export default function Projects({ teamId }: { teamId?: string }) {
 
          <div className="flex-1 min-h-0 w-full flex overflow-hidden">
             <div className="flex-1 min-w-0 h-full overflow-hidden">
-               {viewType === 'timeline' && <ProjectsTimeline groups={groups} />}
-               {viewType === 'board' && <ProjectsBoard groups={groups} />}
-               {viewType === 'list' && <ProjectsList groups={groups} />}
+               {displayed.length === 0 ? (
+                  <div className="flex h-full items-center justify-center px-6 text-center">
+                     <div>
+                        <p className="text-sm font-medium">No projects to show</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                           {allProjects.length === 0
+                              ? 'Create the first project from the header to start organizing work.'
+                              : 'Adjust the current team, status, or display filters.'}
+                        </p>
+                     </div>
+                  </div>
+               ) : (
+                  <>
+                     {viewType === 'timeline' && <ProjectsTimeline groups={groups} />}
+                     {viewType === 'board' && <ProjectsBoard groups={groups} />}
+                     {viewType === 'list' && <ProjectsList groups={groups} />}
+                  </>
+               )}
             </div>
 
             {openPanel === 'insights' && (

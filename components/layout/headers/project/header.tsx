@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { getProjectById } from '@/mock-data/projects';
+import { useProjectsStore } from '@/store/projects-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { BarChart3, ChevronRight, Link2, MoreHorizontal, PanelRight, Star } from 'lucide-react';
 import Link from 'next/link';
@@ -71,7 +72,13 @@ function PanelToggles() {
 
 export default function Header({ projectId }: { projectId: string }) {
    const { orgId } = useParams<{ orgId: string }>();
-   const project = getProjectById(projectId);
+   const workspace = useWorkspace();
+   const storedProject = useProjectsStore((state) =>
+      state.projects.find((item) => item.id === projectId)
+   );
+   const workspaceSlug = useProjectsStore((state) => state.workspaceSlug);
+   const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
+   const project = workspaceReady ? storedProject : undefined;
    if (!project) return null;
 
    return (

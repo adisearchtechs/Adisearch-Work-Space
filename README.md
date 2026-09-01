@@ -14,6 +14,7 @@ attribution.
 - Transactional, per-team issue numbering to prevent concurrent identifier collisions
 - Same-origin, authenticated issue API with strict Zod validation and request-size limits
 - Confirmed destructive actions, RLS-aware mutation results, and tenant-safe client hydration
+- Tenant-scoped project reads and creation with confirmed, rollback-safe deletion
 - Vercel-ready response hardening, including CSP, HSTS, and cross-origin policies
 - Demo-only fallback when Supabase variables are absent; no private data is stored in demo mode
 
@@ -22,8 +23,8 @@ attribution.
 Requirements: Node.js 22 or newer and pnpm 11.
 
 ```shell
-git clone https://github.com/adisearchtechs/circle.git
-cd circle
+git clone https://github.com/adisearchtechs/Adisearch-Work-Space.git
+cd Adisearch-Work-Space
 pnpm install --frozen-lockfile
 cp .env.example .env.local
 pnpm dev
@@ -70,10 +71,10 @@ pnpm build
 
 ## Deployment
 
-1. Import `adisearchtechs/circle` into Vercel.
+1. Import `adisearchtechs/Adisearch-Work-Space` into Vercel.
 2. Add the three environment variables above for Production, Preview, and Development as needed.
 3. Deploy from a reviewed, green commit.
 4. Verify sign-up, email confirmation, workspace onboarding, organization isolation, issue create,
-   issue update, issue delete, sign-out, and security headers.
+   issue update, issue delete, project create, project delete, sign-out, and security headers.
 
 The database service-role secret is not required by the application runtime.
