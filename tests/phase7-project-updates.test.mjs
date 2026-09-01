@@ -52,9 +52,12 @@ test('unconfigured development retains a local project update fallback', async (
    assert.match(store, /createdAt: new Date\(\)\.toISOString\(\)/);
 });
 
-test('project updates migration is append-only, tenant scoped, and RLS protected', async () => {
+test('project updates migration is append-only, tenant scoped, indexed, and RLS protected', async () => {
    const migration = await readSource(
       'supabase/migrations/20260902210000_add_project_updates.sql'
+   );
+   const coveringIndex = await readSource(
+      'supabase/migrations/20260902211500_cover_project_updates_foreign_key.sql'
    );
    const databaseTypes = await readSource('lib/supabase/database.types.ts');
 
@@ -67,6 +70,10 @@ test('project updates migration is append-only, tenant scoped, and RLS protected
    assert.match(migration, /author_id = \(select auth\.uid\(\)\)/);
    assert.match(migration, /grant select, insert on table public\.project_updates to authenticated/);
    assert.doesNotMatch(migration, /grant select, insert, update/);
+   assert.match(
+      coveringIndex,
+      /on public\.project_updates \(project_id, organization_id\)/
+   );
    assert.match(databaseTypes, /project_updates: Table</);
    assert.match(databaseTypes, /kind: 'update' \| 'comment'/);
    assert.match(databaseTypes, /health: 'on-track' \| 'at-risk' \| 'off-track' \| null/);
