@@ -63,6 +63,10 @@ export type Database = {
             { id: string; organization_id: string; project_id: string; created_by: string | null; label: string; url: string; position: number; created_at: string },
             { id?: string; organization_id: string; project_id: string; created_by?: string | null; label: string; url: string; position?: number; created_at?: string }
          >;
+         project_labels: Table<
+            { project_id: string; label_id: string; organization_id: string; created_at: string },
+            { project_id: string; label_id: string; organization_id: string; created_at?: string }
+         >;
          cycles: Table<
             Timestamped & { id: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string },
             { id?: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string; created_at?: string; updated_at?: string }
