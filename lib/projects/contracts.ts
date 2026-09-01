@@ -19,6 +19,7 @@ export const createProjectSchema = z
       organizationSlug: organizationSlugSchema,
       teamKey: teamKeySchema,
       name: z.string().trim().min(1).max(160),
+      description: z.string().max(20000).optional(),
       status: projectStatusSchema.default('planned'),
       targetDate: z.string().date().nullable().optional(),
    })
@@ -27,6 +28,7 @@ export const createProjectSchema = z
 export const updateProjectSchema = z
    .object({
       name: z.string().trim().min(1).max(160).optional(),
+      description: z.string().max(20000).optional(),
       status: projectStatusSchema.optional(),
       targetDate: z.string().date().nullable().optional(),
    })
@@ -56,6 +58,7 @@ export type ProjectTeamDto = {
 export type ProjectDto = {
    id: string;
    name: string;
+   description: string;
    status: ProjectStatus;
    teamKey: string;
    createdAt: string;
