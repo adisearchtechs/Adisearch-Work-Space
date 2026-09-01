@@ -43,8 +43,11 @@ test('configured project overview replaces mock chips with persistent label cont
    assert.match(labels, /if \(!workspace\.configured\) return/);
 });
 
-test('project labels migration preserves tenant identity and RLS boundaries', async () => {
+test('project labels migration preserves tenant identity, RLS and FK coverage', async () => {
    const migration = await readSource('supabase/migrations/20260901214252_add_project_labels.sql');
+   const coverProjectFk = await readSource(
+      'supabase/migrations/20260901214638_cover_project_labels_project_foreign_key.sql'
+   );
    const databaseTypes = await readSource('lib/supabase/database.types.ts');
 
    assert.match(migration, /create table public\.project_labels/);
@@ -55,5 +58,7 @@ test('project labels migration preserves tenant identity and RLS boundaries', as
    assert.match(migration, /enable row level security/);
    assert.match(migration, /private\.is_org_member\(organization_id\)/);
    assert.match(migration, /private\.can_write_org\(organization_id\)/);
+   assert.match(coverProjectFk, /project_labels_project_organization_idx/);
+   assert.match(coverProjectFk, /\(project_id, organization_id\)/);
    assert.match(databaseTypes, /project_labels: Table</);
 });
