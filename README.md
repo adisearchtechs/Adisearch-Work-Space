@@ -13,6 +13,7 @@ attribution.
 - Row-level security on every public application table
 - Transactional, per-team issue numbering to prevent concurrent identifier collisions
 - Same-origin, authenticated issue API with strict Zod validation and request-size limits
+- Confirmed destructive actions, RLS-aware mutation results, and tenant-safe client hydration
 - Vercel-ready response hardening, including CSP, HSTS, and cross-origin policies
 - Demo-only fallback when Supabase variables are absent; no private data is stored in demo mode
 
