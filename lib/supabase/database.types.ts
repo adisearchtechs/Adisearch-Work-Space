@@ -67,6 +67,38 @@ export type Database = {
             { project_id: string; label_id: string; organization_id: string; created_at: string },
             { project_id: string; label_id: string; organization_id: string; created_at?: string }
          >;
+         initiatives: Table<
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               name: string;
+               description: string;
+               icon: string;
+               status: 'active' | 'planned' | 'completed';
+               priority: Database['public']['Enums']['issue_priority'];
+               owner_id: string | null;
+               target: string | null;
+               health: 'no-update' | 'on-track' | 'at-risk' | 'off-track';
+            },
+            {
+               id?: string;
+               organization_id: string;
+               name: string;
+               description?: string;
+               icon?: string;
+               status?: 'active' | 'planned' | 'completed';
+               priority?: Database['public']['Enums']['issue_priority'];
+               owner_id?: string | null;
+               target?: string | null;
+               health?: 'no-update' | 'on-track' | 'at-risk' | 'off-track';
+               created_at?: string;
+               updated_at?: string;
+            }
+         >;
+         initiative_projects: Table<
+            { initiative_id: string; project_id: string; organization_id: string; created_at: string },
+            { initiative_id: string; project_id: string; organization_id: string; created_at?: string }
+         >;
          cycles: Table<
             Timestamped & { id: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string },
             { id?: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string; created_at?: string; updated_at?: string }
