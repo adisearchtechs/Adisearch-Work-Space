@@ -1,0 +1,87 @@
+.grid {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.055) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 35% 50%, black 0%, transparent 74%);
+}
+
+.glow {
+  width: 34rem;
+  height: 34rem;
+  border-radius: 9999px;
+  filter: blur(82px);
+  opacity: 0.22;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.glowOne {
+  top: -13rem;
+  left: -9rem;
+  background: rgba(37, 99, 235, 0.52);
+}
+
+.glowTwo {
+  right: -13rem;
+  bottom: -16rem;
+  background: rgba(6, 182, 212, 0.34);
+  animation-delay: -6s;
+}
+
+.orbit {
+  animation: orbit 22s linear infinite;
+  box-shadow: 0 0 80px rgba(37, 99, 235, 0.08) inset;
+}
+
+.orbitReverse {
+  animation-direction: reverse;
+  animation-duration: 16s;
+}
+
+.watermark {
+  animation: breathe 7s ease-in-out infinite;
+  filter: drop-shadow(0 24px 70px rgba(37, 99, 235, 0.18));
+}
+
+.node {
+  animation: nodePulse 2.6s ease-in-out infinite;
+}
+
+.pixels span {
+  animation: pixelFloat 4.8s ease-in-out infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) scaleX(1.18); }
+  to { transform: rotate(360deg) scaleX(1.18); }
+}
+
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(0.92); }
+  100% { transform: translate3d(4rem, 2rem, 0) scale(1.08); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(0.98); opacity: 0.84; }
+  50% { transform: scale(1.035); opacity: 1; }
+}
+
+@keyframes nodePulse {
+  0%, 100% { transform: translateY(-50%) scale(0.82); opacity: 0.6; }
+  50% { transform: translateY(-50%) scale(1.18); opacity: 1; }
+}
+
+@keyframes pixelFloat {
+  0%, 100% { transform: translateY(0) scale(0.7); opacity: 0.18; }
+  50% { transform: translateY(-14px) scale(1); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow,
+  .orbit,
+  .watermark,
+  .node,
+  .pixels span {
+    animation: none !important;
+  }
+}
