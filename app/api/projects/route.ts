@@ -14,6 +14,7 @@ type ProjectRow = {
    id: string;
    team_id: string;
    name: string;
+   description: string;
    status: ProjectStatus;
    lead_id: string | null;
    target_date: string | null;
@@ -58,6 +59,7 @@ function toDto(
    return {
       id: row.id,
       name: row.name,
+      description: row.description,
       status: row.status,
       teamKey: teamKeyById.get(row.team_id) ?? 'UNKNOWN',
       createdAt: row.created_at,
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
             .order('name'),
          supabase
             .from('projects')
-            .select('id, team_id, name, status, lead_id, target_date, created_at')
+            .select('id, team_id, name, description, status, lead_id, target_date, created_at')
             .eq('organization_id', organization.id)
             .order('created_at', { ascending: false })
             .limit(500),
@@ -205,11 +207,12 @@ export async function POST(request: NextRequest) {
          organization_id: organization.id,
          team_id: team.id,
          name: parsed.data.name,
+         description: parsed.data.description ?? '',
          status: parsed.data.status,
          lead_id: userId,
          target_date: parsed.data.targetDate ?? null,
       })
-      .select('id, team_id, name, status, lead_id, target_date, created_at')
+      .select('id, team_id, name, description, status, lead_id, target_date, created_at')
       .single();
 
    if (error || !project) {
