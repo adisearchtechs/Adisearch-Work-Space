@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { CalendarRange, CheckCircle2, Plus, Trash2, UserRound } from 'lucide-react';
+import { CalendarRange, Plus, Trash2, UserRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { InitiativeDto, InitiativeStatus } from '@/lib/initiatives/contracts';
 import { useProjectsStore } from '@/store/projects-store';
+import { InitiativeActivity } from './initiative-activity';
 
 const TABS = ['overview', 'activity', 'projects'] as const;
 
@@ -177,24 +178,7 @@ export function PersistentInitiativeDetails({ initiativeId }: { initiativeId: st
    };
 
    if (tab === 'activity') {
-      return (
-         <div className="mx-auto w-full max-w-3xl px-8 py-10">
-            <h1 className="text-xl font-semibold">Initiative activity</h1>
-            <div className="mt-6 overflow-hidden rounded-xl border bg-card text-sm">
-               <div className="flex items-center gap-3 border-b px-4 py-3">
-                  <CheckCircle2 className="size-4 text-muted-foreground" />
-                  <span className="flex-1">Initiative created</span>
-                  <time className="text-xs text-muted-foreground">{new Date(initiative.createdAt).toLocaleString()}</time>
-               </div>
-               <div className="flex items-center gap-3 px-4 py-3">
-                  <CheckCircle2 className="size-4 text-muted-foreground" />
-                  <span className="flex-1">Initiative last updated</span>
-                  <time className="text-xs text-muted-foreground">{new Date(initiative.updatedAt).toLocaleString()}</time>
-               </div>
-            </div>
-            <p className="mt-4 text-xs text-muted-foreground">Full initiative update history is intentionally deferred to a later milestone.</p>
-         </div>
-      );
+      return <InitiativeActivity initiative={initiative} />;
    }
 
    if (tab === 'projects') {
