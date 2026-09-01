@@ -76,6 +76,7 @@ export function projectDtoToProject(dto: ProjectDto): Project {
    return {
       id: dto.id,
       name: dto.name,
+      description: dto.description,
       ...statusFields(dto.status),
       icon: Cuboid,
       startDate: dto.createdAt.slice(0, 10),
@@ -95,6 +96,7 @@ export function applyProjectUpdate(project: Project, changes: ProjectUpdate): Pr
    return {
       ...project,
       ...(changes.name !== undefined && { name: changes.name }),
+      ...(changes.description !== undefined && { description: changes.description }),
       ...(changes.targetDate !== undefined && {
          targetDate: changes.targetDate ?? undefined,
       }),
