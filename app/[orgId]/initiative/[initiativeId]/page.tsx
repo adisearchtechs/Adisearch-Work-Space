@@ -1,4 +1,4 @@
-import InitiativeDetails from '@/components/common/initiatives/initiative-details';
+import { InitiativeDetailsRoot } from '@/components/common/initiatives/initiative-details-root';
 import Header from '@/components/layout/headers/initiative/header';
 import MainLayout from '@/components/layout/main-layout';
 
@@ -10,7 +10,7 @@ export default async function InitiativeDetailsPage({
    const { initiativeId } = await params;
    return (
       <MainLayout header={<Header />} headersNumber={2}>
-         <InitiativeDetails initiativeId={initiativeId} />
+         <InitiativeDetailsRoot initiativeId={initiativeId} />
       </MainLayout>
    );
 }
