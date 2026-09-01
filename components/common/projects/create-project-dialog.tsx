@@ -91,6 +91,7 @@ export function CreateProjectDialog() {
             project = {
                id: crypto.randomUUID(),
                name: trimmedName,
+               description: '',
                status,
                teamKey,
                createdAt: new Date().toISOString(),

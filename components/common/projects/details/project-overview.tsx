@@ -41,7 +41,10 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
    const project = workspaceReady ? storedProject : undefined;
    const team = teams.find((candidate) => candidate.key === project?.teamId);
    const scrollRef = useRef<HTMLDivElement>(null);
-   const outlineItems = useMemo(() => getOutlineItems(detail.description), [detail.description]);
+   const outlineItems = useMemo(
+      () => (workspace.configured ? [] : getOutlineItems(detail.description)),
+      [workspace.configured, detail.description]
+   );
 
    if (!project) {
       return (
@@ -54,18 +57,22 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
       );
    }
 
+   const persistedDescription = project.description?.trim() ?? '';
+
    return (
       <div className="w-full h-full flex overflow-hidden">
          {/* Main column */}
          <div className="flex-1 min-w-0 h-full relative">
-            <DocumentOutline items={outlineItems} scrollRef={scrollRef} />
+            {!workspace.configured && <DocumentOutline items={outlineItems} scrollRef={scrollRef} />}
             <div ref={scrollRef} className="h-full overflow-y-auto">
                <div className="max-w-3xl mx-auto px-6 lg:px-10 py-10">
                   <div className="inline-flex size-10 bg-muted/50 items-center justify-center rounded-md mb-4">
                      <project.icon className="size-6" />
                   </div>
                   <h1 className="text-3xl font-semibold tracking-tight">{project.name}</h1>
-                  <p className="mt-3 text-muted-foreground leading-relaxed">{detail.summary}</p>
+                  {!workspace.configured && (
+                     <p className="mt-3 text-muted-foreground leading-relaxed">{detail.summary}</p>
+                  )}
 
                   {/* Inline properties */}
                   <div className="mt-6 flex flex-col gap-2.5 text-sm">
@@ -172,9 +179,22 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                         Description
                         <ChevronDown className="size-3.5" />
                      </div>
-                     <div className="text-[15px] leading-relaxed">
-                        <ContentBlocks blocks={detail.description} />
-                     </div>
+                     {workspace.configured ? (
+                        persistedDescription ? (
+                           <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
+                              {persistedDescription}
+                           </div>
+                        ) : (
+                           <p className="text-sm text-muted-foreground">
+                              No description yet. Use Edit project to add context, goals, or success
+                              criteria.
+                           </p>
+                        )
+                     ) : (
+                        <div className="text-[15px] leading-relaxed">
+                           <ContentBlocks blocks={detail.description} />
+                        </div>
+                     )}
                   </div>
                </div>
             </div>

@@ -29,6 +29,8 @@ import { Priority, priorities } from './priorities';
 export interface Project {
    id: string;
    name: string;
+   /** Persisted project context for SaaS workspaces. */
+   description?: string;
    status: Status;
    icon: LucideIcon | RemixiconComponentType;
    percentComplete: number;

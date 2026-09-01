@@ -11,6 +11,7 @@ import { useIssuesStore } from '@/store/issues-store';
 function supportedProjectChanges(changes: ProjectUpdate): ProjectUpdate {
    return {
       ...(changes.name !== undefined && { name: changes.name }),
+      ...(changes.description !== undefined && { description: changes.description }),
       ...(changes.status !== undefined && { status: changes.status }),
       ...(changes.targetDate !== undefined && { targetDate: changes.targetDate }),
    };

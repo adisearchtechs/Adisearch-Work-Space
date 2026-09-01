@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import type { ProjectStatus, ProjectUpdate } from '@/lib/projects/contracts';
 import { projectToProjectStatus } from '@/lib/projects/mapper';
 import type { Project } from '@/mock-data/projects';
@@ -35,6 +36,7 @@ export function EditProjectDialog({ project }: { project: Project }) {
    const updateProject = useProjectsStore((state) => state.updateProject);
    const [open, setOpen] = useState(false);
    const [name, setName] = useState(project.name);
+   const [description, setDescription] = useState(project.description ?? '');
    const [status, setStatus] = useState<ProjectStatus>(() => projectToProjectStatus(project));
    const [targetDate, setTargetDate] = useState(project.targetDate ?? '');
    const [submitting, setSubmitting] = useState(false);
@@ -45,6 +47,7 @@ export function EditProjectDialog({ project }: { project: Project }) {
       if (submitting) return;
       if (nextOpen) {
          setName(project.name);
+         setDescription(project.description ?? '');
          setStatus(projectToProjectStatus(project));
          setTargetDate(project.targetDate ?? '');
       }
@@ -59,10 +62,15 @@ export function EditProjectDialog({ project }: { project: Project }) {
          return;
       }
 
+      const normalizedDescription = description.trim();
+      const currentDescription = project.description ?? '';
       const normalizedTargetDate = targetDate || null;
       const currentTargetDate = project.targetDate ?? null;
       const changes: ProjectUpdate = {
          ...(trimmedName !== project.name && { name: trimmedName }),
+         ...(normalizedDescription !== currentDescription && {
+            description: normalizedDescription,
+         }),
          ...(status !== projectToProjectStatus(project) && { status }),
          ...(normalizedTargetDate !== currentTargetDate && {
             targetDate: normalizedTargetDate,
@@ -103,7 +111,7 @@ export function EditProjectDialog({ project }: { project: Project }) {
             <DialogHeader>
                <DialogTitle>Edit project</DialogTitle>
                <DialogDescription>
-                  Update the project name, lifecycle status, and target date.
+                  Update the project name, description, lifecycle status, and target date.
                </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-2">
@@ -115,6 +123,22 @@ export function EditProjectDialog({ project }: { project: Project }) {
                      onChange={(event) => setName(event.target.value)}
                      maxLength={160}
                      autoFocus
+                  />
+               </div>
+               <div className="grid gap-2">
+                  <div className="flex items-center justify-between gap-4">
+                     <Label htmlFor="edit-project-description">Description</Label>
+                     <span className="text-xs text-muted-foreground" aria-live="polite">
+                        {description.length.toLocaleString()}/20,000
+                     </span>
+                  </div>
+                  <Textarea
+                     id="edit-project-description"
+                     value={description}
+                     onChange={(event) => setDescription(event.target.value)}
+                     maxLength={20000}
+                     rows={7}
+                     placeholder="Add context, goals, constraints, or success criteria for this project."
                   />
                </div>
                <div className="grid gap-2 sm:grid-cols-2">
