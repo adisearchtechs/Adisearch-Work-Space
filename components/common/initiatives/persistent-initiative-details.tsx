@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import type { InitiativeDto, InitiativeStatus } from '@/lib/initiatives/contracts';
 import { useProjectsStore } from '@/store/projects-store';
 import { InitiativeActivity } from './initiative-activity';
+import { InitiativeLabels } from './initiative-labels';
 import { InitiativeResources } from './initiative-resources';
 
 const TABS = ['overview', 'activity', 'projects'] as const;
@@ -243,6 +244,7 @@ export function PersistentInitiativeDetails({ initiativeId }: { initiativeId: st
                {initiative.owner ? <span className="inline-flex items-center gap-1.5"><Avatar className="size-5"><AvatarImage src={initiative.owner.avatarUrl ?? undefined} alt={initiative.owner.displayName} /><AvatarFallback className="text-[8px]">{initiative.owner.displayName[0]}</AvatarFallback></Avatar>{initiative.owner.displayName}</span> : <span className="inline-flex items-center gap-1 text-muted-foreground"><UserRound className="size-4" /> No owner</span>}
             </div>
 
+            <InitiativeLabels initiativeId={initiative.id} />
             <InitiativeResources initiativeId={initiative.id} />
 
             <div className="rounded-xl border bg-card px-4 py-4">
