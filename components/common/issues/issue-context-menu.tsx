@@ -39,7 +39,7 @@ import { status } from '@/mock-data/status';
 import { priorities } from '@/mock-data/priorities';
 import { users } from '@/mock-data/users';
 import { labels } from '@/mock-data/labels';
-import { projects } from '@/mock-data/projects';
+import { useProjectsStore } from '@/store/projects-store';
 import { toast } from 'sonner';
 import {
    AlertDialog,
@@ -61,6 +61,7 @@ export function IssueContextMenu({ issueId }: IssueContextMenuProps) {
    const [isFavorite, setIsFavorite] = useState(false);
    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
    const [isDeleting, setIsDeleting] = useState(false);
+   const projects = useProjectsStore((state) => state.projects);
 
    const {
       updateIssueStatus,

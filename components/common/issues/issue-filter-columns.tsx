@@ -9,7 +9,7 @@ import { Issue } from '@/mock-data/issues';
 import { labels } from '@/mock-data/labels';
 import { priorities } from '@/mock-data/priorities';
 import { status, StatusCategory } from '@/mock-data/status';
-import { projects } from '@/mock-data/projects';
+import { projects as mockProjects, type Project } from '@/mock-data/projects';
 import { users } from '@/mock-data/users';
 import {
    BarChart3,
@@ -76,11 +76,12 @@ const labelOptions: ColumnOption[] = labels.map((label) => ({
    icon: <span className="size-2.5 rounded-full" style={{ backgroundColor: label.color }} />,
 }));
 
-const projectOptions: ColumnOption[] = projects.map((project) => ({
-   value: project.id,
-   label: project.name,
-   icon: <project.icon className="size-4 text-muted-foreground" />,
-}));
+const projectOptions = (projects: Project[]): ColumnOption[] =>
+   projects.map((project) => ({
+      value: project.id,
+      label: project.name,
+      icon: <project.icon className="size-4 text-muted-foreground" />,
+   }));
 
 const cycleOptions: ColumnOption[] = [
    {
@@ -105,64 +106,67 @@ const dtf = createColumnConfigHelper<Issue>();
  * Filterable issue columns for the bazza/ui data-table-filter component.
  * Accessors return the raw values the filter functions compare against.
  */
-export const issueFilterColumns = [
-   dtf
-      .option()
-      .id('status')
-      .accessor((issue: Issue) => issue.status.id)
-      .displayName('Status')
-      .icon(CircleCheck)
-      .options(statusOptions)
-      .build(),
-   dtf
-      .option()
-      .id('statusType')
-      .accessor((issue: Issue) => issue.status.category)
-      .displayName('Status type')
-      .icon(CircleDashed)
-      .options(statusTypeOptions)
-      .build(),
-   dtf
-      .option()
-      .id('assignee')
-      .accessor((issue: Issue) => issue.assignee?.id ?? 'unassigned')
-      .displayName('Assignee')
-      .icon(CircleUserRound)
-      .options(assigneeOptions)
-      .build(),
-   dtf
-      .option()
-      .id('priority')
-      .accessor((issue: Issue) => issue.priority.id)
-      .displayName('Priority')
-      .icon(BarChart3)
-      .options(priorityOptions)
-      .build(),
-   dtf
-      .multiOption()
-      .id('labels')
-      .accessor((issue: Issue) => issue.labels.map((label) => label.id))
-      .displayName('Labels')
-      .icon(Tag)
-      .options(labelOptions)
-      .build(),
-   dtf
-      .option()
-      .id('project')
-      .accessor((issue: Issue) => issue.project?.id ?? '')
-      .displayName('Project')
-      .icon(Folder)
-      .options(projectOptions)
-      .build(),
-   dtf
-      .option()
-      .id('cycle')
-      .accessor((issue: Issue) => (issue.cycleId === '' ? 'no-cycle' : issue.cycleId))
-      .displayName('Cycle')
-      .icon(RefreshCcw)
-      .options(cycleOptions)
-      .build(),
-] as const;
+export const createIssueFilterColumns = (projects: Project[]) =>
+   [
+      dtf
+         .option()
+         .id('status')
+         .accessor((issue: Issue) => issue.status.id)
+         .displayName('Status')
+         .icon(CircleCheck)
+         .options(statusOptions)
+         .build(),
+      dtf
+         .option()
+         .id('statusType')
+         .accessor((issue: Issue) => issue.status.category)
+         .displayName('Status type')
+         .icon(CircleDashed)
+         .options(statusTypeOptions)
+         .build(),
+      dtf
+         .option()
+         .id('assignee')
+         .accessor((issue: Issue) => issue.assignee?.id ?? 'unassigned')
+         .displayName('Assignee')
+         .icon(CircleUserRound)
+         .options(assigneeOptions)
+         .build(),
+      dtf
+         .option()
+         .id('priority')
+         .accessor((issue: Issue) => issue.priority.id)
+         .displayName('Priority')
+         .icon(BarChart3)
+         .options(priorityOptions)
+         .build(),
+      dtf
+         .multiOption()
+         .id('labels')
+         .accessor((issue: Issue) => issue.labels.map((label) => label.id))
+         .displayName('Labels')
+         .icon(Tag)
+         .options(labelOptions)
+         .build(),
+      dtf
+         .option()
+         .id('project')
+         .accessor((issue: Issue) => issue.project?.id ?? '')
+         .displayName('Project')
+         .icon(Folder)
+         .options(projectOptions(projects))
+         .build(),
+      dtf
+         .option()
+         .id('cycle')
+         .accessor((issue: Issue) => (issue.cycleId === '' ? 'no-cycle' : issue.cycleId))
+         .displayName('Cycle')
+         .icon(RefreshCcw)
+         .options(cycleOptions)
+         .build(),
+   ] as const;
+
+export const issueFilterColumns = createIssueFilterColumns(mockProjects);
 
 const columnById = new Map<string, (typeof issueFilterColumns)[number]>(
    issueFilterColumns.map((column) => [column.id, column])

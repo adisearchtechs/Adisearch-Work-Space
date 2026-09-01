@@ -6,6 +6,7 @@ import { useWorkspace } from '@/components/providers/workspace-provider';
 import type { ProjectDto, ProjectTeamDto } from '@/lib/projects/contracts';
 import { projectDtoToProject } from '@/lib/projects/mapper';
 import { useProjectsStore } from '@/store/projects-store';
+import { useIssuesStore } from '@/store/issues-store';
 
 async function deleteProject(id: string, organizationSlug: string) {
    const response = await fetch(
@@ -19,6 +20,9 @@ async function deleteProject(id: string, organizationSlug: string) {
    if (!response.ok) {
       throw new Error(`Project deletion failed with ${response.status}.`);
    }
+
+   // The database clears issue.project_id through the tenant-scoped foreign key.
+   useIssuesStore.getState().clearProjectReferences(id);
 }
 
 export function SaasProjectsProvider({ children }: { children: React.ReactNode }) {

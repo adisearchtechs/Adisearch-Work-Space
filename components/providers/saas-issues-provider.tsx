@@ -7,6 +7,7 @@ import type { IssueDto } from '@/lib/issues/contracts';
 import type { Issue } from '@/mock-data/issues';
 import { useIssuesStore } from '@/store/issues-store';
 import { useWorkspace } from '@/components/providers/workspace-provider';
+import { useProjectsStore } from '@/store/projects-store';
 
 function supportedChanges(changes: Partial<Issue>) {
    return {
@@ -18,6 +19,7 @@ function supportedChanges(changes: Partial<Issue>) {
       ...('status' in changes && changes.status && { statusSlug: changes.status.id }),
       ...('priority' in changes && changes.priority && { priority: changes.priority.id }),
       ...('dueDate' in changes && { dueDate: changes.dueDate ?? null }),
+      ...('project' in changes && { projectId: changes.project?.id ?? null }),
    };
 }
 
@@ -36,12 +38,18 @@ async function mutation(url: string, method: 'PATCH' | 'DELETE', body?: object) 
 
 export function SaasIssuesProvider({ children }: { children: React.ReactNode }) {
    const workspace = useWorkspace();
+   const projectsWorkspaceSlug = useProjectsStore((state) => state.workspaceSlug);
+   const projectsLoading = useProjectsStore((state) => state.loading);
 
    useEffect(() => {
       if (!workspace.configured) return;
+      if (projectsWorkspaceSlug !== workspace.organization.slug || projectsLoading) return;
 
       const controller = new AbortController();
       const store = useIssuesStore.getState();
+      const projectById = new Map(
+         useProjectsStore.getState().projects.map((project) => [project.id, project])
+      );
       // Never render the previous tenant's in-memory issues while the next tenant loads.
       store.replaceIssues([]);
       store.setPersistenceAdapter({
@@ -69,7 +77,9 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
          })
          .then(({ issues }) => {
             if (controller.signal.aborted) return;
-            useIssuesStore.getState().replaceIssues(issues.map(issueDtoToIssue));
+            useIssuesStore
+               .getState()
+               .replaceIssues(issues.map((issue) => issueDtoToIssue(issue, projectById)));
          })
          .catch((error: unknown) => {
             if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -82,7 +92,7 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
          currentStore.setPersistenceAdapter(null);
          currentStore.replaceIssues([]);
       };
-   }, [workspace.configured, workspace.organization.slug]);
+   }, [projectsLoading, projectsWorkspaceSlug, workspace.configured, workspace.organization.slug]);
 
    return children;
 }

@@ -11,6 +11,8 @@ import { LabelBadge } from '../label-badge';
 import { PrioritySelector } from '../priority-selector';
 import { StatusSelector } from '../status-selector';
 import { IssueRefRow } from './content-blocks';
+import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
+import { useIssuesStore } from '@/store/issues-store';
 
 interface IssuePropertiesPanelProps {
    issue: Issue;
@@ -32,6 +34,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  */
 export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProps) {
    const cycle = issue.cycleId ? getCycleById(issue.cycleId) : undefined;
+   const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
 
    return (
       <div className="flex flex-col gap-7">
@@ -67,20 +70,18 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             </div>
          </Section>
 
-         {issue.project && (
-            <Section title="Project">
-               <div className="flex items-center gap-2 text-sm">
-                  <issue.project.icon className="size-4 text-muted-foreground shrink-0" />
-                  <span className="truncate">{issue.project.name}</span>
+         <Section title="Project">
+            <ProjectSelector
+               project={issue.project}
+               onChange={(project) => updateIssueProject(issue.id, project)}
+            />
+            {issue.project && detail.milestone && (
+               <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
+                  <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
+                  <span className="truncate">{detail.milestone}</span>
                </div>
-               {detail.milestone && (
-                  <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
-                     <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
-                     <span className="truncate">{detail.milestone}</span>
-                  </div>
-               )}
-            </Section>
-         )}
+            )}
+         </Section>
 
          {detail.blockedByIds && detail.blockedByIds.length > 0 && (
             <Section title="Blocked by">
