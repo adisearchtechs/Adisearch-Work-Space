@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, Link2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { EntityAttachments } from '@/components/common/attachments/entity-attachments';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -129,116 +130,68 @@ export function InitiativeResources({ initiativeId }: { initiativeId: string }) 
    if (!workspace.configured) return null;
 
    return (
-      <section className="rounded-xl border bg-card">
-         <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
-            <div>
-               <h2 className="text-sm font-medium">Resources</h2>
-               <p className="mt-0.5 text-xs text-muted-foreground">
-                  Keep briefs, plans, dashboards and reference links with this initiative.
-               </p>
-            </div>
-            {canWrite && (
-               <Button size="sm" variant="outline" className="gap-1.5" onClick={beginCreate}>
-                  <Plus className="size-3.5" /> Add resource
-               </Button>
-            )}
-         </div>
-
-         {formOpen && canWrite && (
-            <div className="grid gap-2 border-b bg-muted/20 p-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] sm:items-end">
-               <label className="grid gap-1 text-xs font-medium">
-                  Label
-                  <Input
-                     value={label}
-                     onChange={(event) => setLabel(event.target.value)}
-                     maxLength={120}
-                     placeholder="Product brief"
-                     autoFocus
-                  />
-               </label>
-               <label className="grid gap-1 text-xs font-medium">
-                  URL
-                  <Input
-                     type="url"
-                     value={url}
-                     onChange={(event) => setUrl(event.target.value)}
-                     maxLength={2048}
-                     placeholder="https://…"
-                  />
-               </label>
-               <div className="flex gap-2">
-                  <Button size="sm" onClick={() => void saveResource()} disabled={submitting}>
-                     {submitting ? 'Saving…' : editingId ? 'Save' : 'Add'}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={closeForm} disabled={submitting}>
-                     Cancel
-                  </Button>
+      <div className="flex flex-col gap-4">
+         <section className="rounded-xl border bg-card">
+            <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+               <div>
+                  <h2 className="text-sm font-medium">Resources</h2>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                     Keep briefs, plans, dashboards and reference links with this initiative.
+                  </p>
                </div>
+               {canWrite && (
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={beginCreate}>
+                     <Plus className="size-3.5" /> Add resource
+                  </Button>
+               )}
             </div>
-         )}
 
-         {loading ? (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground" role="status">
-               Loading initiative resources…
-            </p>
-         ) : resources.length === 0 ? (
-            <div className="flex flex-col items-center px-4 py-9 text-center">
-               <Link2 className="size-5 text-muted-foreground" />
-               <p className="mt-2 text-sm font-medium">No resources yet</p>
-               <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                  {canWrite
-                     ? 'Add the first link the team should keep close to this initiative.'
-                     : 'No shared resources have been added to this initiative.'}
-               </p>
-            </div>
-         ) : (
-            <div>
-               {resources.map((resource) => (
-                  <div
-                     key={resource.id}
-                     className="group flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
-                  >
-                     <Link2 className="size-4 shrink-0 text-muted-foreground" />
-                     <a
-                        href={resource.url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="min-w-0 flex-1"
-                     >
-                        <div className="flex items-center gap-1.5 text-sm font-medium hover:underline">
-                           <span className="truncate">{resource.label}</span>
-                           <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                        </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{resource.url}</p>
-                     </a>
-                     {canWrite && (
-                        <div className="flex items-center gap-1">
-                           <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="size-7 text-muted-foreground"
-                              onClick={() => beginEdit(resource)}
-                              aria-label={`Edit ${resource.label}`}
-                           >
-                              <Pencil className="size-3.5" />
-                           </Button>
-                           <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="size-7 text-muted-foreground hover:text-destructive"
-                              onClick={() => void deleteResource(resource)}
-                              aria-label={`Delete ${resource.label}`}
-                           >
-                              <Trash2 className="size-3.5" />
-                           </Button>
-                        </div>
-                     )}
+            {formOpen && canWrite && (
+               <div className="grid gap-2 border-b bg-muted/20 p-4 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] sm:items-end">
+                  <label className="grid gap-1 text-xs font-medium">
+                     Label
+                     <Input value={label} onChange={(event) => setLabel(event.target.value)} maxLength={120} placeholder="Product brief" autoFocus />
+                  </label>
+                  <label className="grid gap-1 text-xs font-medium">
+                     URL
+                     <Input type="url" value={url} onChange={(event) => setUrl(event.target.value)} maxLength={2048} placeholder="https://…" />
+                  </label>
+                  <div className="flex gap-2">
+                     <Button size="sm" onClick={() => void saveResource()} disabled={submitting}>{submitting ? 'Saving…' : editingId ? 'Save' : 'Add'}</Button>
+                     <Button size="sm" variant="outline" onClick={closeForm} disabled={submitting}>Cancel</Button>
                   </div>
-               ))}
-            </div>
-         )}
-      </section>
+               </div>
+            )}
+
+            {loading ? (
+               <p className="px-4 py-8 text-center text-sm text-muted-foreground" role="status">Loading initiative resources…</p>
+            ) : resources.length === 0 ? (
+               <div className="flex flex-col items-center px-4 py-9 text-center">
+                  <Link2 className="size-5 text-muted-foreground" />
+                  <p className="mt-2 text-sm font-medium">No resources yet</p>
+                  <p className="mt-1 max-w-sm text-xs text-muted-foreground">{canWrite ? 'Add the first link the team should keep close to this initiative.' : 'No shared resources have been added to this initiative.'}</p>
+               </div>
+            ) : (
+               <div>
+                  {resources.map((resource) => (
+                     <div key={resource.id} className="group flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
+                        <Link2 className="size-4 shrink-0 text-muted-foreground" />
+                        <a href={resource.url} target="_blank" rel="noreferrer noopener" className="min-w-0 flex-1">
+                           <div className="flex items-center gap-1.5 text-sm font-medium hover:underline"><span className="truncate">{resource.label}</span><ExternalLink className="size-3 shrink-0 text-muted-foreground" /></div>
+                           <p className="mt-0.5 truncate text-xs text-muted-foreground">{resource.url}</p>
+                        </a>
+                        {canWrite && (
+                           <div className="flex items-center gap-1">
+                              <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => beginEdit(resource)} aria-label={`Edit ${resource.label}`}><Pencil className="size-3.5" /></Button>
+                              <Button type="button" variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => void deleteResource(resource)} aria-label={`Delete ${resource.label}`}><Trash2 className="size-3.5" /></Button>
+                           </div>
+                        )}
+                     </div>
+                  ))}
+               </div>
+            )}
+         </section>
+         <EntityAttachments entityType="initiative" entityId={initiativeId} />
+      </div>
    );
 }
