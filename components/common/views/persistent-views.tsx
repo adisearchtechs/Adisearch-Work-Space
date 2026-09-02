@@ -32,8 +32,7 @@ import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { toast } from 'sonner';
 
 const TABS = ['issues', 'projects'] as const;
-const PRESETS = ['all', 'active', 'backlog', 'completed', 'high-priority', 'has-project'] as const;
-type Preset = (typeof PRESETS)[number];
+type Preset = 'all' | 'active' | 'backlog' | 'completed' | 'high-priority' | 'has-project';
 
 function presetFilter(preset: Preset, viewType: SavedViewType): SavedViewFilter {
    switch (preset) {
