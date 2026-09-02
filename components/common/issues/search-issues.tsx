@@ -1,14 +1,13 @@
 'use client';
 
+import type { Issue } from '@/mock-data/issues';
 import { useIssuesStore } from '@/store/issues-store';
 import { useSearchStore } from '@/store/search-store';
 import { useEffect, useState } from 'react';
 import { IssueLine } from './issue-line';
 
-export function SearchIssues() {
-   const [searchResults, setSearchResults] = useState<
-      ReturnType<typeof useIssuesStore.getState>['issues']
-   >([]);
+export function SearchIssues({ issues }: { issues?: Issue[] }) {
+   const [searchResults, setSearchResults] = useState<Issue[]>([]);
    const { searchIssues } = useIssuesStore();
    const { searchQuery, isSearchOpen } = useSearchStore();
 
@@ -18,13 +17,18 @@ export function SearchIssues() {
          return;
       }
 
-      const results = searchIssues(searchQuery);
+      const query = searchQuery.toLowerCase();
+      const results = issues
+         ? issues.filter(
+              (issue) =>
+                 issue.title.toLowerCase().includes(query) ||
+                 issue.identifier.toLowerCase().includes(query)
+           )
+         : searchIssues(searchQuery);
       setSearchResults(results);
-   }, [searchQuery, searchIssues]);
+   }, [issues, searchQuery, searchIssues]);
 
-   if (!isSearchOpen) {
-      return null;
-   }
+   if (!isSearchOpen) return null;
 
    return (
       <div className="w-full">

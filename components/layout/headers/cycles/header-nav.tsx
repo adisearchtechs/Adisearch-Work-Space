@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useWorkspace } from '@/components/providers/workspace-provider';
-import type { CyclesCollectionResponse } from '@/lib/cycles/contracts';
-import { teams } from '@/mock-data/teams';
+import { resolveTeamReference, useTeamsStore } from '@/store/teams-store';
+import { teams as demoTeams } from '@/mock-data/teams';
 import { ChevronRight, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -12,43 +11,29 @@ import { useParams } from 'next/navigation';
 export default function HeaderNav() {
    const workspace = useWorkspace();
    const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>();
-   const demoTeam = teams.find((team) => team.id === teamId) ?? teams[0];
-   const [team, setTeam] = useState<CyclesCollectionResponse['team'] | null>(null);
-
-   useEffect(() => {
-      if (!workspace.configured) return;
-      const controller = new AbortController();
-      void fetch(
-         `/api/teams/${encodeURIComponent(teamId)}/cycles?organization=${encodeURIComponent(workspace.organization.slug)}`,
-         {
-            credentials: 'same-origin',
-            signal: controller.signal,
-            headers: { Accept: 'application/json' },
-         }
-      )
-         .then(async (response) => {
-            if (!response.ok) return null;
-            return (await response.json()) as CyclesCollectionResponse;
-         })
-         .then((result) => {
-            if (!controller.signal.aborted && result) setTeam(result.team);
-         })
-         .catch(() => undefined);
-      return () => controller.abort();
-   }, [teamId, workspace.configured, workspace.organization.slug]);
-
-   const name = workspace.configured ? team?.name ?? 'Team' : demoTeam.name;
-   const marker = workspace.configured ? (
-      <span className="size-3.5 rounded-sm border" style={{ backgroundColor: team?.color ?? 'transparent' }} />
-   ) : (
-      <span className="inline-flex size-5 bg-muted/50 items-center justify-center rounded shrink-0 text-xs">
-         {demoTeam.icon}
-      </span>
-   );
+   const teams = useTeamsStore((state) => state.teams);
+   const workspaceSlug = useTeamsStore((state) => state.workspaceSlug);
+   const loading = useTeamsStore((state) => state.loading);
+   const persistentTeam =
+      workspace.configured && workspaceSlug === workspace.organization.slug && !loading
+         ? resolveTeamReference(teams, teamId)
+         : undefined;
+   const demoTeam = demoTeams.find((team) => team.id === teamId) ?? demoTeams[0];
+   const name = workspace.configured ? persistentTeam?.name ?? 'Team' : demoTeam.name;
 
    const identity = (
       <span className="flex items-center gap-1.5 min-w-0">
-         {marker}
+         {workspace.configured ? (
+            <span
+               className="size-3.5 rounded-sm border"
+               style={{ backgroundColor: persistentTeam?.color ?? 'transparent' }}
+               aria-hidden="true"
+            />
+         ) : (
+            <span className="inline-flex size-5 bg-muted/50 items-center justify-center rounded shrink-0 text-xs">
+               {demoTeam.icon}
+            </span>
+         )}
          <span className="text-sm font-medium truncate">{name}</span>
       </span>
    );

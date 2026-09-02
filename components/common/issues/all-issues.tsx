@@ -1,28 +1,37 @@
 'use client';
 
-import { Issue } from '@/mock-data/issues';
-import { getStatusesByCategory, StatusCategory, displayOrderedStatus } from '@/mock-data/status';
+import type { Issue } from '@/mock-data/issues';
+import { getStatusesByCategory, type StatusCategory, displayOrderedStatus } from '@/mock-data/status';
 import { useFilterStore } from '@/store/filter-store';
 import { useIssuesStore } from '@/store/issues-store';
+import { resolveTeamReference, useTeamsStore } from '@/store/teams-store';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { applyIssueFilters } from './issue-filter-columns';
 import { IssueFilterBar } from './issue-filter-bar';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
 import { useViewStore } from '@/store/view-store';
 import { useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import { GroupedIssuesView } from './grouped-issues-view';
 import { InsightsPanel } from './insights-panel';
 import { SearchIssues } from './search-issues';
 
 interface AllIssuesProps {
-   /**
-    * Optional status-category filter, used by the "Active" and "Backlog"
-    * tabs. When omitted, every status is shown ("All issues").
-    */
    categories?: StatusCategory[];
 }
 
 export default function AllIssues({ categories }: AllIssuesProps) {
+   const workspace = useWorkspace();
+   const params = useParams<{ teamId?: string }>();
+   const routeTeamReference = params?.teamId;
+   const tenantTeams = useTeamsStore((state) => state.teams);
+   const teamsWorkspaceSlug = useTeamsStore((state) => state.workspaceSlug);
+   const teamsLoading = useTeamsStore((state) => state.loading);
+   const resolvedTeam =
+      workspace.configured && routeTeamReference && teamsWorkspaceSlug === workspace.organization.slug
+         ? resolveTeamReference(tenantTeams, routeTeamReference)
+         : undefined;
    const { isSearchOpen, searchQuery } = useSearchStore();
    const { viewType } = useViewStore();
    const { filters } = useFilterStore();
@@ -37,24 +46,41 @@ export default function AllIssues({ categories }: AllIssuesProps) {
       [categories]
    );
 
-   const scopedIssues = useMemo<Issue[]>(
-      () =>
-         categories
-            ? issues.filter((issue) => categories.includes(issue.status.category))
-            : issues,
-      [issues, categories]
-   );
+   const scopedIssues = useMemo<Issue[]>(() => {
+      let list = categories
+         ? issues.filter((issue) => categories.includes(issue.status.category))
+         : issues;
+
+      if (workspace.configured && routeTeamReference) {
+         if (!resolvedTeam) return [];
+         const prefix = `${resolvedTeam.issuePrefix}-`;
+         list = list.filter((issue) => issue.identifier.startsWith(prefix));
+      }
+      return list;
+   }, [categories, issues, resolvedTeam, routeTeamReference, workspace.configured]);
 
    const displayedIssues = useMemo(
       () => applyIssueFilters(scopedIssues, filters),
       [scopedIssues, filters]
    );
 
+   if (
+      workspace.configured &&
+      routeTeamReference &&
+      (teamsLoading || teamsWorkspaceSlug !== workspace.organization.slug)
+   ) {
+      return <div className="flex h-full items-center justify-center text-sm text-muted-foreground" role="status">Loading team issues…</div>;
+   }
+
+   if (workspace.configured && routeTeamReference && !resolvedTeam) {
+      return <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Team not found.</div>;
+   }
+
    if (isSearching) {
       return (
          <div className="w-full h-full">
             <div className="px-6 mb-6">
-               <SearchIssues />
+               <SearchIssues issues={scopedIssues} />
             </div>
          </div>
       );

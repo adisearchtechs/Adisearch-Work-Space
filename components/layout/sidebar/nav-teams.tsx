@@ -1,25 +1,25 @@
 'use client';
 
 import {
-   Archive,
-   Bell,
    Box,
    ChevronRight,
    CopyMinus,
    Home,
-   Layers,
    Link as LinkIcon,
    MoreHorizontal,
    Settings,
 } from 'lucide-react';
 import Link from 'next/link';
-
+import { useMemo } from 'react';
+import { RiDonutChartFill } from '@remixicon/react';
+import { useParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
-   DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -33,129 +33,182 @@ import {
    SidebarMenuSubButton,
    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { teams } from '@/mock-data/teams';
-import { RiDonutChartFill } from '@remixicon/react';
-import { useParams } from 'next/navigation';
+import { teams as demoTeams } from '@/mock-data/teams';
+import { useTeamsStore } from '@/store/teams-store';
 
 export function NavTeams() {
    const { orgId } = useParams<{ orgId: string }>();
-   const joinedTeams = teams.filter((t) => t.joined);
+   const workspace = useWorkspace();
+   const teams = useTeamsStore((state) => state.teams);
+   const joinedTeamIds = useTeamsStore((state) => state.joinedTeamIds);
+   const loading = useTeamsStore((state) => state.loading);
+   const workspaceSlug = useTeamsStore((state) => state.workspaceSlug);
+   const joinedSet = useMemo(() => new Set(joinedTeamIds), [joinedTeamIds]);
+   const configuredReady =
+      workspace.configured && workspaceSlug === workspace.organization.slug && !loading;
+   const runtimeTeams = configuredReady ? teams.filter((team) => joinedSet.has(team.id)) : [];
+   const joinedDemoTeams = demoTeams.filter((team) => team.joined);
+
+   if (workspace.configured) {
+      return (
+         <SidebarGroup>
+            <SidebarGroupLabel>Your teams</SidebarGroupLabel>
+            <SidebarMenu>
+               {!configuredReady ? (
+                  <SidebarMenuItem>
+                     <SidebarMenuButton disabled>
+                        <span className="text-sm text-muted-foreground">Loading teams…</span>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ) : runtimeTeams.length === 0 ? (
+                  <SidebarMenuItem>
+                     <SidebarMenuButton asChild>
+                        <Link href={`/${orgId}/settings/teams/new`}>
+                           <Settings className="size-4" />
+                           <span>Manage teams</span>
+                        </Link>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ) : (
+                  runtimeTeams.map((team, index) => (
+                     <Collapsible
+                        key={team.id}
+                        asChild
+                        defaultOpen={index === 0}
+                        className="group/collapsible"
+                     >
+                        <SidebarMenuItem>
+                           <CollapsibleTrigger asChild>
+                              <SidebarMenuButton tooltip={team.name}>
+                                 <span
+                                    className="size-3.5 shrink-0 rounded-sm border"
+                                    style={{ backgroundColor: team.color }}
+                                    aria-hidden="true"
+                                 />
+                                 <span className="text-sm truncate">{team.name}</span>
+                                 <span className="w-3 shrink-0">
+                                    <ChevronRight className="w-full transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                 </span>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                       <SidebarMenuAction asChild showOnHover>
+                                          <div>
+                                             <MoreHorizontal />
+                                             <span className="sr-only">More</span>
+                                          </div>
+                                       </SidebarMenuAction>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-48 rounded-lg" side="right" align="start">
+                                       <DropdownMenuItem asChild>
+                                          <Link href={`/${orgId}/settings/teams/${team.id}`}>
+                                             <Settings className="size-4" />
+                                             <span>Team settings</span>
+                                          </Link>
+                                       </DropdownMenuItem>
+                                       <DropdownMenuItem
+                                          onSelect={() => {
+                                             const url = `${window.location.origin}/${orgId}/team/${team.key}/overview`;
+                                             void navigator.clipboard
+                                                .writeText(url)
+                                                .then(() => toast.success('Team link copied.'))
+                                                .catch(() => toast.error('Unable to copy team link.'));
+                                          }}
+                                       >
+                                          <LinkIcon className="size-4" />
+                                          <span>Copy link</span>
+                                       </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                 </DropdownMenu>
+                              </SidebarMenuButton>
+                           </CollapsibleTrigger>
+                           <CollapsibleContent>
+                              <SidebarMenuSub>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/${orgId}/team/${team.key}/overview`}>
+                                          <Home size={14} />
+                                          <span>Home</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/${orgId}/team/${team.key}/all`}>
+                                          <CopyMinus size={14} />
+                                          <span>Issues</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/${orgId}/team/${team.key}/cycles`}>
+                                          <RiDonutChartFill size={14} />
+                                          <span>Cycles</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/${orgId}/team/${team.key}/projects`}>
+                                          <Box size={14} />
+                                          <span>Projects</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
+                              </SidebarMenuSub>
+                           </CollapsibleContent>
+                        </SidebarMenuItem>
+                     </Collapsible>
+                  ))
+               )}
+            </SidebarMenu>
+         </SidebarGroup>
+      );
+   }
+
    return (
       <SidebarGroup>
          <SidebarGroupLabel>Your teams</SidebarGroupLabel>
          <SidebarMenu>
-            {joinedTeams.map((item, index) => (
+            {joinedDemoTeams.map((team, index) => (
                <Collapsible
-                  key={item.name}
+                  key={team.name}
                   asChild
                   defaultOpen={index === 0}
                   className="group/collapsible"
                >
                   <SidebarMenuItem>
                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={item.name}>
+                        <SidebarMenuButton tooltip={team.name}>
                            <div className="inline-flex size-6 bg-muted/50 items-center justify-center rounded shrink-0">
-                              <div className="text-sm">{item.icon}</div>
+                              <div className="text-sm">{team.icon}</div>
                            </div>
-                           <span className="text-sm">{item.name}</span>
+                           <span className="text-sm">{team.name}</span>
                            <span className="w-3 shrink-0">
                               <ChevronRight className="w-full transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                            </span>
-                           <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                 <SidebarMenuAction asChild showOnHover>
-                                    <div>
-                                       <MoreHorizontal />
-                                       <span className="sr-only">More</span>
-                                    </div>
-                                 </SidebarMenuAction>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                 className="w-48 rounded-lg"
-                                 side="right"
-                                 align="start"
-                              >
-                                 <DropdownMenuItem>
-                                    <Settings className="size-4" />
-                                    <span>Team settings</span>
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem>
-                                    <LinkIcon className="size-4" />
-                                    <span>Copy link</span>
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem>
-                                    <Archive className="size-4" />
-                                    <span>Open archive</span>
-                                 </DropdownMenuItem>
-                                 <DropdownMenuSeparator />
-                                 <DropdownMenuItem>
-                                    <Bell className="size-4" />
-                                    <span>Subscribe</span>
-                                 </DropdownMenuItem>
-                                 <DropdownMenuSeparator />
-                                 <DropdownMenuItem>
-                                    <span>Leave team...</span>
-                                 </DropdownMenuItem>
-                              </DropdownMenuContent>
-                           </DropdownMenu>
                         </SidebarMenuButton>
                      </CollapsibleTrigger>
                      <CollapsibleContent>
                         <SidebarMenuSub>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href={`/${orgId}/team/${item.id}/overview`}>
-                                    <Home size={14} />
-                                    <span>Home</span>
-                                 </Link>
+                                 <Link href={`/${orgId}/team/${team.id}/overview`}><Home size={14} /><span>Home</span></Link>
                               </SidebarMenuSubButton>
                            </SidebarMenuSubItem>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href={`/${orgId}/team/${item.id}/all`}>
-                                    <CopyMinus size={14} />
-                                    <span>Issues</span>
-                                 </Link>
+                                 <Link href={`/${orgId}/team/${team.id}/all`}><CopyMinus size={14} /><span>Issues</span></Link>
                               </SidebarMenuSubButton>
                            </SidebarMenuSubItem>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href={`/${orgId}/team/${item.id}/cycles`}>
-                                    <RiDonutChartFill size={14} />
-                                    <span>Cycles</span>
-                                 </Link>
-                              </SidebarMenuSubButton>
-                              <SidebarMenuSub className="mr-0 pr-0">
-                                 <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton asChild>
-                                       <Link href={`/${orgId}/team/${item.id}/cycle/active`}>
-                                          <span>Current</span>
-                                       </Link>
-                                    </SidebarMenuSubButton>
-                                 </SidebarMenuSubItem>
-                                 <SidebarMenuSubItem>
-                                    <SidebarMenuSubButton asChild>
-                                       <Link href={`/${orgId}/team/${item.id}/cycle/upcoming`}>
-                                          <span>Upcoming</span>
-                                       </Link>
-                                    </SidebarMenuSubButton>
-                                 </SidebarMenuSubItem>
-                              </SidebarMenuSub>
-                           </SidebarMenuSubItem>
-                           <SidebarMenuSubItem>
-                              <SidebarMenuSubButton asChild>
-                                 <Link href={`/${orgId}/team/${item.id}/projects`}>
-                                    <Box size={14} />
-                                    <span>Projects</span>
-                                 </Link>
+                                 <Link href={`/${orgId}/team/${team.id}/cycles`}><RiDonutChartFill size={14} /><span>Cycles</span></Link>
                               </SidebarMenuSubButton>
                            </SidebarMenuSubItem>
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
-                                 <Link href={`/${orgId}/team/${item.id}/views`}>
-                                    <Layers size={14} />
-                                    <span>Views</span>
-                                 </Link>
+                                 <Link href={`/${orgId}/team/${team.id}/projects`}><Box size={14} /><span>Projects</span></Link>
                               </SidebarMenuSubButton>
                            </SidebarMenuSubItem>
                         </SidebarMenuSub>

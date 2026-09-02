@@ -19,7 +19,10 @@ export async function GET(request: NextRequest) {
          .select('id, name, key, issue_prefix, color, created_at, updated_at')
          .eq('organization_id', context.organizationId)
          .order('name'),
-      context.supabase.from('team_members').select('team_id').eq('organization_id', context.organizationId),
+      context.supabase
+         .from('team_members')
+         .select('team_id, user_id')
+         .eq('organization_id', context.organizationId),
       context.supabase.from('issues').select('team_id').eq('organization_id', context.organizationId),
       context.supabase.from('projects').select('team_id').eq('organization_id', context.organizationId),
       context.supabase.from('cycles').select('team_id').eq('organization_id', context.organizationId),
@@ -42,6 +45,9 @@ export async function GET(request: NextRequest) {
    const issueCounts = countByTeam(issuesResult.data);
    const projectCounts = countByTeam(projectsResult.data);
    const cycleCounts = countByTeam(cyclesResult.data);
+   const joinedTeamIds = (membersResult.data ?? [])
+      .filter((member) => member.user_id === context.userId)
+      .map((member) => member.team_id);
 
    const teams: TeamDto[] = (teamsResult.data ?? []).map((team) => ({
       id: team.id,
@@ -60,7 +66,11 @@ export async function GET(request: NextRequest) {
    }));
 
    return NextResponse.json(
-      { teams, canAdmin: context.role === 'owner' || context.role === 'admin' },
+      {
+         teams,
+         joinedTeamIds,
+         canAdmin: context.role === 'owner' || context.role === 'admin',
+      },
       { headers: { 'Cache-Control': 'private, no-store' } }
    );
 }
