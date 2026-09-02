@@ -3,6 +3,7 @@ import { WorkspaceProvider } from '@/components/providers/workspace-provider';
 import { SaasTeamsProvider } from '@/components/providers/saas-teams-provider';
 import { SaasSavedViewsProvider } from '@/components/providers/saas-saved-views-provider';
 import { SaasNotificationsProvider } from '@/components/providers/saas-notifications-provider';
+import { SaasIssueSubscriptionsProvider } from '@/components/providers/saas-issue-subscriptions-provider';
 import { SaasIssuesProvider } from '@/components/providers/saas-issues-provider';
 import { SaasProjectsProvider } from '@/components/providers/saas-projects-provider';
 import { getWorkspaceSession } from '@/lib/workspace';
@@ -27,7 +28,9 @@ export default async function OrganizationLayout({
             <SaasProjectsProvider>
                <SaasIssuesProvider>
                   <SaasSavedViewsProvider>
-                     <SaasNotificationsProvider>{children}</SaasNotificationsProvider>
+                     <SaasIssueSubscriptionsProvider>
+                        <SaasNotificationsProvider>{children}</SaasNotificationsProvider>
+                     </SaasIssueSubscriptionsProvider>
                   </SaasSavedViewsProvider>
                </SaasIssuesProvider>
             </SaasProjectsProvider>

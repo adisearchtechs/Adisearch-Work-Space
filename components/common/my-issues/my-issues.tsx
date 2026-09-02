@@ -5,9 +5,11 @@ import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
 import { InsightsPanel } from '@/components/common/issues/insights-panel';
 import { SearchIssues } from '@/components/common/issues/search-issues';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { BreakdownPanel } from './breakdown-panel';
 import { displayOrderedStatus } from '@/mock-data/status';
 import { useFilterStore } from '@/store/filter-store';
+import { useIssueSubscriptionsStore } from '@/store/issue-subscriptions-store';
 import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
@@ -21,17 +23,37 @@ import { scopeMyIssues, useMyIssuesTab } from './use-my-issues';
  * current tab (Assigned / Created / Subscribed / Activity).
  */
 export default function MyIssues() {
+   const workspace = useWorkspace();
    const [tab] = useMyIssuesTab();
    const { isSearchOpen, searchQuery } = useSearchStore();
    const { viewType } = useViewStore();
    const { filters } = useFilterStore();
    const { issues } = useIssuesStore();
+   const subscriptionIds = useIssueSubscriptionsStore((state) => state.issueIds);
+   const subscriptionsLoaded = useIssueSubscriptionsStore((state) => state.loaded);
    const { openPanel } = useRightPanelStore();
 
    const isSearching = isSearchOpen && searchQuery.trim() !== '';
    const isViewTypeGrid = viewType === 'grid';
+   const subscriptionSet = useMemo(() => new Set(subscriptionIds), [subscriptionIds]);
 
-   const scopedIssues = useMemo(() => scopeMyIssues(issues, tab), [issues, tab]);
+   const scopedIssues = useMemo(() => {
+      if (workspace.configured && !subscriptionsLoaded && (tab === 'subscribed' || tab === 'activity')) {
+         return [];
+      }
+
+      return scopeMyIssues(
+         issues,
+         tab,
+         workspace.configured
+            ? {
+                 configured: true,
+                 userId: workspace.user.id,
+                 subscriptionIds: subscriptionSet,
+              }
+            : { configured: false }
+      );
+   }, [issues, subscriptionSet, subscriptionsLoaded, tab, workspace.configured, workspace.user.id]);
 
    const displayedIssues = useMemo(
       () => applyIssueFilters(scopedIssues, filters),

@@ -11,7 +11,9 @@ type IssueRow = {
    description: string;
    status_id: string;
    priority: IssueDto['priorityId'];
+   creator_id: string;
    created_at: string;
+   updated_at: string;
    cycle_id: string | null;
    rank: string;
    due_date: string | null;
@@ -47,7 +49,9 @@ function toDto(
       description: row.description,
       statusId: statusById.get(row.status_id) ?? 'to-do',
       priorityId: row.priority,
+      creatorId: row.creator_id,
       createdAt: row.created_at,
+      updatedAt: row.updated_at,
       cycleId: row.cycle_id ?? '',
       rank: row.rank,
       dueDate: row.due_date ?? undefined,
@@ -91,7 +95,7 @@ export async function GET(request: NextRequest) {
       supabase
          .from('issues')
          .select(
-            'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
+            'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
          )
          .eq('organization_id', organization.id)
          .order('rank', { ascending: false })
@@ -103,7 +107,9 @@ export async function GET(request: NextRequest) {
    }
 
    const issueRows = (issues ?? []) as IssueRow[];
-   const assigneeIds = [...new Set(issueRows.flatMap((issue) => (issue.assignee_id ? [issue.assignee_id] : [])))];
+   const assigneeIds = [
+      ...new Set(issueRows.flatMap((issue) => (issue.assignee_id ? [issue.assignee_id] : []))),
+   ];
    const profilesResult = assigneeIds.length
       ? await supabase.from('profiles').select('id, display_name, avatar_url').in('id', assigneeIds)
       : { data: [], error: null };
@@ -116,7 +122,9 @@ export async function GET(request: NextRequest) {
    const assigneeById = new Map(
       ((profilesResult.data ?? []) as AssigneeProfile[]).map((profile) => [profile.id, profile])
    );
-   const result = issueRows.map((issue) => toDto(issue, statusById, prefixByTeamId, assigneeById));
+   const result = issueRows.map((issue) =>
+      toDto(issue, statusById, prefixByTeamId, assigneeById)
+   );
 
    return NextResponse.json(
       { issues: result },
@@ -200,7 +208,7 @@ export async function POST(request: NextRequest) {
          project_id: parsed.data.projectId ?? null,
       })
       .select(
-         'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
+         'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
       )
       .single();
 
