@@ -4,6 +4,7 @@ import {
    Box,
    ChevronRight,
    CopyMinus,
+   FileText,
    Home,
    Link as LinkIcon,
    MoreHorizontal,
@@ -155,6 +156,14 @@ export function NavTeams() {
                                        </Link>
                                     </SidebarMenuSubButton>
                                  </SidebarMenuSubItem>
+                                 <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton asChild>
+                                       <Link href={`/${orgId}/team/${team.key}/documents`}>
+                                          <FileText size={14} />
+                                          <span>Documents</span>
+                                       </Link>
+                                    </SidebarMenuSubButton>
+                                 </SidebarMenuSubItem>
                               </SidebarMenuSub>
                            </CollapsibleContent>
                         </SidebarMenuItem>
@@ -209,6 +218,11 @@ export function NavTeams() {
                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild>
                                  <Link href={`/${orgId}/team/${team.id}/projects`}><Box size={14} /><span>Projects</span></Link>
+                              </SidebarMenuSubButton>
+                           </SidebarMenuSubItem>
+                           <SidebarMenuSubItem>
+                              <SidebarMenuSubButton asChild>
+                                 <Link href={`/${orgId}/team/${team.id}/documents`}><FileText size={14} /><span>Documents</span></Link>
                               </SidebarMenuSubButton>
                            </SidebarMenuSubItem>
                         </SidebarMenuSub>

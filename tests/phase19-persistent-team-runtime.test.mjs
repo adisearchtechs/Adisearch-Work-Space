@@ -42,14 +42,23 @@ test('configured sidebar and headers use persisted teams without mock runtime sh
    assert.doesNotMatch(cycleHeader, /\/api\/teams\/.*\/cycles\?organization=/);
 });
 
-test('configured team overview uses real metadata and excludes mock resources', async () => {
+test('configured team overview uses real tenant metadata without mock resource leakage', async () => {
    const overview = await readSource('components/common/teams/team-overview.tsx');
 
-   assert.match(overview, /\/api\/teams\/\$\{encodeURIComponent\(resolvedTeam\.id\)\}\?organization=/);
+   assert.match(overview, /resolveTeamReference\(teams, teamId\)/);
+   assert.match(
+      overview,
+      /const query = `\?organization=\$\{encodeURIComponent\(workspace\.organization\.slug\)\}`/
+   );
+   assert.match(
+      overview,
+      /fetch\(`\/api\/teams\/\$\{encodeURIComponent\(resolvedTeam\.id\)\}\$\{query\}`/
+   );
    assert.match(overview, /resolvedTeam\.usage\.issues/);
    assert.match(overview, /team\.members\.slice\(0, 8\)/);
    assert.match(overview, /settings\/teams\/\$\{resolvedTeam\.id\}/);
    assert.doesNotMatch(overview, /documentFolders/);
+   assert.match(overview, /if \(!workspace\.configured\)/);
    assert.match(overview, /Demo team overview/);
 });
 

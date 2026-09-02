@@ -43,6 +43,10 @@ export type Database = {
             { team_id: string; organization_id: string; user_id: string; created_at: string },
             { team_id: string; organization_id: string; user_id: string; created_at?: string }
          >;
+         team_documents: Table<
+            Timestamped & { id: string; organization_id: string; team_id: string; created_by: string | null; title: string; body: string; pinned: boolean },
+            { id?: string; organization_id: string; team_id: string; created_by?: string | null; title: string; body?: string; pinned?: boolean; created_at?: string; updated_at?: string }
+         >;
          statuses: Table<
             Timestamped & { id: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position: number },
             { id?: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position?: number; created_at?: string; updated_at?: string }

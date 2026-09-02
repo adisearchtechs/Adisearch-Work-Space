@@ -16,6 +16,7 @@ const PERSISTENT_TEAM_TABS = [
    { label: 'Issues', segment: 'all' },
    { label: 'Cycles', segment: 'cycles' },
    { label: 'Projects', segment: 'projects' },
+   { label: 'Documents', segment: 'documents' },
 ];
 
 export default function HeaderTabs() {
