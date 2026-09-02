@@ -59,7 +59,7 @@ test('configured issue details use persisted descriptions and comments without m
    assert.match(description, /workspace\.user\.role !== 'guest'/);
    assert.match(activity, /\/api\/issue-comments\?organization=/);
    assert.match(activity, /method: 'POST'/);
-   assert.match(activity, /No comments yet/);
+   assert.match(activity, /No activity yet/);
    assert.match(properties, /detail: IssueDetail \| null/);
    assert.match(properties, /detail\?\.blockedByIds/);
    assert.match(properties, /detail\?\.prLinks/);

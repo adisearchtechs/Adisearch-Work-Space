@@ -1,13 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { requireSupabaseConfig } from '@/lib/supabase/env';
-import type { DatabaseWithIssueRelations } from '@/lib/supabase/database-with-issue-relations';
+import type { DatabaseWithIssueAuditActivity } from '@/lib/supabase/database-with-issue-audit-activity';
 
 export async function createClient() {
    const cookieStore = await cookies();
    const { url, publishableKey } = requireSupabaseConfig();
 
-   return createServerClient<DatabaseWithIssueRelations>(url, publishableKey, {
+   return createServerClient<DatabaseWithIssueAuditActivity>(url, publishableKey, {
       cookies: {
          getAll() {
             return cookieStore.getAll();
