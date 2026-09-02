@@ -1,6 +1,7 @@
 'use client';
 
 import { InlineText } from '@/components/common/issues/details/content-blocks';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +17,7 @@ import { useAgentChatStore } from '@/store/agent-chat-store';
 import { ArrowUp, Blocks, Bot, ChevronDown, Paperclip, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-/** Streams the canned reply into the assistant message, word by word. */
+/** Streams the deterministic placeholder reply into the assistant message, word by word. */
 function useStreamReply() {
    const { appendToMessage, finishMessage } = useAgentChatStore();
    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -148,19 +149,25 @@ function ChatComposer({
    );
 }
 
-/**
- * Functional mock of the Linear Agent page: ask anything, get a canned
- * (deterministic) reply streamed word by word. Conversations live in a
- * client store and can be revisited from the header dropdown.
- */
 export default function AgentChat() {
-   const { chats, activeChatId, sendMessage } = useAgentChatStore();
+   const workspace = useWorkspace();
+   const {
+      chats,
+      activeChatId,
+      sendMessage,
+      connectPersistence,
+      persistenceError,
+   } = useAgentChatStore();
    const stream = useStreamReply();
    const [bannerDismissed, setBannerDismissed] = useState(false);
    const [examplesDismissed, setExamplesDismissed] = useState(false);
    const scrollRef = useRef<HTMLDivElement>(null);
 
    const activeChat = chats.find((chat) => chat.id === activeChatId);
+
+   useEffect(() => {
+      connectPersistence(workspace.configured ? workspace.organization.slug : null);
+   }, [connectPersistence, workspace.configured, workspace.organization.slug]);
 
    useEffect(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -171,7 +178,12 @@ export default function AgentChat() {
       stream(chatId, assistantMessageId, reply);
    };
 
-   /* ------------------------------- Hero ------------------------------- */
+   const syncWarning = persistenceError ? (
+      <p className="mt-2 text-xs text-destructive" role="status">
+         {persistenceError} New messages may not survive a reload.
+      </p>
+   ) : null;
+
    if (!activeChat) {
       return (
          <div className="w-full h-full flex flex-col items-center overflow-y-auto">
@@ -195,6 +207,7 @@ export default function AgentChat() {
                   <Bot className="size-24" strokeWidth={1} />
                </div>
                <ChatComposer onSend={handleSend} autoFocus large />
+               {syncWarning}
 
                {!examplesDismissed && (
                   <div className="mt-6">
@@ -233,7 +246,6 @@ export default function AgentChat() {
       );
    }
 
-   /* --------------------------- Conversation --------------------------- */
    return (
       <div className="w-full h-full flex flex-col overflow-hidden">
          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
@@ -270,6 +282,7 @@ export default function AgentChat() {
          <div className="shrink-0 border-t bg-container">
             <div className="max-w-2xl mx-auto px-6 py-4">
                <ChatComposer onSend={handleSend} />
+               {syncWarning}
             </div>
          </div>
       </div>
