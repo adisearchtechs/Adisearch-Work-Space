@@ -67,12 +67,10 @@ test('configured issue details use persisted descriptions and comments without m
 
 test('Phase 28 extends the database chain and documents intentionally deferred issue activity', async () => {
    const database = await readSource('lib/supabase/database-with-issue-comments.ts');
-   const serverClient = await readSource('lib/supabase/server.ts');
    const scope = await readSource('PHASE28_SCOPE.md');
 
    assert.match(database, /DatabaseWithAgent/);
    assert.match(database, /issue_comments: IssueCommentsTable/);
-   assert.match(serverClient, /DatabaseWithIssueComments/);
    assert.match(scope, /audit-event generation/i);
    assert.match(scope, /persistent sub-issue relationships/i);
    assert.match(scope, /Do not merge/i);
