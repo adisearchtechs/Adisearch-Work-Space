@@ -6,15 +6,17 @@ import {
    useMyIssuesTab,
 } from '@/components/common/my-issues/use-my-issues';
 import { IssueFilterTrigger } from '@/components/common/issues/issue-filter-trigger';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { useIssueSubscriptionsStore } from '@/store/issue-subscriptions-store';
 import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
 import { BarChart3, PanelRight, SearchIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { DisplayOptions } from '../display-options';
 import Notifications from '../issues/notifications';
 
@@ -90,11 +92,31 @@ function HeaderNav() {
 }
 
 function HeaderOptions() {
+   const workspace = useWorkspace();
    const [tab, setTab] = useMyIssuesTab();
    const { issues } = useIssuesStore();
+   const subscriptionIds = useIssueSubscriptionsStore((state) => state.issueIds);
+   const subscriptionsLoaded = useIssueSubscriptionsStore((state) => state.loaded);
    const { openPanel, togglePanel } = useRightPanelStore();
+   const subscriptionSet = useMemo(() => new Set(subscriptionIds), [subscriptionIds]);
 
-   const count = scopeMyIssues(issues, tab).length;
+   const count = useMemo(() => {
+      if (workspace.configured && !subscriptionsLoaded && (tab === 'subscribed' || tab === 'activity')) {
+         return 0;
+      }
+
+      return scopeMyIssues(
+         issues,
+         tab,
+         workspace.configured
+            ? {
+                 configured: true,
+                 userId: workspace.user.id,
+                 subscriptionIds: subscriptionSet,
+              }
+            : { configured: false }
+      ).length;
+   }, [issues, subscriptionSet, subscriptionsLoaded, tab, workspace.configured, workspace.user.id]);
 
    return (
       <div className="w-full flex justify-between items-center border-b py-1.5 px-6 h-10">
