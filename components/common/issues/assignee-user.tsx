@@ -1,4 +1,7 @@
 'use client';
+
+import { useEffect, useState } from 'react';
+import { CheckIcon, CircleUserRound, Send, UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
    DropdownMenu,
@@ -8,21 +11,83 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { statusUserColors, User, users } from '@/mock-data/users';
-import { CheckIcon, CircleUserRound, Send, UserIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useWorkspace } from '@/components/providers/workspace-provider';
+import type { WorkspaceMemberDto } from '@/lib/workspace-members/contracts';
+import { statusUserColors, type User, users } from '@/mock-data/users';
+import { useIssuesStore } from '@/store/issues-store';
+import { toast } from 'sonner';
 
 interface AssigneeUserProps {
    user: User | null;
+   issueId?: string;
 }
 
-export function AssigneeUser({ user }: AssigneeUserProps) {
+function memberToUser(member: WorkspaceMemberDto): User {
+   return {
+      id: member.id,
+      name: member.displayName,
+      avatarUrl:
+         member.avatarUrl ??
+         `https://api.dicebear.com/9.x/glass/svg?seed=${encodeURIComponent(member.id)}`,
+      email: '',
+      status: 'offline',
+      role: 'Member',
+      joinedDate: member.joinedAt,
+      teamIds: [],
+      timezone: 'UTC',
+   };
+}
+
+export function AssigneeUser({ user, issueId }: AssigneeUserProps) {
+   const workspace = useWorkspace();
+   const updateIssueAssignee = useIssuesStore((state) => state.updateIssueAssignee);
    const [open, setOpen] = useState(false);
    const [currentAssignee, setCurrentAssignee] = useState<User | null>(user);
+   const [members, setMembers] = useState<User[]>([]);
+   const [loadingMembers, setLoadingMembers] = useState(false);
 
    useEffect(() => {
       setCurrentAssignee(user);
    }, [user]);
+
+   useEffect(() => {
+      if (!open || !workspace.configured) return;
+      const controller = new AbortController();
+      setLoadingMembers(true);
+      void fetch(`/api/members?organization=${encodeURIComponent(workspace.organization.slug)}`, {
+         credentials: 'same-origin',
+         signal: controller.signal,
+         headers: { Accept: 'application/json' },
+      })
+         .then(async (response) => {
+            if (!response.ok) throw new Error(`Member load failed with ${response.status}.`);
+            return (await response.json()) as { members: WorkspaceMemberDto[] };
+         })
+         .then(({ members: workspaceMembers }) => {
+            if (controller.signal.aborted) return;
+            setMembers(workspaceMembers.map(memberToUser));
+         })
+         .catch((error: unknown) => {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            toast.error('Unable to load workspace members.');
+         })
+         .finally(() => {
+            if (!controller.signal.aborted) setLoadingMembers(false);
+         });
+      return () => controller.abort();
+   }, [open, workspace.configured, workspace.organization.slug]);
+
+   const chooseAssignee = (nextAssignee: User | null) => {
+      setCurrentAssignee(nextAssignee);
+      setOpen(false);
+      if (workspace.configured && issueId) {
+         updateIssueAssignee(issueId, nextAssignee);
+      }
+   };
+
+   const directory = workspace.configured
+      ? members
+      : users.filter((candidate) => candidate.teamIds.includes('CORE'));
 
    const renderAvatar = () => {
       if (currentAssignee) {
@@ -32,13 +97,12 @@ export function AssigneeUser({ user }: AssigneeUserProps) {
                <AvatarFallback>{currentAssignee.name[0]}</AvatarFallback>
             </Avatar>
          );
-      } else {
-         return (
-            <div className="size-6 flex items-center justify-center">
-               <CircleUserRound className="size-5 text-zinc-600" />
-            </div>
-         );
       }
+      return (
+         <div className="size-6 flex items-center justify-center">
+            <CircleUserRound className="size-5 text-zinc-600" />
+         </div>
+      );
    };
 
    return (
@@ -56,13 +120,12 @@ export function AssigneeUser({ user }: AssigneeUserProps) {
                )}
             </button>
          </DropdownMenuTrigger>
-         <DropdownMenuContent align="start" className="w-[206px]">
+         <DropdownMenuContent align="start" className="w-[240px]">
             <DropdownMenuLabel>Assign to...</DropdownMenuLabel>
             <DropdownMenuItem
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentAssignee(null);
-                  setOpen(false);
+               onClick={(event) => {
+                  event.stopPropagation();
+                  chooseAssignee(null);
                }}
             >
                <div className="flex items-center gap-2">
@@ -72,35 +135,42 @@ export function AssigneeUser({ user }: AssigneeUserProps) {
                {!currentAssignee && <CheckIcon className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {users
-               .filter((user) => user.teamIds.includes('CORE'))
-               .map((user) => (
+            {workspace.configured && loadingMembers ? (
+               <DropdownMenuItem disabled>Loading members…</DropdownMenuItem>
+            ) : directory.length === 0 ? (
+               <DropdownMenuItem disabled>No workspace members available</DropdownMenuItem>
+            ) : (
+               directory.map((candidate) => (
                   <DropdownMenuItem
-                     key={user.id}
-                     onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentAssignee(user);
-                        setOpen(false);
+                     key={candidate.id}
+                     onClick={(event) => {
+                        event.stopPropagation();
+                        chooseAssignee(candidate);
                      }}
                   >
-                     <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                           <AvatarImage src={user.avatarUrl} alt={user.name} />
-                           <AvatarFallback>{user.name[0]}</AvatarFallback>
+                     <div className="flex min-w-0 items-center gap-2">
+                        <Avatar className="h-5 w-5 shrink-0">
+                           <AvatarImage src={candidate.avatarUrl} alt={candidate.name} />
+                           <AvatarFallback>{candidate.name[0]}</AvatarFallback>
                         </Avatar>
-                        <span>{user.name}</span>
+                        <span className="truncate">{candidate.name}</span>
                      </div>
-                     {currentAssignee?.id === user.id && <CheckIcon className="ml-auto h-4 w-4" />}
+                     {currentAssignee?.id === candidate.id && <CheckIcon className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
-               ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>New user</DropdownMenuLabel>
-            <DropdownMenuItem>
-               <div className="flex items-center gap-2">
-                  <Send className="h-4 w-4" />
-                  <span>Invite and assign...</span>
-               </div>
-            </DropdownMenuItem>
+               ))
+            )}
+            {!workspace.configured && (
+               <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>New user</DropdownMenuLabel>
+                  <DropdownMenuItem>
+                     <div className="flex items-center gap-2">
+                        <Send className="h-4 w-4" />
+                        <span>Invite and assign...</span>
+                     </div>
+                  </DropdownMenuItem>
+               </>
+            )}
          </DropdownMenuContent>
       </DropdownMenu>
    );

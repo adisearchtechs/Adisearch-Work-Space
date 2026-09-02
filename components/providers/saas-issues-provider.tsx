@@ -20,6 +20,7 @@ function supportedChanges(changes: Partial<Issue>) {
       ...('priority' in changes && changes.priority && { priority: changes.priority.id }),
       ...('dueDate' in changes && { dueDate: changes.dueDate ?? null }),
       ...('project' in changes && { projectId: changes.project?.id ?? null }),
+      ...('assignee' in changes && { assigneeId: changes.assignee?.id ?? null }),
    };
 }
 
@@ -50,7 +51,6 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
       const projectById = new Map(
          useProjectsStore.getState().projects.map((project) => [project.id, project])
       );
-      // Never render the previous tenant's in-memory issues while the next tenant loads.
       store.replaceIssues([]);
       store.setPersistenceAdapter({
          async update(id, changes) {

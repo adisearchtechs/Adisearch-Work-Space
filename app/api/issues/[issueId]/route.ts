@@ -47,7 +47,7 @@ export async function PATCH(
 
    const { data: existing, error: existingError } = await supabase
       .from('issues')
-      .select('id, organization_id')
+      .select('id, organization_id, assignee_id')
       .eq('id', issueId)
       .maybeSingle();
    if (existingError) {
@@ -83,6 +83,21 @@ export async function PATCH(
       if (!project) return NextResponse.json({ error: 'Invalid project.' }, { status: 400 });
    }
 
+   if (parsed.data.assigneeId) {
+      const { data: assigneeMembership, error: assigneeError } = await supabase
+         .from('organization_members')
+         .select('user_id')
+         .eq('organization_id', existing.organization_id)
+         .eq('user_id', parsed.data.assigneeId)
+         .maybeSingle();
+      if (assigneeError) {
+         return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+      }
+      if (!assigneeMembership) {
+         return NextResponse.json({ error: 'Invalid assignee.' }, { status: 400 });
+      }
+   }
+
    const changes = {
       ...(parsed.data.title !== undefined && { title: parsed.data.title }),
       ...(parsed.data.description !== undefined && { description: parsed.data.description }),
@@ -90,6 +105,7 @@ export async function PATCH(
       ...(parsed.data.dueDate !== undefined && { due_date: parsed.data.dueDate }),
       ...(statusId !== undefined && { status_id: statusId }),
       ...(parsed.data.projectId !== undefined && { project_id: parsed.data.projectId }),
+      ...(parsed.data.assigneeId !== undefined && { assignee_id: parsed.data.assigneeId }),
    };
    const { data: updated, error } = await supabase
       .from('issues')

@@ -7,9 +7,11 @@ import {
    SidebarMenuButton,
    SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { forYouReviews } from '@/mock-data/reviews';
 import { inboxItems } from '@/mock-data/side-bar-nav';
 import { useNotificationsStore } from '@/store/notifications-store';
+import { usePersistentNotificationsStore } from '@/store/persistent-notifications-store';
 import {
    isSidebarItemVisible,
    resolveOrder,
@@ -21,23 +23,39 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 const ITEM_KEYS: Record<string, SidebarItemKey> = {
-   'Inbox': 'inbox',
-   'Reviews': 'reviews',
+   Inbox: 'inbox',
+   Reviews: 'reviews',
    'My issues': 'my-issues',
-   'Agent': 'agent',
+   Agent: 'agent',
 };
 
 export function NavInbox() {
    const { orgId } = useParams<{ orgId: string }>();
+   const workspace = useWorkspace();
    const { visibility, badgeStyle, order } = useSidebarPrefsStore();
    const { getUnreadCount } = useNotificationsStore();
+   const persistentNotifications = usePersistentNotificationsStore((state) => state.notifications);
+   const persistentLoading = usePersistentNotificationsStore((state) => state.loading);
+   const persistentWorkspaceSlug = usePersistentNotificationsStore((state) => state.workspaceSlug);
    const [mounted, setMounted] = useState(false);
    useEffect(() => setMounted(true), []);
 
-   const unread = mounted ? getUnreadCount() : 0;
+   const persistentReady =
+      persistentWorkspaceSlug === workspace.organization.slug && !persistentLoading;
+   const persistentUnread = persistentReady
+      ? persistentNotifications.filter((notification) => !notification.readAt).length
+      : 0;
+   const unread = mounted
+      ? workspace.configured
+         ? persistentUnread
+         : getUnreadCount()
+      : 0;
 
    const orderedItems = mounted
-      ? resolveOrder(order.personal, inboxItems.map((item) => ITEM_KEYS[item.name]).filter(Boolean))
+      ? resolveOrder(
+           order.personal,
+           inboxItems.map((item) => ITEM_KEYS[item.name]).filter(Boolean)
+        )
            .map((key) => inboxItems.find((item) => ITEM_KEYS[item.name] === key))
            .filter((item): item is (typeof inboxItems)[number] => Boolean(item))
       : inboxItems;
