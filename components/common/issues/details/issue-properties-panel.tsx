@@ -1,22 +1,23 @@
 'use client';
 
 import { CyclePlayIcon } from '@/components/common/cycles/cycle-line';
+import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
 import { getCycleById } from '@/mock-data/cycles';
 import { IssueDetail } from '@/mock-data/issue-details';
 import { Issue } from '@/mock-data/issues';
+import { useIssuesStore } from '@/store/issues-store';
 import { Ban, GitPullRequestArrow, Plus } from 'lucide-react';
 import { AssigneeUser } from '../assignee-user';
 import { LabelBadge } from '../label-badge';
 import { PrioritySelector } from '../priority-selector';
 import { StatusSelector } from '../status-selector';
 import { IssueRefRow } from './content-blocks';
-import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
-import { useIssuesStore } from '@/store/issues-store';
 
 interface IssuePropertiesPanelProps {
    issue: Issue;
-   detail: IssueDetail;
+   detail: IssueDetail | null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -29,7 +30,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProps) {
-   const cycle = issue.cycleId ? getCycleById(issue.cycleId) : undefined;
+   const workspace = useWorkspace();
+   const cycle = detail && issue.cycleId ? getCycleById(issue.cycleId) : undefined;
    const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
 
    return (
@@ -60,9 +62,11 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
          <Section title="Labels">
             <div className="flex items-center flex-wrap gap-1.5">
                <LabelBadge label={issue.labels} />
-               <Button variant="ghost" size="icon" className="size-6 rounded-full border">
-                  <Plus className="size-3.5" />
-               </Button>
+               {!workspace.configured && (
+                  <Button variant="ghost" size="icon" className="size-6 rounded-full border">
+                     <Plus className="size-3.5" />
+                  </Button>
+               )}
             </div>
          </Section>
 
@@ -71,7 +75,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
                project={issue.project}
                onChange={(project) => updateIssueProject(issue.id, project)}
             />
-            {issue.project && detail.milestone && (
+            {issue.project && detail?.milestone && (
                <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
                   <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
                   <span className="truncate">{detail.milestone}</span>
@@ -79,7 +83,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             )}
          </Section>
 
-         {detail.blockedByIds && detail.blockedByIds.length > 0 && (
+         {detail?.blockedByIds && detail.blockedByIds.length > 0 && (
             <Section title="Blocked by">
                <div className="flex flex-col">
                   {detail.blockedByIds.map((identifier) => (
@@ -92,7 +96,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             </Section>
          )}
 
-         {detail.relatedIds && detail.relatedIds.length > 0 && (
+         {detail?.relatedIds && detail.relatedIds.length > 0 && (
             <Section title="Related">
                <div className="flex flex-col">
                   {detail.relatedIds.map((identifier) => (
@@ -102,7 +106,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             </Section>
          )}
 
-         {detail.prLinks && detail.prLinks.length > 0 && (
+         {detail?.prLinks && detail.prLinks.length > 0 && (
             <Section title="Diffs">
                <div className="flex flex-col gap-1">
                   {detail.prLinks.map((pr) => (

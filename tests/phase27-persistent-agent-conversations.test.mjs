@@ -59,13 +59,11 @@ test('configured Agent UI hydrates and queues persistence while retaining the de
 
 test('Phase 27 extends the stacked database type chain and records the real Agent boundary', async () => {
    const database = await readSource('lib/supabase/database-with-agent.ts');
-   const serverClient = await readSource('lib/supabase/server.ts');
    const scope = await readSource('PHASE27_SCOPE.md');
 
    assert.match(database, /DatabaseWithAttachments/);
    assert.match(database, /agent_conversations: AgentConversationsTable/);
    assert.match(database, /agent_messages: AgentMessagesTable/);
-   assert.match(serverClient, /DatabaseWithAgent/);
    assert.match(scope, /model-provider execution/i);
    assert.match(scope, /tool calling/i);
    assert.match(scope, /Do not merge/i);

@@ -63,7 +63,10 @@ test('configured issue, project and initiative surfaces use the shared attachmen
    assert.match(component, /Download/);
    assert.match(component, /Delete/);
    assert.match(issue, /<EntityAttachments entityType="issue" entityId=\{issue\.id\} compact \/>/);
-   assert.match(issue, /!workspace\.configured && <button[^>]*aria-label="Attach file"/s);
+   assert.match(
+      issue,
+      /\{!workspace\.configured && \(\s*<button[^>]*aria-label="Attach file"/s
+   );
    assert.match(project, /<EntityAttachments entityType="project" entityId=\{project\.id\} \/>/);
    assert.match(initiative, /<EntityAttachments entityType="initiative" entityId=\{initiativeId\} \/>/);
 });
