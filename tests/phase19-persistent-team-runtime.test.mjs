@@ -63,7 +63,7 @@ test('configured team issue and project routes resolve and scope the persisted t
    assert.match(allIssues, /const prefix = `\$\{resolvedTeam\.issuePrefix\}-`/);
    assert.match(allIssues, /issue\.identifier\.startsWith\(prefix\)/);
    assert.match(allIssues, /<SearchIssues issues=\{scopedIssues\} \/>/);
-   assert.match(searchIssues, /issues \? issues\.filter/);
+   assert.match(searchIssues, /const results = issues[\s\S]*\? issues\.filter/);
    assert.match(teamProjects, /resolveTeamReference\(teams, teamId\)/);
    assert.match(teamProjects, /<Projects teamId=\{team\.key\} \/>/);
    assert.match(projectsHeader, /resolveTeamReference/);
