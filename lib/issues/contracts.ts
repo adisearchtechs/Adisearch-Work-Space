@@ -39,6 +39,7 @@ export const updateIssueSchema = z
       priority: issuePrioritySchema.optional(),
       dueDate: z.string().date().nullable().optional(),
       projectId: z.string().uuid().nullable().optional(),
+      assigneeId: z.string().uuid().nullable().optional(),
    })
    .strict()
    .refine((value) => Object.keys(value).length > 0, 'No supported changes supplied.');
@@ -55,4 +56,9 @@ export type IssueDto = {
    rank: string;
    dueDate?: string;
    projectId: string | null;
+   assignee: {
+      id: string;
+      displayName: string;
+      avatarUrl: string | null;
+   } | null;
 };

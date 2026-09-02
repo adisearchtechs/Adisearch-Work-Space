@@ -51,6 +51,11 @@ export type Database = {
             Timestamped & { id: string; organization_id: string; team_id: string | null; owner_id: string; name: string; description: string; icon: string; view_type: 'issue' | 'project'; filter: Json },
             { id?: string; organization_id: string; team_id?: string | null; owner_id: string; name: string; description?: string; icon?: string; view_type: 'issue' | 'project'; filter?: Json; created_at?: string; updated_at?: string }
          >;
+         notifications: Table<
+            { id: string; organization_id: string; recipient_id: string; actor_id: string | null; issue_id: string | null; kind: 'assignment' | 'status'; content: string; read_at: string | null; created_at: string },
+            { id?: string; organization_id: string; recipient_id: string; actor_id?: string | null; issue_id?: string | null; kind: 'assignment' | 'status'; content?: string; read_at?: string | null; created_at?: string },
+            { read_at?: string | null }
+         >;
          statuses: Table<
             Timestamped & { id: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position: number },
             { id?: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position?: number; created_at?: string; updated_at?: string }

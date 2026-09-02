@@ -28,10 +28,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
    );
 }
 
-/**
- * Right sidebar of the issue page: editable properties (status, priority,
- * assignee), cycle, labels, project + milestone, relations and linked PRs.
- */
 export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProps) {
    const cycle = issue.cycleId ? getCycleById(issue.cycleId) : undefined;
    const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
@@ -49,7 +45,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
                   <span className="text-sm">{issue.priority.name}</span>
                </div>
                <div className="flex items-center gap-2 mt-0.5">
-                  <AssigneeUser user={issue.assignee} />
+                  <AssigneeUser user={issue.assignee} issueId={issue.id} />
                   <span className="text-sm">{issue.assignee ? issue.assignee.name : 'Assign'}</span>
                </div>
                {cycle && (

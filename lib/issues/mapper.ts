@@ -18,7 +18,21 @@ export function issueDtoToIssue(dto: IssueDto, projectById: ReadonlyMap<string, 
       priority:
          priorities.find((item) => item.id === dto.priorityId) ??
          priorities.find((item) => item.id === 'no-priority')!,
-      assignee: null,
+      assignee: dto.assignee
+         ? {
+              id: dto.assignee.id,
+              name: dto.assignee.displayName,
+              avatarUrl:
+                 dto.assignee.avatarUrl ??
+                 `https://api.dicebear.com/9.x/glass/svg?seed=${encodeURIComponent(dto.assignee.id)}`,
+              email: '',
+              status: 'offline',
+              role: 'Member',
+              joinedDate: dto.createdAt,
+              teamIds: [],
+              timezone: 'UTC',
+           }
+         : null,
       labels: [],
       createdAt: dto.createdAt,
       cycleId: dto.cycleId,

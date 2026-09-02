@@ -17,7 +17,10 @@ type IssueRow = {
    due_date: string | null;
    team_id: string;
    project_id: string | null;
+   assignee_id: string | null;
 };
+
+type AssigneeProfile = { id: string; display_name: string | null; avatar_url: string | null };
 
 function unavailable() {
    return NextResponse.json({ error: 'Database is not configured.' }, { status: 503 });
@@ -33,8 +36,10 @@ async function authenticatedClient() {
 function toDto(
    row: IssueRow,
    statusById: Map<string, string>,
-   prefixByTeamId: Map<string, string>
+   prefixByTeamId: Map<string, string>,
+   assigneeById: Map<string, AssigneeProfile>
 ): IssueDto {
+   const assignee = row.assignee_id ? assigneeById.get(row.assignee_id) : undefined;
    return {
       id: row.id,
       identifier: `${prefixByTeamId.get(row.team_id) ?? 'ISS'}-${row.issue_number}`,
@@ -47,6 +52,13 @@ function toDto(
       rank: row.rank,
       dueDate: row.due_date ?? undefined,
       projectId: row.project_id,
+      assignee: row.assignee_id
+         ? {
+              id: row.assignee_id,
+              displayName: assignee?.display_name || 'Workspace member',
+              avatarUrl: assignee?.avatar_url ?? null,
+           }
+         : null,
    };
 }
 
@@ -79,7 +91,7 @@ export async function GET(request: NextRequest) {
       supabase
          .from('issues')
          .select(
-            'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id'
+            'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
          )
          .eq('organization_id', organization.id)
          .order('rank', { ascending: false })
@@ -90,11 +102,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to load issues.' }, { status: 500 });
    }
 
+   const issueRows = (issues ?? []) as IssueRow[];
+   const assigneeIds = [...new Set(issueRows.flatMap((issue) => (issue.assignee_id ? [issue.assignee_id] : [])))];
+   const profilesResult = assigneeIds.length
+      ? await supabase.from('profiles').select('id, display_name, avatar_url').in('id', assigneeIds)
+      : { data: [], error: null };
+   if (profilesResult.error) {
+      return NextResponse.json({ error: 'Unable to load issues.' }, { status: 500 });
+   }
+
    const statusById = new Map((statuses ?? []).map((item) => [item.id, item.slug]));
    const prefixByTeamId = new Map((teams ?? []).map((item) => [item.id, item.issue_prefix]));
-   const result = ((issues ?? []) as IssueRow[]).map((issue) =>
-      toDto(issue, statusById, prefixByTeamId)
+   const assigneeById = new Map(
+      ((profilesResult.data ?? []) as AssigneeProfile[]).map((profile) => [profile.id, profile])
    );
+   const result = issueRows.map((issue) => toDto(issue, statusById, prefixByTeamId, assigneeById));
 
    return NextResponse.json(
       { issues: result },
@@ -178,7 +200,7 @@ export async function POST(request: NextRequest) {
          project_id: parsed.data.projectId ?? null,
       })
       .select(
-         'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id'
+         'id, issue_number, title, description, status_id, priority, created_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
       )
       .single();
 
@@ -189,7 +211,8 @@ export async function POST(request: NextRequest) {
    const dto = toDto(
       issue as IssueRow,
       new Map([[issueStatus.id, issueStatus.slug]]),
-      new Map([[team.id, team.issue_prefix]])
+      new Map([[team.id, team.issue_prefix]]),
+      new Map()
    );
    return NextResponse.json({ issue: dto }, { status: 201 });
 }

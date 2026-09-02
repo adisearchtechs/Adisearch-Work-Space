@@ -1,10 +1,10 @@
 import MainLayout from '@/components/layout/main-layout';
-import Inbox from '@/components/common/inbox/inbox';
+import InboxRuntime from '@/components/common/inbox/inbox-runtime';
 
 export default function InboxPage() {
    return (
       <MainLayout>
-         <Inbox />
+         <InboxRuntime />
       </MainLayout>
    );
 }
