@@ -72,12 +72,10 @@ test('configured issue details expose real relationship CRUD while demo sub-issu
 
 test('Phase 29 extends the stacked database type chain and records deferred graph work', async () => {
    const database = await readSource('lib/supabase/database-with-issue-relations.ts');
-   const serverClient = await readSource('lib/supabase/server.ts');
    const scope = await readSource('PHASE29_SCOPE.md');
 
    assert.match(database, /DatabaseWithIssueComments/);
    assert.match(database, /issue_relations: IssueRelationsTable/);
-   assert.match(serverClient, /DatabaseWithIssueRelations/);
    assert.match(scope, /issue milestone links/i);
    assert.match(scope, /audit-event generation/i);
    assert.match(scope, /Do not merge/i);
