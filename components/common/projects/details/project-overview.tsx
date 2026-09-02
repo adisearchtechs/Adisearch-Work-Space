@@ -1,5 +1,6 @@
 'use client';
 
+import { EntityAttachments } from '@/components/common/attachments/entity-attachments';
 import { ContentBlocks } from '@/components/common/issues/details/content-blocks';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,6 +112,12 @@ export default function ProjectOverview({ projectId }: ProjectOverviewProps) {
                      <ProjectLabels projectId={project.id} demoLabels={project.labels} />
                      <ProjectResources projectId={project.id} demoResources={detail.resources} />
                   </div>
+
+                  {workspace.configured && (
+                     <div className="mt-6">
+                        <EntityAttachments entityType="project" entityId={project.id} />
+                     </div>
+                  )}
 
                   <Link
                      href={`/${orgId}/project/${project.id}/activity`}
