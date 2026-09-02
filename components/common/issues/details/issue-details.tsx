@@ -14,6 +14,7 @@ import { ActivityFeed } from './activity-feed';
 import { ContentBlocks } from './content-blocks';
 import { IssuePropertiesPanel } from './issue-properties-panel';
 import { PersistentIssueDescription } from './persistent-issue-description';
+import { PersistentIssueRelations } from './persistent-issue-relations';
 
 export default function IssueDetails() {
    const workspace = useWorkspace();
@@ -72,7 +73,9 @@ export default function IssueDetails() {
                   <EntityAttachments entityType="issue" entityId={issue.id} compact />
                )}
 
-               {!workspace.configured && (
+               {workspace.configured ? (
+                  <PersistentIssueRelations issue={issue} />
+               ) : (
                   <div className="mt-8">
                      {subIssues.length > 0 ? (
                         <>
