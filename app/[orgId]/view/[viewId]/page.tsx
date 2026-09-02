@@ -1,5 +1,5 @@
-import ViewDetails from '@/components/common/views/view-details';
-import Header from '@/components/layout/headers/view/header';
+import ViewDetailsRuntime from '@/components/common/views/view-details-runtime';
+import Header from '@/components/layout/headers/view/header-runtime';
 import MainLayout from '@/components/layout/main-layout';
 
 export default async function ViewDetailsPage({
@@ -10,7 +10,7 @@ export default async function ViewDetailsPage({
    const { viewId } = await params;
    return (
       <MainLayout header={<Header />} headersNumber={2}>
-         <ViewDetails viewId={viewId} />
+         <ViewDetailsRuntime viewId={viewId} />
       </MainLayout>
    );
 }

@@ -4,6 +4,7 @@ import {
    Box,
    ChevronRight,
    CopyMinus,
+   Eye,
    FileText,
    Home,
    Link as LinkIcon,
@@ -105,6 +106,7 @@ export function NavTeams() {
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/all`}><CopyMinus size={14} /><span>Issues</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/cycles`}><RiDonutChartFill size={14} /><span>Cycles</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/projects`}><Box size={14} /><span>Projects</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
+                                 <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/views`}><Eye size={14} /><span>Views</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/documents`}><FileText size={14} /><span>Documents</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/members`}><Users size={14} /><span>Members</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                               </SidebarMenuSub>
@@ -138,6 +140,7 @@ export function NavTeams() {
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/all`}><CopyMinus size={14} /><span>Issues</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/cycles`}><RiDonutChartFill size={14} /><span>Cycles</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/projects`}><Box size={14} /><span>Projects</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
+                           <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/views`}><Eye size={14} /><span>Views</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/documents`}><FileText size={14} /><span>Documents</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/members`}><Users size={14} /><span>Members</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                         </SidebarMenuSub>

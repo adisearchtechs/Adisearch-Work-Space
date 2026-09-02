@@ -7,6 +7,7 @@ import { useParams, usePathname } from 'next/navigation';
 
 const DEMO_TEAM_TABS = [
    { label: 'Overview', segment: 'overview' },
+   { label: 'Views', segment: 'views' },
    { label: 'Documents', segment: 'documents' },
    { label: 'Members', segment: 'members' },
 ];
@@ -16,6 +17,7 @@ const PERSISTENT_TEAM_TABS = [
    { label: 'Issues', segment: 'all' },
    { label: 'Cycles', segment: 'cycles' },
    { label: 'Projects', segment: 'projects' },
+   { label: 'Views', segment: 'views' },
    { label: 'Documents', segment: 'documents' },
    { label: 'Members', segment: 'members' },
 ];
