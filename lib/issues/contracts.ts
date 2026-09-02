@@ -51,7 +51,9 @@ export type IssueDto = {
    description: string;
    statusId: string;
    priorityId: z.infer<typeof issuePrioritySchema>;
+   creatorId: string;
    createdAt: string;
+   updatedAt: string;
    cycleId: string;
    rank: string;
    dueDate?: string;

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import { AssigneeUser } from '../assignee-user';
+import { IssueSubscriptionButton } from '../issue-subscription-button';
 import { ActivityFeed } from './activity-feed';
 import { ContentBlocks } from './content-blocks';
 import { IssuePropertiesPanel } from './issue-properties-panel';
@@ -43,7 +44,6 @@ export default function IssueDetails() {
 
    return (
       <div className="w-full h-full flex overflow-hidden">
-         {/* Main column */}
          <div className="flex-1 min-w-0 h-full overflow-y-auto">
             <div className="max-w-3xl mx-auto px-8 py-10">
                <h1 className="text-3xl font-semibold leading-tight text-balance">{issue.title}</h1>
@@ -52,8 +52,8 @@ export default function IssueDetails() {
                   <ContentBlocks blocks={detail.description} />
                </div>
 
-               {/* Quick actions */}
                <div className="flex items-center gap-3 mt-6 text-muted-foreground">
+                  <IssueSubscriptionButton issueId={issue.id} />
                   <button className="hover:text-foreground" aria-label="Add reaction">
                      <SmilePlus className="size-4" />
                   </button>
@@ -62,7 +62,6 @@ export default function IssueDetails() {
                   </button>
                </div>
 
-               {/* Sub-issues */}
                <div className="mt-8">
                   {subIssues.length > 0 ? (
                      <>
@@ -110,7 +109,6 @@ export default function IssueDetails() {
             </div>
          </div>
 
-         {/* Properties sidebar */}
          <aside className="hidden lg:block w-80 shrink-0 border-l h-full overflow-y-auto bg-container px-5 py-6">
             <IssuePropertiesPanel issue={issue} detail={detail} />
          </aside>

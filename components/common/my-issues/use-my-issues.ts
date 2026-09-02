@@ -14,7 +14,7 @@ export const MY_ISSUES_TAB_ITEMS: { label: string; value: MyIssuesTab }[] = [
    { label: 'Activity', value: 'activity' },
 ];
 
-/** The "current" user of the mock workspace. */
+/** The "current" user of the unconfigured demo workspace. */
 export const ME = users[0];
 
 /** Shared tab state (URL-backed) between the header and the page body. */
@@ -22,25 +22,59 @@ export function useMyIssuesTab() {
    return useQueryState('tab', parseAsStringLiteral(MY_ISSUES_TABS).withDefault('assigned'));
 }
 
-const isCreatedByMe = (issue: Issue): boolean => issueCreatorIndex(issue, users.length) === 0;
-const isSubscribed = (issue: Issue): boolean =>
-   issue.assignee?.id === ME.id || isCreatedByMe(issue) || issueCreatorIndex(issue, 7) === 3;
+const isDemoCreatedByMe = (issue: Issue): boolean => issueCreatorIndex(issue, users.length) === 0;
+const isDemoSubscribed = (issue: Issue): boolean =>
+   issue.assignee?.id === ME.id || isDemoCreatedByMe(issue) || issueCreatorIndex(issue, 7) === 3;
 
-/** Issues shown by each My issues tab. */
-export function scopeMyIssues(issues: Issue[], tab: MyIssuesTab): Issue[] {
+type ConfiguredMyIssuesScope = {
+   configured: true;
+   userId: string;
+   subscriptionIds: ReadonlySet<string>;
+};
+
+type DemoMyIssuesScope = { configured: false };
+
+/** Issues shown by each My issues tab. Demo-only heuristics never run for configured workspaces. */
+export function scopeMyIssues(
+   issues: Issue[],
+   tab: MyIssuesTab,
+   scope: ConfiguredMyIssuesScope | DemoMyIssuesScope
+): Issue[] {
+   if (!scope.configured) {
+      switch (tab) {
+         case 'assigned':
+            return issues.filter((issue) => issue.assignee?.id === ME.id);
+         case 'created':
+            return issues.filter(isDemoCreatedByMe);
+         case 'subscribed':
+            return issues.filter(isDemoSubscribed);
+         case 'activity':
+         default:
+            return issues
+               .filter(isDemoSubscribed)
+               .slice()
+               .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      }
+   }
+
+   const isAssigned = (issue: Issue) => issue.assignee?.id === scope.userId;
+   const isCreated = (issue: Issue) => issue.creatorId === scope.userId;
+   const isSubscribed = (issue: Issue) => scope.subscriptionIds.has(issue.id);
+
    switch (tab) {
       case 'assigned':
-         return issues.filter((issue) => issue.assignee?.id === ME.id);
+         return issues.filter(isAssigned);
       case 'created':
-         return issues.filter(isCreatedByMe);
+         return issues.filter(isCreated);
       case 'subscribed':
          return issues.filter(isSubscribed);
       case 'activity':
       default:
-         // "Activity" = everything I touch, most recent first.
          return issues
-            .filter(isSubscribed)
+            .filter((issue) => isAssigned(issue) || isCreated(issue) || isSubscribed(issue))
             .slice()
-            .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            .sort((a, b) =>
+               (b.updatedAt ?? b.createdAt).localeCompare(a.updatedAt ?? a.createdAt)
+            );
    }
 }
