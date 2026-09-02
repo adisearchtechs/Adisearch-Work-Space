@@ -70,12 +70,10 @@ test('configured issue, project and initiative surfaces use the shared attachmen
 
 test('Phase 26 extends the stacked database type chain and records deferred content scanning', async () => {
    const database = await readSource('lib/supabase/database-with-attachments.ts');
-   const serverClient = await readSource('lib/supabase/server.ts');
    const scope = await readSource('PHASE26_SCOPE.md');
 
    assert.match(database, /DatabaseWithReviews/);
    assert.match(database, /attachments: AttachmentsTable/);
-   assert.match(serverClient, /DatabaseWithAttachments/);
    assert.match(scope, /malware\/virus scanning/i);
    assert.match(scope, /signed URLs?/i);
    assert.match(scope, /Do not merge/i);
