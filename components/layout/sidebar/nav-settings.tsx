@@ -59,6 +59,10 @@ export const settingsNav: SettingsNavGroup[] = [
       ],
    },
    {
+      label: 'Workspace',
+      items: [{ name: 'Members', url: '/settings/members', icon: Users }],
+   },
+   {
       label: 'Issues',
       items: [
          { name: 'Labels', url: '/settings/issue-labels', icon: Tag },
