@@ -14,7 +14,7 @@ async function loadTarget(
    failureMessage: string
 ) {
    const context = await authorizeWorkspaceMemberAccess(request, true, failureMessage);
-   if ('response' in context) return context;
+   if ('response' in context) return { ok: false, response: context.response } as const;
 
    const { data: target, error } = await context.supabase
       .from('organization_members')
@@ -23,10 +23,18 @@ async function loadTarget(
       .eq('user_id', userId)
       .maybeSingle();
    if (error) {
-      return { response: NextResponse.json({ error: failureMessage }, { status: 500 }) } as const;
+      return {
+         ok: false,
+         response: NextResponse.json({ error: failureMessage }, { status: 500 }),
+      } as const;
    }
-   if (!target) return { response: NextResponse.json({ error: 'Not found.' }, { status: 404 }) } as const;
-   return { ...context, target } as const;
+   if (!target) {
+      return {
+         ok: false,
+         response: NextResponse.json({ error: 'Not found.' }, { status: 404 }),
+      } as const;
+   }
+   return { ok: true, ...context, target } as const;
 }
 
 function roleGuard(
@@ -62,7 +70,7 @@ export async function PATCH(
    if (!parsed.success) return NextResponse.json({ error: 'Invalid workspace role.' }, { status: 400 });
 
    const context = await loadTarget(request, userId, 'Unable to update workspace member.');
-   if ('response' in context) return context.response;
+   if (!context.ok) return context.response;
    const guard = roleGuard(context.userId, context.role, context.target, parsed.data.role);
    if (guard) return NextResponse.json({ error: guard }, { status: 403 });
 
@@ -89,7 +97,7 @@ export async function DELETE(
    if (!isUuid(userId)) return NextResponse.json({ error: 'Not found.' }, { status: 404 });
 
    const context = await loadTarget(request, userId, 'Unable to remove workspace member.');
-   if ('response' in context) return context.response;
+   if (!context.ok) return context.response;
    const guard = roleGuard(context.userId, context.role, context.target);
    if (guard) return NextResponse.json({ error: guard }, { status: 403 });
 
