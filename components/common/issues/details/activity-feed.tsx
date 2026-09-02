@@ -1,9 +1,6 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { ActivityItem } from '@/mock-data/issue-details';
-import { users } from '@/mock-data/users';
+import { formatDistanceToNow } from 'date-fns';
 import {
    Ban,
    CircleDot,
@@ -16,7 +13,14 @@ import {
    Tag,
    Unlock,
 } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { useWorkspace } from '@/components/providers/workspace-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import type { IssueCommentDto } from '@/lib/issue-comments/contracts';
+import { ActivityItem } from '@/mock-data/issue-details';
+import { users } from '@/mock-data/users';
 import { ContentBlocks } from './content-blocks';
 
 const EVENT_ICONS: Record<string, ReactNode> = {
@@ -76,71 +80,176 @@ function CommentCard({ item }: { item: Extract<ActivityItem, { kind: 'comment' }
    );
 }
 
-/**
- * Issue activity: interleaved events and comments, plus a local
- * comment composer (comments are kept in memory only).
- */
-export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
-   const [items, setItems] = useState<ActivityItem[]>(activity);
-   const [draft, setDraft] = useState('');
-   const currentUser = users[0];
+function PersistentCommentCard({ comment }: { comment: IssueCommentDto }) {
+   return (
+      <div className="my-2 rounded-lg border border-border/60 bg-container p-3.5">
+         <div className="flex items-center gap-2 mb-1.5">
+            <Avatar className="size-5">
+               {comment.author.avatarUrl && (
+                  <AvatarImage src={comment.author.avatarUrl} alt={comment.author.displayName} />
+               )}
+               <AvatarFallback>{comment.author.displayName[0] ?? '?'}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium">{comment.author.displayName}</span>
+            <span className="text-xs text-muted-foreground">
+               {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+            </span>
+         </div>
+         <p className="whitespace-pre-wrap text-sm leading-relaxed">{comment.body}</p>
+      </div>
+   );
+}
 
-   const submitComment = () => {
+export function ActivityFeed({ activity, issueId }: { activity: ActivityItem[]; issueId: string }) {
+   const workspace = useWorkspace();
+   const [demoItems, setDemoItems] = useState<ActivityItem[]>(activity);
+   const [comments, setComments] = useState<IssueCommentDto[]>([]);
+   const [draft, setDraft] = useState('');
+   const [loading, setLoading] = useState(false);
+   const [posting, setPosting] = useState(false);
+   const [canWrite, setCanWrite] = useState(workspace.user.role !== 'guest');
+   const currentUser = users[0];
+   const endpoint = `/api/issue-comments?organization=${encodeURIComponent(workspace.organization.slug)}&issueId=${encodeURIComponent(issueId)}`;
+
+   useEffect(() => {
+      if (!workspace.configured) setDemoItems(activity);
+   }, [activity, workspace.configured]);
+
+   const refresh = useCallback(async (signal?: AbortSignal) => {
+      if (!workspace.configured) return;
+      setLoading(true);
+      try {
+         const response = await fetch(endpoint, {
+            credentials: 'same-origin',
+            signal,
+            headers: { Accept: 'application/json' },
+         });
+         if (!response.ok) throw new Error(String(response.status));
+         const payload = (await response.json()) as {
+            comments: IssueCommentDto[];
+            canWrite: boolean;
+         };
+         setComments(payload.comments);
+         setCanWrite(payload.canWrite);
+      } catch (error) {
+         if (error instanceof DOMException && error.name === 'AbortError') return;
+         toast.error('Unable to load issue comments.');
+      } finally {
+         setLoading(false);
+      }
+   }, [endpoint, workspace.configured]);
+
+   useEffect(() => {
+      if (!workspace.configured) return;
+      const controller = new AbortController();
+      void refresh(controller.signal);
+      return () => controller.abort();
+   }, [refresh, workspace.configured]);
+
+   const submitComment = async () => {
       const text = draft.trim();
-      if (!text) return;
-      setItems((previous) => [
-         ...previous,
-         {
-            kind: 'comment',
-            id: `local-${previous.length}`,
-            actor: currentUser,
-            timeAgo: 'just now',
-            body: [{ type: 'paragraph', text }],
-         },
-      ]);
-      setDraft('');
+      if (!text || posting) return;
+
+      if (!workspace.configured) {
+         setDemoItems((previous) => [
+            ...previous,
+            {
+               kind: 'comment',
+               id: `local-${previous.length}`,
+               actor: currentUser,
+               timeAgo: 'just now',
+               body: [{ type: 'paragraph', text }],
+            },
+         ]);
+         setDraft('');
+         return;
+      }
+
+      if (!canWrite) return;
+      setPosting(true);
+      try {
+         const response = await fetch(
+            `/api/issue-comments?organization=${encodeURIComponent(workspace.organization.slug)}`,
+            {
+               method: 'POST',
+               credentials: 'same-origin',
+               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+               body: JSON.stringify({ issueId, body: text }),
+            }
+         );
+         const payload = (await response.json().catch(() => ({}))) as {
+            comment?: IssueCommentDto;
+            error?: string;
+         };
+         if (!response.ok || !payload.comment) {
+            throw new Error(payload.error || 'Unable to save comment.');
+         }
+         setComments((previous) => [...previous, payload.comment!]);
+         setDraft('');
+      } catch (error) {
+         toast.error(error instanceof Error ? error.message : 'Unable to save comment.');
+      } finally {
+         setPosting(false);
+      }
    };
+
+   const renderedItems = workspace.configured ? comments : demoItems;
 
    return (
       <div className="mt-10">
          <div className="flex items-center justify-between mb-2">
             <h2 className="text-base font-semibold">Activity</h2>
-            <button className="text-xs text-muted-foreground hover:text-foreground">
-               Subscribe
-            </button>
-         </div>
-
-         <div className="flex flex-col">
-            {items.map((item) =>
-               item.kind === 'event' ? (
-                  <EventRow key={item.id} item={item} />
-               ) : (
-                  <CommentCard key={item.id} item={item} />
-               )
+            {!workspace.configured && (
+               <button className="text-xs text-muted-foreground hover:text-foreground">
+                  Subscribe
+               </button>
             )}
          </div>
 
-         {/* Composer */}
-         <div className="mt-3 rounded-lg border border-border/60 bg-container p-3 flex flex-col gap-2">
-            <textarea
-               value={draft}
-               onChange={(event) => setDraft(event.target.value)}
-               onKeyDown={(event) => {
-                  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-                     submitComment();
-                  }
-               }}
-               placeholder="Leave a comment..."
-               rows={2}
-               className="w-full resize-none bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-            />
-            <div className="flex items-center justify-between">
-               <Plus className="size-4 text-muted-foreground" />
-               <Button size="xs" onClick={submitComment} disabled={!draft.trim()}>
-                  Comment
-               </Button>
-            </div>
+         <div className="flex flex-col">
+            {loading && <p className="py-3 text-sm text-muted-foreground">Loading comments…</p>}
+            {!loading && renderedItems.length === 0 && workspace.configured && (
+               <p className="py-3 text-sm text-muted-foreground">No comments yet.</p>
+            )}
+            {workspace.configured
+               ? comments.map((comment) => (
+                    <PersistentCommentCard key={comment.id} comment={comment} />
+                 ))
+               : demoItems.map((item) =>
+                    item.kind === 'event' ? (
+                       <EventRow key={item.id} item={item} />
+                    ) : (
+                       <CommentCard key={item.id} item={item} />
+                    )
+                 )}
          </div>
+
+         {(canWrite || !workspace.configured) && (
+            <div className="mt-3 rounded-lg border border-border/60 bg-container p-3 flex flex-col gap-2">
+               <textarea
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value.slice(0, 10000))}
+                  onKeyDown={(event) => {
+                     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                        void submitComment();
+                     }
+                  }}
+                  placeholder="Leave a comment..."
+                  rows={2}
+                  className="w-full resize-none bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+               />
+               <div className="flex items-center justify-between">
+                  <Plus className="size-4 text-muted-foreground" />
+                  <Button
+                     size="xs"
+                     onClick={() => void submitComment()}
+                     disabled={!draft.trim() || posting}
+                  >
+                     {posting ? 'Posting…' : 'Comment'}
+                  </Button>
+               </div>
+            </div>
+         )}
       </div>
    );
 }
