@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWorkspace } from '@/components/providers/workspace-provider';
+import type { TeamDocumentDto } from '@/lib/team-documents/contracts';
 import type { TeamDetailsDto } from '@/lib/teams/contracts';
 import { teams as demoTeams } from '@/mock-data/teams';
 import { resolveTeamReference, useTeamsStore } from '@/store/teams-store';
 import { RiDonutChartFill } from '@remixicon/react';
-import { Box, CopyMinus, Settings, Users } from 'lucide-react';
+import { Box, CopyMinus, FileText, Pin, Settings, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -19,29 +20,44 @@ export default function TeamOverview() {
    const workspaceSlug = useTeamsStore((state) => state.workspaceSlug);
    const teamsLoading = useTeamsStore((state) => state.loading);
    const [details, setDetails] = useState<TeamDetailsDto | null>(null);
+   const [documents, setDocuments] = useState<TeamDocumentDto[]>([]);
    const resolvedTeam =
       workspace.configured && workspaceSlug === workspace.organization.slug
          ? resolveTeamReference(teams, teamId)
          : undefined;
+   const pinnedDocuments = useMemo(
+      () => documents.filter((document) => document.pinned).slice(0, 6),
+      [documents]
+   );
 
    useEffect(() => {
       if (!workspace.configured || !resolvedTeam) return;
       const controller = new AbortController();
       setDetails(null);
-      void fetch(
-         `/api/teams/${encodeURIComponent(resolvedTeam.id)}?organization=${encodeURIComponent(workspace.organization.slug)}`,
-         {
+      setDocuments([]);
+      const query = `?organization=${encodeURIComponent(workspace.organization.slug)}`;
+      void Promise.all([
+         fetch(`/api/teams/${encodeURIComponent(resolvedTeam.id)}${query}`, {
             credentials: 'same-origin',
             signal: controller.signal,
             headers: { Accept: 'application/json' },
-         }
-      )
-         .then(async (response) => {
+         }).then(async (response) => {
             if (!response.ok) throw new Error(`Team load failed with ${response.status}.`);
             return (await response.json()) as { team: TeamDetailsDto };
-         })
-         .then(({ team }) => {
-            if (!controller.signal.aborted) setDetails(team);
+         }),
+         fetch(`/api/teams/${encodeURIComponent(resolvedTeam.id)}/documents${query}`, {
+            credentials: 'same-origin',
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+         }).then(async (response) => {
+            if (!response.ok) throw new Error(`Team documents load failed with ${response.status}.`);
+            return (await response.json()) as { documents: TeamDocumentDto[] };
+         }),
+      ])
+         .then(([teamResult, documentResult]) => {
+            if (controller.signal.aborted) return;
+            setDetails(teamResult.team);
+            setDocuments(documentResult.documents);
          })
          .catch((error: unknown) => {
             if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -93,6 +109,7 @@ export default function TeamOverview() {
       { label: 'Issues', icon: CopyMinus, href: `/${orgId}/team/${resolvedTeam.key}/all` },
       { label: 'Cycles', icon: RiDonutChartFill, href: `/${orgId}/team/${resolvedTeam.key}/cycles` },
       { label: 'Projects', icon: Box, href: `/${orgId}/team/${resolvedTeam.key}/projects` },
+      { label: 'Documents', icon: FileText, href: `/${orgId}/team/${resolvedTeam.key}/documents` },
    ];
 
    return (
@@ -114,8 +131,32 @@ export default function TeamOverview() {
             </div>
 
             <div className="mt-10">
-               <h2 className="text-lg font-semibold">Team workspace</h2>
-               <p className="mt-1 text-sm text-muted-foreground">This overview is backed by your persisted team data. Demo documents and resources are not mixed into configured workspaces.</p>
+               <div className="flex items-center justify-between gap-3">
+                  <div>
+                     <h2 className="text-lg font-semibold">Pinned documents</h2>
+                     <p className="mt-1 text-sm text-muted-foreground">Keep the team’s most useful notes and decisions close at hand.</p>
+                  </div>
+                  <Link href={`/${orgId}/team/${resolvedTeam.key}/documents`} className="text-sm font-medium text-muted-foreground hover:text-foreground">View all</Link>
+               </div>
+               <div className="mt-4 grid gap-2">
+                  {pinnedDocuments.length === 0 ? (
+                     <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">No pinned documents yet.</div>
+                  ) : (
+                     pinnedDocuments.map((document) => (
+                        <Link
+                           key={document.id}
+                           href={`/${orgId}/team/${resolvedTeam.key}/documents`}
+                           className="flex items-center gap-3 rounded-lg border px-4 py-3 hover:bg-muted/30"
+                        >
+                           <Pin className="size-4 shrink-0 text-muted-foreground" />
+                           <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{document.title}</p>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">{document.body || 'Empty document'}</p>
+                           </div>
+                        </Link>
+                     ))
+                  )}
+               </div>
             </div>
          </div>
 
