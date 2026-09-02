@@ -1,23 +1,33 @@
 'use client';
 
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 
-const TEAM_TABS = [
+const DEMO_TEAM_TABS = [
    { label: 'Overview', segment: 'overview' },
    { label: 'Documents', segment: 'documents' },
    { label: 'Members', segment: 'members' },
 ];
 
+const PERSISTENT_TEAM_TABS = [
+   { label: 'Overview', segment: 'overview' },
+   { label: 'Issues', segment: 'all' },
+   { label: 'Cycles', segment: 'cycles' },
+   { label: 'Projects', segment: 'projects' },
+];
+
 export default function HeaderTabs() {
+   const workspace = useWorkspace();
    const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>();
    const pathname = usePathname();
+   const tabs = workspace.configured ? PERSISTENT_TEAM_TABS : DEMO_TEAM_TABS;
 
    return (
       <div className="w-full flex justify-between items-center border-b py-1.5 px-6 h-10">
          <div className="flex items-center gap-1">
-            {TEAM_TABS.map((tab) => {
+            {tabs.map((tab) => {
                const href = `/${orgId}/team/${teamId}/${tab.segment}`;
                const isActive = pathname === href;
                return (

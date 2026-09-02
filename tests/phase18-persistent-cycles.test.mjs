@@ -46,8 +46,8 @@ test('configured cycle UI uses persistent CRUD and does not fabricate burn-up hi
    assert.match(cycles, /\/cycles\/issues\?organization=/);
    assert.match(cycles, /Historical burn-up snapshots are intentionally not fabricated/);
    assert.match(cycles, /if \(!workspace\.configured\) return <DemoCycles \/>/);
-   assert.match(header, /workspace\.configured \? identity/);
-   assert.match(header, /team\?\.name \?\? 'Team'/);
+   assert.match(header, /useTeamsStore/);
+   assert.match(header, /persistentTeam\?\.name \?\? 'Team'/);
 });
 
 test('Phase 18 reuses the existing secured cycles table without a migration', async () => {

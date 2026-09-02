@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { WorkspaceProvider } from '@/components/providers/workspace-provider';
+import { SaasTeamsProvider } from '@/components/providers/saas-teams-provider';
 import { SaasIssuesProvider } from '@/components/providers/saas-issues-provider';
 import { SaasProjectsProvider } from '@/components/providers/saas-projects-provider';
 import { getWorkspaceSession } from '@/lib/workspace';
@@ -20,9 +21,11 @@ export default async function OrganizationLayout({
 
    return (
       <WorkspaceProvider value={workspace}>
-         <SaasProjectsProvider>
-            <SaasIssuesProvider>{children}</SaasIssuesProvider>
-         </SaasProjectsProvider>
+         <SaasTeamsProvider>
+            <SaasProjectsProvider>
+               <SaasIssuesProvider>{children}</SaasIssuesProvider>
+            </SaasProjectsProvider>
+         </SaasTeamsProvider>
       </WorkspaceProvider>
    );
 }
