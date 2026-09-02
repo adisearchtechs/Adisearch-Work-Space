@@ -1,10 +1,10 @@
-import Reviews from '@/components/common/reviews/reviews';
+import ReviewsRuntime from '@/components/common/reviews/reviews-runtime';
 import MainLayout from '@/components/layout/main-layout';
 
 export default function CreatedReviewsPage() {
    return (
       <MainLayout>
-         <Reviews listTab="created" />
+         <ReviewsRuntime listTab="created" />
       </MainLayout>
    );
 }
