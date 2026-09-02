@@ -1,4 +1,4 @@
-import Views from '@/components/common/views/views';
+import ViewsRuntime from '@/components/common/views/views-runtime';
 import Header from '@/components/layout/headers/team-views/header';
 import MainLayout from '@/components/layout/main-layout';
 
@@ -10,7 +10,7 @@ export default async function TeamViewsPage({
    const { teamId } = await params;
    return (
       <MainLayout header={<Header />} headersNumber={1}>
-         <Views teamId={teamId} />
+         <ViewsRuntime teamId={teamId} />
       </MainLayout>
    );
 }
