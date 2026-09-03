@@ -56,7 +56,7 @@ test('R2 integration directory remains searchable without fake enabled or dead c
    assert.doesNotMatch(integrations, />\s*Connect\s*</);
 });
 
-test('R2 generic placeholder and profile surfaces do not expose dead write controls', async () => {
+test('R2 generic placeholders remain inert and profile writes are now backed by the real profile API', async () => {
    const placeholder = await readSource('components/common/settings/settings-placeholder.tsx');
    const profile = await readSource('components/common/settings/profile.tsx');
    const notice = await readSource('components/common/settings/settings-notice.tsx');
@@ -64,7 +64,8 @@ test('R2 generic placeholder and profile surfaces do not expose dead write contr
    assert.doesNotMatch(placeholder, /components\/ui\/button/);
    assert.doesNotMatch(placeholder, /components\/ui\/input/);
    assert.match(placeholder, /Planned/);
-   assert.doesNotMatch(profile, /components\/ui\/button/);
+   assert.match(profile, /fetch\('\/api\/profile'/);
+   assert.match(profile, /Save profile/);
    assert.doesNotMatch(profile, /Leave workspace/);
    assert.match(profile, /Membership changes are managed by workspace administrators/);
    assert.match(notice, /No settings shown here are being simulated or saved locally/);
