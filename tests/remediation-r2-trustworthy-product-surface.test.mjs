@@ -67,3 +67,12 @@ test('R2 configured member profiles use real ownership, teams, and issue-derived
    assert.match(header, /!workspace\.configured/);
    assert.match(issueTypes, /creatorId\?: string/);
 });
+
+test('R2 configured issue errors never route users into the demo CORE team', async () => {
+   const details = await readSource('components/common/issues/details/issue-details.tsx');
+
+   assert.match(details, /workspace\.configured/);
+   assert.match(details, /my-issues/);
+   assert.match(details, /team\/CORE\/all/);
+   assert.match(details, /const backHref = workspace\.configured/);
+});
