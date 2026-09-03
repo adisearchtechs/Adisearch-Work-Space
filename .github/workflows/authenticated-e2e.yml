@@ -2,14 +2,12 @@ name: Authenticated E2E
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
-    paths:
-      - '.github/workflows/authenticated-e2e.yml'
-      - 'e2e/authenticated.playwright.config.cjs'
-      - 'e2e/authenticated-workspace.spec.cjs'
-      - '.env.production'
 
 permissions:
   contents: read
@@ -20,6 +18,7 @@ concurrency:
 
 jobs:
   authenticated-workspace:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -54,7 +53,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - name: Install locked dependencies
