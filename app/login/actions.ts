@@ -64,12 +64,14 @@ export async function signUpAction(
       return { message: parsed.error.issues[0]?.message ?? 'Check your credentials.' };
    }
 
+   const next = safeRedirectPath(parsed.data.next);
    const supabase = await createClient();
+   const emailRedirectTo = new URL(next, `${getSiteUrl()}/`).toString();
 
    const { error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: { emailRedirectTo: getSiteUrl() },
+      options: { emailRedirectTo },
    });
 
    if (error) {
@@ -77,7 +79,6 @@ export async function signUpAction(
    }
 
    const redirectParams = new URLSearchParams({ status: 'check-email' });
-   const next = safeRedirectPath(parsed.data.next);
 
    if (next !== '/') {
       redirectParams.set('next', next);

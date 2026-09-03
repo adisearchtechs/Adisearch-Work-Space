@@ -5,6 +5,10 @@ import {
    type WorkspaceInvitationDto,
 } from '@/lib/invitations/contracts';
 import {
+   invitationDeliveryReadiness,
+   sendWorkspaceInvitationEmail,
+} from '@/lib/invitations/email';
+import {
    invitationRpcErrorMessage,
    invitationRpcErrorStatus,
    workspaceInvitationStatus,
@@ -72,7 +76,11 @@ export async function GET(request: NextRequest) {
    }));
 
    return NextResponse.json(
-      { invitations, actorRole: context.role },
+      {
+         invitations,
+         actorRole: context.role,
+         delivery: invitationDeliveryReadiness(),
+      },
       { headers: { 'Cache-Control': 'private, no-store' } }
    );
 }
@@ -106,6 +114,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only the workspace owner can invite another admin.' }, { status: 403 });
    }
 
+   const delivery = invitationDeliveryReadiness();
+   if (!delivery.available) {
+      return NextResponse.json(
+         { error: delivery.reason, delivery },
+         { status: 503, headers: { 'Cache-Control': 'private, no-store' } }
+      );
+   }
+
+   const { data: organization, error: organizationError } = await context.supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', context.organizationId)
+      .maybeSingle();
+   if (organizationError || !organization) {
+      return NextResponse.json({ error: 'Unable to load workspace details.' }, { status: 500 });
+   }
+
    const token = generateWorkspaceInvitationToken();
    const tokenHash = hashWorkspaceInvitationToken(token);
    const expiresAt = workspaceInvitationExpiry();
@@ -131,6 +156,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to create workspace invitation.' }, { status: 500 });
    }
 
+   try {
+      await sendWorkspaceInvitationEmail({
+         email: created.email,
+         organizationName: organization.name,
+         role: created.role,
+         token,
+      });
+   } catch {
+      const { error: revokeError } = await context.supabase.rpc('revoke_organization_invitation', {
+         p_invitation_id: created.invitation_id,
+         p_organization_id: context.organizationId,
+      });
+      if (revokeError) {
+         return NextResponse.json(
+            {
+               error:
+                  'Invitation delivery failed and the invitation could not be safely revoked. Review it before retrying.',
+            },
+            { status: 500 }
+         );
+      }
+      return NextResponse.json(
+         { error: 'Invitation email could not be delivered. No active invitation was left behind.' },
+         { status: 502 }
+      );
+   }
+
    const invitation: WorkspaceInvitationDto = {
       id: created.invitation_id,
       email: created.email,
@@ -145,14 +197,7 @@ export async function POST(request: NextRequest) {
    };
 
    return NextResponse.json(
-      {
-         invitation,
-         inviteToken: token,
-         delivery: {
-            status: 'not-sent',
-            reason: 'Transactional invitation email delivery is added in R3B.',
-         },
-      },
+      { invitation, delivery: { status: 'sent' } },
       { status: 201, headers: { 'Cache-Control': 'private, no-store' } }
    );
 }

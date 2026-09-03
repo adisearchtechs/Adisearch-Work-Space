@@ -47,7 +47,10 @@ test('members settings is dedicated, permission-aware and invitation-safe', asyn
    assert.match(settings, /method: 'PATCH'/);
    assert.match(settings, /method: 'DELETE'/);
    assert.match(settings, /actorRole === 'owner'/);
-   assert.match(settings, /New-member email invitations require the transactional email sender/);
+   assert.match(settings, /\/api\/invitations\?organization=/);
+   assert.match(settings, /!invitationDelivery\.available/);
+   assert.match(settings, /Send invitation/);
+   assert.match(settings, /\/resend\?organization=/);
    assert.match(dispatcher, /'members': WorkspaceMembersSettings/);
    assert.match(nav, /name: 'Members', url: '\/settings\/members'/);
 });

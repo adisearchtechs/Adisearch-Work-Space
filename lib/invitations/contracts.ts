@@ -23,6 +23,9 @@ export const acceptWorkspaceInvitationSchema = z
 
 export type WorkspaceInvitationRole = z.infer<typeof invitationRoleSchema>;
 export type WorkspaceInvitationStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
+export type WorkspaceInvitationDeliveryState =
+   | { available: true }
+   | { available: false; reason: string };
 
 export type WorkspaceInvitationDto = {
    id: string;
