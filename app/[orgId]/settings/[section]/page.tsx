@@ -5,6 +5,7 @@ import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-s
 import Profile from '@/components/common/settings/profile';
 import SettingsNotice from '@/components/common/settings/settings-notice';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
+import WorkspaceGeneralSettings from '@/components/common/settings/workspace-general-settings';
 import WorkspaceMembersSettings from '@/components/common/settings/workspace-members-settings';
 import MainLayout from '@/components/layout/main-layout';
 import Header from '@/components/layout/headers/settings/header';
@@ -82,6 +83,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'profile': Profile,
    'project-statuses': ProjectStatusesNotice,
    'security': SecurityNotice,
+   'workspace': WorkspaceGeneralSettings,
 };
 
 export default async function SettingsSectionPage({
