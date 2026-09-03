@@ -3,6 +3,7 @@
 import {
    Box,
    ChevronRight,
+   ClipboardList,
    CopyMinus,
    Eye,
    FileText,
@@ -103,6 +104,7 @@ export function NavTeams() {
                            <CollapsibleContent>
                               <SidebarMenuSub>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/overview`}><Home size={14} /><span>Home</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
+                                 <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/status-report`}><ClipboardList size={14} /><span>Status report</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/all`}><CopyMinus size={14} /><span>Issues</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/cycles`}><RiDonutChartFill size={14} /><span>Cycles</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                                  <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.key}/projects`}><Box size={14} /><span>Projects</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
@@ -137,6 +139,7 @@ export function NavTeams() {
                      <CollapsibleContent>
                         <SidebarMenuSub>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/overview`}><Home size={14} /><span>Home</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
+                           <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/status-report`}><ClipboardList size={14} /><span>Status report</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/all`}><CopyMinus size={14} /><span>Issues</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/cycles`}><RiDonutChartFill size={14} /><span>Cycles</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
                            <SidebarMenuSubItem><SidebarMenuSubButton asChild><Link href={`/${orgId}/team/${team.id}/projects`}><Box size={14} /><span>Projects</span></Link></SidebarMenuSubButton></SidebarMenuSubItem>
