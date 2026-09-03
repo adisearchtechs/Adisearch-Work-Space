@@ -20,26 +20,21 @@ interface FilterOptions {
 interface IssuePersistenceAdapter {
    update: (id: string, changes: Partial<Issue>) => Promise<void>;
    delete: (id: string) => Promise<void>;
+   addLabel?: (issueId: string, labelId: string) => Promise<void>;
+   removeLabel?: (issueId: string, labelId: string) => Promise<void>;
    onError: (message: string) => void;
 }
 
 interface IssuesState {
-   // Data
    issues: Issue[];
    issuesByStatus: Record<string, Issue[]>;
    persistenceAdapter: IssuePersistenceAdapter | null;
-
-   //
    getAllIssues: () => Issue[];
    replaceIssues: (issues: Issue[]) => void;
    setPersistenceAdapter: (adapter: IssuePersistenceAdapter | null) => void;
-
-   // Actions
    addIssue: (issue: Issue) => void;
    updateIssue: (id: string, updatedIssue: Partial<Issue>) => void;
    deleteIssue: (id: string) => Promise<void>;
-
-   // Filters
    filterByStatus: (statusId: string) => Issue[];
    filterByPriority: (priorityId: string) => Issue[];
    filterByAssignee: (userId: string | null) => Issue[];
@@ -48,25 +43,13 @@ interface IssuesState {
    filterByCycle: (cycleId: string) => Issue[];
    searchIssues: (query: string) => Issue[];
    filterIssues: (filters: FilterOptions) => Issue[];
-
-   // Status management
    updateIssueStatus: (issueId: string, newStatus: Status) => void;
-
-   // Priority management
    updateIssuePriority: (issueId: string, newPriority: Priority) => void;
-
-   // Assignee management
    updateIssueAssignee: (issueId: string, newAssignee: User | null) => void;
-
-   // Labels management
    addIssueLabel: (issueId: string, label: LabelInterface) => void;
    removeIssueLabel: (issueId: string, labelId: string) => void;
-
-   // Project management
    updateIssueProject: (issueId: string, newProject: Project | undefined) => void;
    clearProjectReferences: (projectId: string) => void;
-
-   // Utility functions
    getIssueById: (id: string) => Issue | undefined;
 }
 
@@ -78,24 +61,29 @@ function restoreRejectedChanges(
    rejectedChanges: Partial<Issue>
 ) {
    const restoredIssue = { ...currentIssue };
-
    for (const key of Object.keys(rejectedChanges) as (keyof Issue)[]) {
-      // Preserve a newer optimistic edit to the same issue while reverting this request.
       if (Object.is(currentIssue[key], rejectedChanges[key])) {
          Object.assign(restoredIssue, { [key]: previousIssue[key] });
       }
    }
-
    return restoredIssue;
 }
 
+function replaceIssueLabels(
+   issues: Issue[],
+   issueId: string,
+   update: (labels: LabelInterface[]) => LabelInterface[]
+) {
+   return issues.map((issue) =>
+      issue.id === issueId ? { ...issue, labels: update(issue.labels) } : issue
+   );
+}
+
 export const useIssuesStore = create<IssuesState>((set, get) => ({
-   // Initial state
    issues: initialIssues,
    issuesByStatus: groupIssuesByStatus(initialIssues),
    persistenceAdapter: null,
 
-   //
    getAllIssues: () => get().issues,
    replaceIssues: (issues) => {
       const sortedIssues = [...issues].sort((a, b) => b.rank.localeCompare(a.rank));
@@ -103,14 +91,10 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    },
    setPersistenceAdapter: (persistenceAdapter) => set({ persistenceAdapter }),
 
-   // Actions
    addIssue: (issue: Issue) => {
       set((state) => {
          const newIssues = [...state.issues, issue];
-         return {
-            issues: newIssues,
-            issuesByStatus: groupIssuesByStatus(newIssues),
-         };
+         return { issues: newIssues, issuesByStatus: groupIssuesByStatus(newIssues) };
       });
    },
 
@@ -120,18 +104,13 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
          const newIssues = state.issues.map((issue) =>
             issue.id === id ? { ...issue, ...updatedIssue } : issue
          );
-
-         return {
-            issues: newIssues,
-            issuesByStatus: groupIssuesByStatus(newIssues),
-         };
+         return { issues: newIssues, issuesByStatus: groupIssuesByStatus(newIssues) };
       });
 
       const adapter = get().persistenceAdapter;
       if (adapter && previousIssue) {
          void adapter.update(id, updatedIssue).catch(() => {
             if (get().persistenceAdapter !== adapter) return;
-
             set((state) => {
                const restoredIssues = state.issues.map((issue) =>
                   issue.id === id
@@ -151,13 +130,9 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
    deleteIssue: async (id: string) => {
       const deletedIssue = get().issues.find((issue) => issue.id === id);
       if (!deletedIssue) return;
-
       set((state) => {
          const newIssues = state.issues.filter((issue) => issue.id !== id);
-         return {
-            issues: newIssues,
-            issuesByStatus: groupIssuesByStatus(newIssues),
-         };
+         return { issues: newIssues, issuesByStatus: groupIssuesByStatus(newIssues) };
       });
 
       const adapter = get().persistenceAdapter;
@@ -168,7 +143,6 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
             if (get().persistenceAdapter === adapter) {
                set((state) => {
                   if (state.issues.some((issue) => issue.id === id)) return state;
-
                   const restoredIssues = [...state.issues, deletedIssue].sort((a, b) =>
                      b.rank.localeCompare(a.rank)
                   );
@@ -184,34 +158,18 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
       }
    },
 
-   // Filters
-   filterByStatus: (statusId: string) => {
-      return get().issues.filter((issue) => issue.status.id === statusId);
-   },
-
-   filterByPriority: (priorityId: string) => {
-      return get().issues.filter((issue) => issue.priority.id === priorityId);
-   },
-
+   filterByStatus: (statusId: string) => get().issues.filter((issue) => issue.status.id === statusId),
+   filterByPriority: (priorityId: string) =>
+      get().issues.filter((issue) => issue.priority.id === priorityId),
    filterByAssignee: (userId: string | null) => {
-      if (userId === null) {
-         return get().issues.filter((issue) => issue.assignee === null);
-      }
+      if (userId === null) return get().issues.filter((issue) => issue.assignee === null);
       return get().issues.filter((issue) => issue.assignee?.id === userId);
    },
-
-   filterByLabel: (labelId: string) => {
-      return get().issues.filter((issue) => issue.labels.some((label) => label.id === labelId));
-   },
-
-   filterByProject: (projectId: string) => {
-      return get().issues.filter((issue) => issue.project?.id === projectId);
-   },
-
-   filterByCycle: (cycleId: string) => {
-      return get().issues.filter((issue) => issue.cycleId === cycleId);
-   },
-
+   filterByLabel: (labelId: string) =>
+      get().issues.filter((issue) => issue.labels.some((label) => label.id === labelId)),
+   filterByProject: (projectId: string) =>
+      get().issues.filter((issue) => issue.project?.id === projectId),
+   filterByCycle: (cycleId: string) => get().issues.filter((issue) => issue.cycleId === cycleId),
    searchIssues: (query: string) => {
       const lowerCaseQuery = query.toLowerCase();
       return get().issues.filter(
@@ -220,105 +178,107 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
             issue.identifier.toLowerCase().includes(lowerCaseQuery)
       );
    },
-
    filterIssues: (filters: FilterOptions) => {
       let filteredIssues = get().issues;
-
-      // Filter by status
-      if (filters.status && filters.status.length > 0) {
-         filteredIssues = filteredIssues.filter((issue) =>
-            filters.status!.includes(issue.status.id)
-         );
+      if (filters.status?.length) {
+         filteredIssues = filteredIssues.filter((issue) => filters.status!.includes(issue.status.id));
       }
-
-      // Filter by assignee
-      if (filters.assignee && filters.assignee.length > 0) {
+      if (filters.assignee?.length) {
          filteredIssues = filteredIssues.filter((issue) => {
-            if (filters.assignee!.includes('unassigned')) {
-               // If 'unassigned' is selected and the issue has no assignee
-               if (issue.assignee === null) {
-                  return true;
-               }
-            }
-            // Check if the issue's assignee is in the selected assignees
+            if (filters.assignee!.includes('unassigned') && issue.assignee === null) return true;
             return issue.assignee && filters.assignee!.includes(issue.assignee.id);
          });
       }
-
-      // Filter by priority
-      if (filters.priority && filters.priority.length > 0) {
+      if (filters.priority?.length) {
          filteredIssues = filteredIssues.filter((issue) =>
             filters.priority!.includes(issue.priority.id)
          );
       }
-
-      // Filter by labels
-      if (filters.labels && filters.labels.length > 0) {
+      if (filters.labels?.length) {
          filteredIssues = filteredIssues.filter((issue) =>
             issue.labels.some((label) => filters.labels!.includes(label.id))
          );
       }
-
-      // Filter by project
-      if (filters.project && filters.project.length > 0) {
+      if (filters.project?.length) {
          filteredIssues = filteredIssues.filter(
             (issue) => issue.project && filters.project!.includes(issue.project.id)
          );
       }
-
-      // Filter by cycle ('no-cycle' matches issues outside any cycle)
-      if (filters.cycle && filters.cycle.length > 0) {
+      if (filters.cycle?.length) {
          filteredIssues = filteredIssues.filter((issue) => {
-            if (filters.cycle!.includes('no-cycle') && issue.cycleId === '') {
-               return true;
-            }
+            if (filters.cycle!.includes('no-cycle') && issue.cycleId === '') return true;
             return filters.cycle!.includes(issue.cycleId);
          });
       }
-
-      // Filter by status type (status category)
-      if (filters.statusType && filters.statusType.length > 0) {
+      if (filters.statusType?.length) {
          filteredIssues = filteredIssues.filter((issue) =>
             filters.statusType!.includes(issue.status.category)
          );
       }
-
       return filteredIssues;
    },
 
-   // Status management
    updateIssueStatus: (issueId: string, newStatus: Status) => {
       get().updateIssue(issueId, { status: newStatus });
    },
-
-   // Priority management
    updateIssuePriority: (issueId: string, newPriority: Priority) => {
       get().updateIssue(issueId, { priority: newPriority });
    },
-
-   // Assignee management
    updateIssueAssignee: (issueId: string, newAssignee: User | null) => {
       get().updateIssue(issueId, { assignee: newAssignee });
    },
 
-   // Labels management
    addIssueLabel: (issueId: string, label: LabelInterface) => {
       const issue = get().getIssueById(issueId);
-      if (issue) {
-         const updatedLabels = [...issue.labels, label];
-         get().updateIssue(issueId, { labels: updatedLabels });
+      if (!issue || issue.labels.some((item) => item.id === label.id)) return;
+      set((state) => {
+         const nextIssues = replaceIssueLabels(state.issues, issueId, (labels) => [...labels, label]);
+         return { issues: nextIssues, issuesByStatus: groupIssuesByStatus(nextIssues) };
+      });
+
+      const adapter = get().persistenceAdapter;
+      if (adapter?.addLabel) {
+         void adapter.addLabel(issueId, label.id).catch(() => {
+            if (get().persistenceAdapter !== adapter) return;
+            set((state) => {
+               const nextIssues = replaceIssueLabels(state.issues, issueId, (labels) =>
+                  labels.filter((item) => item.id !== label.id)
+               );
+               return { issues: nextIssues, issuesByStatus: groupIssuesByStatus(nextIssues) };
+            });
+            adapter.onError('The label was not added. Your change was reverted.');
+         });
       }
    },
 
    removeIssueLabel: (issueId: string, labelId: string) => {
       const issue = get().getIssueById(issueId);
-      if (issue) {
-         const updatedLabels = issue.labels.filter((label) => label.id !== labelId);
-         get().updateIssue(issueId, { labels: updatedLabels });
+      const removedLabel = issue?.labels.find((label) => label.id === labelId);
+      if (!issue || !removedLabel) return;
+      set((state) => {
+         const nextIssues = replaceIssueLabels(state.issues, issueId, (labels) =>
+            labels.filter((label) => label.id !== labelId)
+         );
+         return { issues: nextIssues, issuesByStatus: groupIssuesByStatus(nextIssues) };
+      });
+
+      const adapter = get().persistenceAdapter;
+      if (adapter?.removeLabel) {
+         void adapter.removeLabel(issueId, labelId).catch(() => {
+            if (get().persistenceAdapter !== adapter) return;
+            set((state) => {
+               const nextIssues = replaceIssueLabels(state.issues, issueId, (labels) =>
+                  labels.some((label) => label.id === removedLabel.id)
+                     ? labels
+                     : [...labels, removedLabel]
+               );
+               return { issues: nextIssues, issuesByStatus: groupIssuesByStatus(nextIssues) };
+            });
+            adapter.onError('The label was not removed. Your change was reverted.');
+         });
       }
    },
 
-   // Project management
    updateIssueProject: (issueId: string, newProject: Project | undefined) => {
       get().updateIssue(
          issueId,
@@ -335,9 +295,5 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
          return { issues, issuesByStatus: groupIssuesByStatus(issues) };
       });
    },
-
-   // Utility functions
-   getIssueById: (id: string) => {
-      return get().issues.find((issue) => issue.id === id);
-   },
+   getIssueById: (id: string) => get().issues.find((issue) => issue.id === id),
 }));
