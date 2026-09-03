@@ -41,6 +41,7 @@ export function issueDtoToIssue(dto: IssueDto, projectById: ReadonlyMap<string, 
       rank: dto.rank,
       dueDate: dto.dueDate,
       project: dto.projectId ? projectById.get(dto.projectId) : undefined,
+      milestoneId: dto.milestoneId,
       subissues: [],
    };
 }
