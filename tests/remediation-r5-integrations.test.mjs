@@ -41,7 +41,7 @@ test('R5A API authenticates the workspace and filters integration reads by tenan
    assert.match(supabaseServer, /DatabaseWithIntegrations/);
 });
 
-test('R5A settings surfaces render persisted connection state and expose no fake connect action', async () => {
+test('R5A/R5B settings surfaces render persisted state while the directory remains inert', async () => {
    const hook = await readSource('components/common/settings/use-integration-connections.ts');
    const integrations = await readSource('components/common/settings/integrations.tsx');
    const connections = await readSource('components/common/settings/account-connections.tsx');
@@ -51,11 +51,17 @@ test('R5A settings surfaces render persisted connection state and expose no fake
    assert.match(integrations, /useIntegrationConnections/);
    assert.match(integrations, /Not connected/);
    assert.match(integrations, /Connected/);
-   assert.match(integrations, /OAuth setup and disconnect flows are not released in R5A/);
+   assert.match(integrations, /GitHub authorization is managed from Connected accounts/);
+   assert.match(integrations, /other provider authorization and disconnect flows are not released yet/);
    assert.match(connections, /server-authoritative/);
    assert.match(connections, /useIntegrationConnections/);
+   assert.match(connections, /\/api\/integrations\/github\/start/);
+   assert.match(connections, /'Connect GitHub'/);
    assert.doesNotMatch(integrations, />\s*Connect\s*</);
-   assert.doesNotMatch(connections, />\s*Connect\s*</);
+   assert.doesNotMatch(integrations, /<Button/);
+   assert.doesNotMatch(connections, /Connect Slack/);
+   assert.doesNotMatch(connections, /Connect Notion/);
+   assert.doesNotMatch(connections, /Disconnect GitHub/);
 });
 
 test('R5A removes fake GitHub code-review controls until provider actions exist', async () => {
