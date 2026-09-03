@@ -14,9 +14,7 @@ import {
    Box,
    CalendarClock,
    CheckCircle2,
-   Compass,
    Flag,
-   Layers3,
    Milestone,
    UsersRound,
 } from 'lucide-react';
