@@ -1,12 +1,15 @@
 'use client';
 
 import type { IssueDto } from '@/lib/issues/contracts';
-import type { Issue } from '@/mock-data/issues';
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import type { Project } from '@/mock-data/projects';
 import { priorities } from '@/mock-data/priorities';
 import { status } from '@/mock-data/status';
 
-export function issueDtoToIssue(dto: IssueDto, projectById: ReadonlyMap<string, Project>): Issue {
+export function issueDtoToIssue(
+   dto: IssueDto,
+   projectById: ReadonlyMap<string, Project>
+): WorkspaceIssue {
    return {
       id: dto.id,
       identifier: dto.identifier,
