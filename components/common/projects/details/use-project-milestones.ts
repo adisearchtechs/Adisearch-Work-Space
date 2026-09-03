@@ -21,7 +21,7 @@ export function useProjectMilestones(projectId: string) {
    const replaceMilestones = useProjectMilestonesStore((state) => state.replaceProjectMilestones);
 
    useEffect(() => {
-      if (!workspace.configured || loaded || loading) return;
+      if (!workspace.configured || loaded) return;
       const current = useProjectMilestonesStore.getState();
       if (current.loadingByProject[projectId] || current.loadedByProject[projectId]) return;
 
@@ -55,7 +55,6 @@ export function useProjectMilestones(projectId: string) {
       return () => controller.abort();
    }, [
       loaded,
-      loading,
       projectId,
       replaceMilestones,
       setLoading,
