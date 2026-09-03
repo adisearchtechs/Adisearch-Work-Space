@@ -1,6 +1,7 @@
 import AccountConnections from '@/components/common/settings/account-connections';
 import Integrations from '@/components/common/settings/integrations';
 import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
+import NotificationPreferences from '@/components/common/settings/notification-preferences';
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
 import PersistentPreferences from '@/components/common/settings/persistent-preferences';
 import Profile from '@/components/common/settings/profile';
@@ -13,13 +14,6 @@ import Header from '@/components/layout/headers/settings/header';
 import { notFound } from 'next/navigation';
 import type { ComponentType, ReactNode } from 'react';
 
-const NotificationsNotice = () => (
-   <SettingsNotice
-      title="Notifications"
-      description="Notification delivery preferences are not configurable yet. Inbox notifications continue to use the current production behavior."
-      milestone="R6 Settings persistence"
-   />
-);
 const SecurityNotice = () => (
    <SettingsNotice
       title="Security & access"
@@ -72,7 +66,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'issue-labels': IssueLabelsSettings,
    'issue-templates': IssueTemplatesNotice,
    'members': WorkspaceMembersSettings,
-   'notifications': NotificationsNotice,
+   'notifications': NotificationPreferences,
    'preferences': PersistentPreferences,
    'profile': Profile,
    'project-statuses': ProjectStatusesNotice,
