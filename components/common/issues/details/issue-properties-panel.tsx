@@ -33,6 +33,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProps) {
    const workspace = useWorkspace();
    const cycle = detail && issue.cycleId ? getCycleById(issue.cycleId) : undefined;
+   const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
    const updateIssue = useIssuesStore((state) => state.updateIssue) as (
       id: string,
       changes: Partial<WorkspaceIssue>
@@ -78,12 +79,7 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
             <div className="flex flex-wrap items-center gap-1.5">
                <ProjectSelector
                   project={issue.project}
-                  onChange={(project) =>
-                     updateIssue(issue.id, {
-                        project,
-                        milestoneId: null,
-                     })
-                  }
+                  onChange={(project) => updateIssueProject(issue.id, project)}
                />
                {workspace.configured && (
                   <MilestoneSelector
