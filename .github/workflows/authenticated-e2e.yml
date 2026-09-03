@@ -1,0 +1,129 @@
+name: Authenticated E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/authenticated-e2e.yml'
+      - 'e2e/authenticated.playwright.config.cjs'
+      - 'e2e/authenticated-workspace.spec.cjs'
+      - '.env.production'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: authenticated-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  authenticated-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      E2E_PRIMARY_EMAIL: ${{ secrets.E2E_PRIMARY_EMAIL }}
+      E2E_PRIMARY_PASSWORD: ${{ secrets.E2E_PRIMARY_PASSWORD }}
+      E2E_SECONDARY_EMAIL: ${{ secrets.E2E_SECONDARY_EMAIL }}
+      E2E_SECONDARY_PASSWORD: ${{ secrets.E2E_SECONDARY_PASSWORD }}
+    steps:
+      - name: Verify dedicated test identities are configured
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in E2E_PRIMARY_EMAIL E2E_PRIMARY_PASSWORD E2E_SECONDARY_EMAIL E2E_SECONDARY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured as a repository Actions secret."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Use dedicated confirmed test identities. Never use a personal production account for this suite."
+            exit 1
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate dedicated identities through Supabase SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source .env.production
+          set +a
+          node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js';
+
+          const identities = [
+            ['PRIMARY', process.env.E2E_PRIMARY_EMAIL, process.env.E2E_PRIMARY_PASSWORD],
+            ['SECONDARY', process.env.E2E_SECONDARY_EMAIL, process.env.E2E_SECONDARY_PASSWORD],
+          ];
+
+          let failed = false;
+          for (const [label, email, password] of identities) {
+            const client = createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL,
+              process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+              {
+                auth: {
+                  persistSession: false,
+                  autoRefreshToken: false,
+                  detectSessionInUrl: false,
+                },
+              }
+            );
+
+            const { error } = await client.auth.signInWithPassword({ email, password });
+            if (!error) {
+              console.log(`${label} E2E credentials accepted by Supabase Auth.`);
+              continue;
+            }
+
+            const code = error.code || error.name || 'unknown_error';
+            console.error(
+              `::error::${label} E2E credentials rejected by Supabase Auth (${error.status || 'no_status'}, ${code}).`
+            );
+            failed = true;
+          }
+
+          if (failed) process.exit(1);
+          NODE
+
+      - name: Build production application against real Supabase
+        run: pnpm build
+
+      - name: Install pinned browser test harness
+        run: pnpm add --save-dev --lockfile=false --ignore-scripts @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run authenticated persistence and tenant isolation certification
+        run: pnpm exec playwright test --config=e2e/authenticated.playwright.config.cjs
+
+      - name: Upload authenticated browser diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authenticated-e2e-diagnostics
+          path: |
+            playwright-authenticated-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
