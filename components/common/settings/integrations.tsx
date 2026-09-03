@@ -136,7 +136,7 @@ export default function Integrations() {
         ? 'Checking persisted workspace connection state…'
         : state === 'error'
           ? error ?? 'Integration connection state could not be loaded.'
-          : 'Connection labels below come from persisted workspace metadata. OAuth setup and disconnect flows are not released in R5A.';
+          : 'Connection labels below come from persisted workspace metadata. GitHub authorization is managed from Connected accounts when the GitHub App is configured; other provider authorization and disconnect flows are not released yet.';
 
    return (
       <div className="w-full overflow-y-auto h-full">
