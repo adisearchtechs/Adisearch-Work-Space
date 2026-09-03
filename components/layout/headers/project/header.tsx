@@ -26,7 +26,7 @@ function ProjectTabs({ projectId }: { projectId: string }) {
       <div className="flex items-center gap-1">
          {PROJECT_TABS.map((tab) => {
             const href = `/${orgId}/project/${projectId}/${tab.segment}`;
-            const isActive = pathname === href;
+            const isActive = pathname === href || pathname.startsWith(`${href}/`);
             return (
                <Link
                   key={tab.segment}
