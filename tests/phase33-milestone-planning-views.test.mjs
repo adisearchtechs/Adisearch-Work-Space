@@ -54,7 +54,7 @@ test('milestone index surfaces real assignment counts and links into planning', 
    assert.match(milestones, /completedCount/);
    assert.match(milestones, /plannedCount/);
    assert.match(milestones, /\% complete/);
-   assert.match(milestones, /milestones\$\{milestone\.id\}/);
+   assert.match(milestones, /\/milestones\/\$\{milestone\.id\}/);
 });
 
 test('Phase 33 reuses existing persistent milestone and issue schema', async () => {
