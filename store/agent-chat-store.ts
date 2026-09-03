@@ -92,6 +92,7 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
          .then(async (response) => {
             const payload = (await response.json().catch(() => ({}))) as {
                chats?: AgentChatDto[];
+               canWrite?: boolean;
                ai?: AgentAvailability;
                error?: string;
             };
@@ -106,15 +107,21 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
                const mergedRemote = remoteChats.map((chat) => localById.get(chat.id) ?? chat);
                const remoteIds = new Set(remoteChats.map((chat) => chat.id));
                const localOnly = current.chats.filter((chat) => !remoteIds.has(chat.id));
+               const availability: AgentAvailability =
+                  payload.canWrite === false
+                     ? {
+                          available: false,
+                          reason: 'Read-only workspace members cannot send Agent messages.',
+                       }
+                     : payload.ai ?? {
+                          available: false,
+                          reason: 'Agent model readiness could not be determined.',
+                       };
                return {
                   chats: [...localOnly, ...mergedRemote],
                   persistenceStatus: 'ready',
                   persistenceError: null,
-                  agentAvailability:
-                     payload.ai ?? {
-                        available: false,
-                        reason: 'Agent model readiness could not be determined.',
-                     },
+                  agentAvailability: availability,
                };
             });
          })
@@ -195,12 +202,13 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
                conversation?: { id: string; title: string };
                messages?: AgentMessageDto[];
                error?: string;
-               ai?: AgentAvailability;
             };
             if (!response.ok) throw new Error(errorMessage(payload, 'The Agent request failed.'));
             const persistedUser = payload.messages?.find((message) => message.role === 'user');
             const persistedAssistant = payload.messages?.find((message) => message.role === 'assistant');
-            if (!persistedUser || !persistedAssistant) throw new Error('The Agent returned an incomplete response.');
+            if (!persistedUser || !persistedAssistant) {
+               throw new Error('The Agent returned an incomplete response.');
+            }
 
             if (get().persistenceOrganization !== organizationSlug) return;
             set((current) => ({
