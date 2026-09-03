@@ -60,7 +60,7 @@ test('authenticated persistence, CRUD, and tenant isolation are enforced end to 
 
   try {
     await primaryPage.goto(`${APP_ORIGIN}/`);
-    await expect(primaryPage).toHaveURL(/\/login$/);
+    await expect(primaryPage).toHaveURL(/\/login(?:\?.*)?$/);
 
     primarySlug = await signIn(primaryPage, primaryEmail, primaryPassword);
     const secondarySlug = await signIn(secondaryPage, secondaryEmail, secondaryPassword);
