@@ -58,10 +58,18 @@ test('R6A profile UI persists real settings and refreshes server-authoritative w
 });
 
 test('R6A reuses existing self-only profile RLS and requires no schema migration', async () => {
-   const migrations = await readSource('supabase/migrations/20260826083217_harden_schema_and_rls.sql');
+   const initial = await readSource(
+      'supabase/migrations/20260826123300_initial_adisearch_workspace_schema.sql'
+   );
+   const optimized = await readSource(
+      'supabase/migrations/20260826123513_optimize_rls_and_foreign_key_indexes.sql'
+   );
 
-   assert.match(migrations, /profiles_update_self/);
-   assert.match(migrations, /for update/);
-   assert.match(migrations, /using \(id = \(select auth\.uid\(\)\)\)/);
-   assert.match(migrations, /with check \(id = \(select auth\.uid\(\)\)\)/);
+   assert.match(initial, /create policy profiles_update_self on public\.profiles/);
+   assert.match(initial, /for update to authenticated/);
+   assert.match(initial, /using \(id = auth\.uid\(\)\)/);
+   assert.match(initial, /with check \(id = auth\.uid\(\)\)/);
+   assert.match(optimized, /alter policy profiles_update_self on public\.profiles/);
+   assert.match(optimized, /using \(id = \(select auth\.uid\(\)\)\)/);
+   assert.match(optimized, /with check \(id = \(select auth\.uid\(\)\)\)/);
 });
