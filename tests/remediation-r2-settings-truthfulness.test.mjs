@@ -27,8 +27,10 @@ test('R2 production settings route does not expose prototype settings controls',
 test('R2 connected accounts never fabricate provider connection state', async () => {
    const connections = await readSource('components/common/settings/account-connections.tsx');
 
-   assert.match(connections, /Not configured/);
+   assert.match(connections, /useIntegrationConnections/);
+   assert.match(connections, /Not connected/);
    assert.match(connections, /server-authoritative/);
+   assert.match(connections, /not configured/);
    assert.doesNotMatch(connections, /ConnectedTrailing/);
    assert.doesNotMatch(connections, /@adisearchtechs/);
    assert.doesNotMatch(connections, /octo-relay/);
@@ -39,11 +41,14 @@ test('R2 integration directory remains searchable without fake enabled or dead c
    const integrations = await readSource('components/common/settings/integrations.tsx');
 
    assert.match(integrations, /Search integrations/);
-   assert.match(integrations, /Coming soon/);
+   assert.match(integrations, /useIntegrationConnections/);
+   assert.match(integrations, /Not connected/);
+   assert.match(integrations, /OAuth setup and disconnect flows are not released in R5A/);
    assert.match(integrations, /onClick=\{\(\) => setExpanded\(true\)\}/);
    assert.doesNotMatch(integrations, /ENABLED_INTEGRATIONS/);
    assert.doesNotMatch(integrations, /status === 'enabled'/);
    assert.doesNotMatch(integrations, /function IntegrationCard[\s\S]*?return \(\s*<button/);
+   assert.doesNotMatch(integrations, />\s*Connect\s*</);
 });
 
 test('R2 generic placeholder and profile surfaces do not expose dead write controls', async () => {
