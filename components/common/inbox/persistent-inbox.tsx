@@ -15,6 +15,7 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { issueHref } from '@/lib/issues/routes';
 import { cn } from '@/lib/utils';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { usePersistentNotificationsStore } from '@/store/persistent-notifications-store';
@@ -230,7 +231,7 @@ export default function PersistentInbox() {
                            <span>{selected.issue.statusName}</span><span>·</span><span>{selected.issue.priorityId}</span>
                         </div>
                         <Button asChild className="mt-5" size="sm">
-                           <Link href={`/${orgId}/issue/${selected.issue.id}`}>Open issue</Link>
+                           <Link href={issueHref(orgId, selected.issue.identifier)}>Open issue</Link>
                         </Button>
                      </div>
                   )}
