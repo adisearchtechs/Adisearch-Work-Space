@@ -2,6 +2,7 @@
 
 import { EntityAttachments } from '@/components/common/attachments/entity-attachments';
 import { useWorkspace } from '@/components/providers/workspace-provider';
+import { issueHref } from '@/lib/issues/routes';
 import { getIssueDetail } from '@/mock-data/issue-details';
 import { useIssuesStore } from '@/store/issues-store';
 import { Paperclip, Plus, SmilePlus } from 'lucide-react';
@@ -21,7 +22,7 @@ export default function IssueDetails() {
    const { orgId, issueId } = useParams<{ orgId: string; issueId: string }>();
    const { issues } = useIssuesStore();
    const issue = useMemo(
-      () => issues.find((candidate) => candidate.identifier === issueId),
+      () => issues.find((candidate) => candidate.identifier === issueId || candidate.id === issueId),
       [issues, issueId]
    );
    const demoDetail = useMemo(
@@ -90,7 +91,7 @@ export default function IssueDetails() {
                               {subIssues.map((subIssue) => (
                                  <Link
                                     key={subIssue.id}
-                                    href={`/${orgId ?? 'demo'}/issue/${subIssue.identifier}`}
+                                    href={issueHref(orgId ?? 'demo', subIssue.identifier)}
                                     className="flex items-center gap-2.5 h-10 px-1 border-b border-border/50 hover:bg-sidebar/50 text-sm min-w-0"
                                  >
                                     <subIssue.status.icon />
