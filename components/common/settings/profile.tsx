@@ -1,12 +1,10 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { SettingsCard, SettingsRow, SettingsSection, SettingsShell } from './shared';
 
-/** Personal "Profile" settings backed by the authenticated workspace session. */
 export default function Profile() {
    const { user, organization } = useWorkspace();
    const displayName = user.displayName || 'Workspace member';
@@ -15,7 +13,10 @@ export default function Profile() {
    const fallback = displayName.slice(0, 2).toUpperCase();
 
    return (
-      <SettingsShell title="My Profile">
+      <SettingsShell
+         title="My Profile"
+         description="This page reflects authenticated workspace identity. Editing profile fields is not available until persistent profile settings are implemented."
+      >
          <SettingsSection>
             <SettingsCard>
                <SettingsRow
@@ -42,7 +43,7 @@ export default function Profile() {
                />
                <SettingsRow
                   title="Username"
-                  description="Your short workspace identity"
+                  description="Derived from your current display name; it is not a separately persisted username."
                   trailing={
                      <Input
                         value={username || 'member'}
@@ -73,9 +74,9 @@ export default function Profile() {
                   title={organization.name}
                   description={`Signed in as ${displayName}`}
                   trailing={
-                     <Button size="xs" variant="ghost" className="text-red-500 hover:text-red-500">
-                        Leave workspace
-                     </Button>
+                     <span className="text-xs text-muted-foreground">
+                        Membership changes are managed by workspace administrators
+                     </span>
                   }
                />
             </SettingsCard>

@@ -4,14 +4,8 @@ import { Input } from '@/components/ui/input';
 import { ChevronRight, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { INTEGRATION_LOGOS } from './integration-logos';
-import {
-   ENABLED_INTEGRATIONS,
-   INTEGRATION_CATEGORIES,
-   INTEGRATIONS,
-   Integration,
-} from './integrations-data';
+import { INTEGRATION_CATEGORIES, INTEGRATIONS, type Integration } from './integrations-data';
 
-/** How many cards a category shows before "Show all". */
 const VISIBLE_PER_CATEGORY = 8;
 
 function IntegrationIcon({ integration, size = 36 }: { integration: Integration; size?: number }) {
@@ -38,12 +32,7 @@ function IntegrationIcon({ integration, size = 36 }: { integration: Integration;
    return (
       <span
          className="rounded-md inline-flex items-center justify-center font-semibold text-white shrink-0 select-none"
-         style={{
-            width: size,
-            height: size,
-            backgroundColor: integration.color,
-            fontSize: size * 0.34,
-         }}
+         style={{ width: size, height: size, backgroundColor: integration.color, fontSize: size * 0.34 }}
          aria-hidden
       >
          {initials}
@@ -51,38 +40,26 @@ function IntegrationIcon({ integration, size = 36 }: { integration: Integration;
    );
 }
 
-function StatusBadge({ status }: { status: NonNullable<Integration['status']> }) {
-   return (
-      <span className="text-[11px] text-muted-foreground border rounded px-1 py-px leading-none shrink-0">
-         {status === 'enabled' ? 'Enabled' : 'Pre-installed'}
-      </span>
-   );
-}
-
 function IntegrationCard({ integration }: { integration: Integration }) {
    return (
-      <button className="flex items-start gap-3 rounded-lg border bg-container p-3 text-left hover:bg-accent/50 transition-colors">
+      <div className="flex items-start gap-3 rounded-lg border bg-container p-3 text-left">
          <IntegrationIcon integration={integration} />
-         <span className="flex flex-col gap-0.5 min-w-0">
-            <span className="flex items-center gap-2">
+         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2">
                <span className="text-sm font-medium truncate">{integration.name}</span>
-               {integration.status && <StatusBadge status={integration.status} />}
-            </span>
+               <span className="text-[11px] text-muted-foreground border rounded px-1 py-px leading-none shrink-0">
+                  Coming soon
+               </span>
+            </div>
             <span className="text-xs text-muted-foreground line-clamp-2">
                {integration.description}
             </span>
-         </span>
-      </button>
+         </div>
+      </div>
    );
 }
 
-function CategorySection({
-   label,
-   items,
-}: {
-   label: string;
-   items: Integration[];
-}) {
+function CategorySection({ label, items }: { label: string; items: Integration[] }) {
    const [expanded, setExpanded] = useState(false);
    const visible = expanded ? items : items.slice(0, VISIBLE_PER_CATEGORY);
    return (
@@ -95,6 +72,7 @@ function CategorySection({
          </div>
          {!expanded && items.length > VISIBLE_PER_CATEGORY && (
             <button
+               type="button"
                onClick={() => setExpanded(true)}
                className="self-start text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
             >
@@ -106,13 +84,8 @@ function CategorySection({
    );
 }
 
-/**
- * Workspace "Integrations" directory (settings/integrations): search,
- * enabled integrations carousel and categorized integration cards.
- */
 export default function Integrations() {
    const [query, setQuery] = useState('');
-
    const searchResults = useMemo(() => {
       const needle = query.trim().toLowerCase();
       if (!needle) return null;
@@ -129,8 +102,12 @@ export default function Integrations() {
             <div className="flex flex-col gap-1">
                <h1 className="text-2xl font-medium">Integrations</h1>
                <p className="text-sm text-muted-foreground">
-                  Enhance your workspace with a wide variety of add-ons and integrations
+                  Browse planned providers. Connection flows and authoritative connection state arrive in R5.
                </p>
+            </div>
+
+            <div className="rounded-lg border bg-container px-4 py-3 text-sm text-muted-foreground">
+               No integration shown on this page is currently connected or enabled by this directory.
             </div>
 
             <div className="relative">
@@ -155,40 +132,13 @@ export default function Integrations() {
                   </div>
                </section>
             ) : (
-               <>
-                  <section className="flex flex-col gap-3">
-                     <div className="flex items-center justify-between">
-                        <h2 className="text-base font-medium">Enabled</h2>
-                        <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                           View all
-                        </button>
-                     </div>
-                     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-                        {ENABLED_INTEGRATIONS.map((integration) => (
-                           <button
-                              key={integration.id}
-                              className="flex flex-col items-start gap-2 rounded-lg border bg-container p-3 w-32 shrink-0 hover:bg-accent/50 transition-colors"
-                           >
-                              <IntegrationIcon integration={integration} size={28} />
-                              <span className="flex flex-col items-start">
-                                 <span className="text-xs font-medium truncate max-w-full">
-                                    {integration.name}
-                                 </span>
-                                 <span className="text-[11px] text-muted-foreground">Enabled</span>
-                              </span>
-                           </button>
-                        ))}
-                     </div>
-                  </section>
-
-                  {INTEGRATION_CATEGORIES.map((category) => (
-                     <CategorySection
-                        key={category.id}
-                        label={category.label}
-                        items={category.items.map((id) => INTEGRATIONS[id])}
-                     />
-                  ))}
-               </>
+               INTEGRATION_CATEGORIES.map((category) => (
+                  <CategorySection
+                     key={category.id}
+                     label={category.label}
+                     items={category.items.map((id) => INTEGRATIONS[id])}
+                  />
+               ))
             )}
          </div>
       </div>
