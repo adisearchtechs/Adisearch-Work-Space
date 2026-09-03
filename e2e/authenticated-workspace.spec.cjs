@@ -160,6 +160,15 @@ test('authenticated persistence, CRUD, and tenant isolation are enforced end to 
       priorityId: 'high',
     });
 
+    // Cross-tenant mutation of a known primary resource must also be denied.
+    const secondaryMutatesPrimary = await mutation(
+      secondaryPage,
+      'PATCH',
+      `/api/issues/${createdIssueId}`,
+      { title: 'cross-tenant mutation must not succeed' }
+    );
+    expect([403, 404]).toContain(secondaryMutatesPrimary.status());
+
     const secondaryReadsPrimarySettings = await secondaryPage.request.get(
       `${APP_ORIGIN}/api/workspace-settings?organization=${encodeURIComponent(primarySlug)}`
     );
