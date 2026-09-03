@@ -11,6 +11,9 @@ test('R3A invitation schema stores only token hashes and keeps direct writes beh
    const migration = await readSource(
       'supabase/migrations/20260903102000_add_workspace_invitations.sql'
    );
+   const rpcGrantFix = await readSource(
+      'supabase/migrations/20260903103000_restrict_workspace_invitation_rpc_execution.sql'
+   );
 
    assert.match(migration, /create table public\.organization_invitations/);
    assert.match(migration, /token_hash text not null unique/);
@@ -25,6 +28,9 @@ test('R3A invitation schema stores only token hashes and keeps direct writes beh
    assert.match(migration, /create or replace function public\.accept_organization_invitation/);
    assert.match(migration, /security definer[\s\S]*?set search_path = ''/);
    assert.match(migration, /grant execute on function public\.accept_organization_invitation\(text\) to authenticated/);
+   assert.match(rpcGrantFix, /revoke execute on function public\.create_organization_invitation[\s\S]*from anon/);
+   assert.match(rpcGrantFix, /revoke execute on function public\.revoke_organization_invitation\(uuid, uuid\) from anon/);
+   assert.match(rpcGrantFix, /revoke execute on function public\.accept_organization_invitation\(text\) from anon/);
 });
 
 test('R3A invitation creation enforces tenant, membership, role and team boundaries in the database', async () => {
