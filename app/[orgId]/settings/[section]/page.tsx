@@ -1,16 +1,9 @@
-import AccountCodeReviews from '@/components/common/settings/account-code-reviews';
 import AccountConnections from '@/components/common/settings/account-connections';
-import AccountNotifications from '@/components/common/settings/account-notifications';
-import AccountSecurity from '@/components/common/settings/account-security';
-import AgentPersonalization from '@/components/common/settings/agent-personalization';
-import AiAgents from '@/components/common/settings/ai-agents';
 import Integrations from '@/components/common/settings/integrations';
 import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
-import IssueTemplatesSettings from '@/components/common/settings/issue-templates-settings';
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
-import Preferences from '@/components/common/settings/preferences';
 import Profile from '@/components/common/settings/profile';
-import ProjectStatusesSettings from '@/components/common/settings/project-statuses-settings';
+import SettingsNotice from '@/components/common/settings/settings-notice';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
 import WorkspaceMembersSettings from '@/components/common/settings/workspace-members-settings';
 import MainLayout from '@/components/layout/main-layout';
@@ -18,20 +11,77 @@ import Header from '@/components/layout/headers/settings/header';
 import { notFound } from 'next/navigation';
 import type { ComponentType, ReactNode } from 'react';
 
+const PreferencesNotice = () => (
+   <SettingsNotice
+      title="Preferences"
+      description="Persistent user preferences are not configurable yet. Existing product behavior remains unchanged."
+      milestone="R6 Settings persistence"
+   />
+);
+const NotificationsNotice = () => (
+   <SettingsNotice
+      title="Notifications"
+      description="Notification delivery preferences are not configurable yet. Inbox notifications continue to use the current production behavior."
+      milestone="R6 Settings persistence"
+   />
+);
+const SecurityNotice = () => (
+   <SettingsNotice
+      title="Security & access"
+      description="Detailed session, passkey, personal API-key, and signing-key management is not implemented in Adisearch Workspace. Authentication remains managed by Supabase Auth."
+      milestone="R7 Security and Supabase hardening"
+   />
+);
+const AgentPersonalizationNotice = () => (
+   <SettingsNotice
+      title="Agent personalization"
+      description="Personal guidance, skills, and MCP connector preferences are not persisted yet."
+      milestone="R4 Real AI Agent and R6 Settings persistence"
+   />
+);
+const AiNotice = () => (
+   <SettingsNotice
+      title="AI & Agents"
+      description="Production AI capability controls are not available yet. Coding Sessions, Loops, Code Intelligence, and Slack Agent integrations are not enabled by this workspace."
+      milestone="R4 Real AI Agent"
+   />
+);
+const CodeReviewsNotice = () => (
+   <SettingsNotice
+      title="Code & reviews"
+      description="Git provider settings and review automation are not configurable until a real provider connection exists."
+      milestone="R5 Connected apps architecture"
+   />
+);
+const IssueTemplatesNotice = () => (
+   <SettingsNotice
+      title="Issue templates"
+      description="Workspace issue templates are not implemented. No sample template is treated as production data."
+      milestone="R6 feature-specific settings"
+   />
+);
+const ProjectStatusesNotice = () => (
+   <SettingsNotice
+      title="Project statuses"
+      description="Project-status administration is not implemented. Existing project status values remain unchanged."
+      milestone="R6 feature-specific settings"
+   />
+);
+
 const DEDICATED_SECTIONS: Record<string, ComponentType> = {
-   'agent-personalization': AgentPersonalization,
-   'ai': AiAgents,
-   'code-and-reviews': AccountCodeReviews,
+   'agent-personalization': AgentPersonalizationNotice,
+   ai: AiNotice,
+   'code-and-reviews': CodeReviewsNotice,
    'connected-accounts': AccountConnections,
-   'integrations': Integrations,
+   integrations: Integrations,
    'issue-labels': IssueLabelsSettings,
-   'issue-templates': IssueTemplatesSettings,
-   'members': WorkspaceMembersSettings,
-   'notifications': AccountNotifications,
-   'preferences': Preferences,
-   'profile': Profile,
-   'project-statuses': ProjectStatusesSettings,
-   'security': AccountSecurity,
+   'issue-templates': IssueTemplatesNotice,
+   members: WorkspaceMembersSettings,
+   notifications: NotificationsNotice,
+   preferences: PreferencesNotice,
+   profile: Profile,
+   'project-statuses': ProjectStatusesNotice,
+   security: SecurityNotice,
 };
 
 export default async function SettingsSectionPage({
