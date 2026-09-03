@@ -53,11 +53,11 @@ test('R6B workspace settings UI persists organization name and keeps URL slug im
    assert.match(nav, /name: 'General', url: '\/settings\/workspace'/);
 });
 
-test('R6 keeps unreleased notification controls behind a truthful notice while preferences become persistent', async () => {
+test('R6 routes persistent personal and notification settings without restoring prototype controls', async () => {
    const route = await readSource('app/[orgId]/settings/[section]/page.tsx');
 
-   assert.match(route, /Notification delivery preferences are not configurable yet/);
    assert.match(route, /'preferences': PersistentPreferences/);
-   assert.match(route, /'notifications': NotificationsNotice/);
+   assert.match(route, /'notifications': NotificationPreferences/);
    assert.doesNotMatch(route, /'preferences': PreferencesNotice/);
+   assert.doesNotMatch(route, /'notifications': NotificationsNotice/);
 });
