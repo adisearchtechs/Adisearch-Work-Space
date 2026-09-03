@@ -15,7 +15,10 @@ async function signIn(page, email, password) {
   await page.getByLabel('Work email').fill(email);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in securely' }).click();
-  await page.waitForURL((url) => url.pathname !== '/login', { timeout: 20_000 });
+  await page.waitForURL(
+    (url) => url.pathname === '/onboarding' || /^\/[^/]+\/team\/CORE\/all$/.test(url.pathname),
+    { timeout: 20_000 }
+  );
 
   const path = new URL(page.url()).pathname;
   if (path === '/onboarding') {
