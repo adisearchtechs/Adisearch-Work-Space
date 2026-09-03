@@ -70,7 +70,7 @@ test('R3A invitation acceptance is atomic, email-bound and never bypasses member
    assert.doesNotMatch(acceptRoute, /from\('organization_members'\).*insert/s);
 });
 
-test('R3A invitation API uses admin authorization, bounded validation and truthful delivery state', async () => {
+test('R3 invitation API uses admin authorization, bounded validation and truthful delivery state', async () => {
    const route = await readSource('app/api/invitations/route.ts');
    const contracts = await readSource('lib/invitations/contracts.ts');
    const token = await readSource('lib/invitations/token.ts');
@@ -81,7 +81,10 @@ test('R3A invitation API uses admin authorization, bounded validation and truthf
    assert.match(route, /readJsonBody\(request\)/);
    assert.match(route, /context\.role === 'admin' && parsed\.data\.role === 'admin'/);
    assert.match(route, /rpc\('create_organization_invitation'/);
-   assert.match(route, /status: 'not-sent'/);
+   assert.match(route, /invitationDeliveryReadiness\(\)/);
+   assert.match(route, /sendWorkspaceInvitationEmail/);
+   assert.match(route, /status: 'sent'/);
+   assert.doesNotMatch(route, /inviteToken/);
    assert.match(contracts, /teamIds: z\.array\(z\.string\(\)\.uuid\(\)\)\.max\(50\)/);
    assert.match(token, /randomBytes\(32\)\.toString\('base64url'\)/);
    assert.match(token, /createHash\('sha256'\)/);
