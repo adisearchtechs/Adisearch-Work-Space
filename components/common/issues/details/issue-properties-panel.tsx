@@ -4,6 +4,7 @@ import { CyclePlayIcon } from '@/components/common/cycles/cycle-line';
 import { LabelSelector } from '@/components/layout/sidebar/create-new-issue/label-selector';
 import { MilestoneSelector } from '@/components/layout/sidebar/create-new-issue/milestone-selector';
 import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import type { WorkspaceIssue } from '@/lib/issues/types';
 import { getCycleById } from '@/mock-data/cycles';
 import { IssueDetail } from '@/mock-data/issue-details';
@@ -31,6 +32,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProps) {
+   const workspace = useWorkspace();
    const cycle = detail && issue.cycleId ? getCycleById(issue.cycleId) : undefined;
    const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
    const addIssueLabel = useIssuesStore((state) => state.addIssueLabel);
@@ -89,13 +91,15 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
                   project={issue.project}
                   onChange={(project) => updateIssueProject(issue.id, project)}
                />
-               <MilestoneSelector
-                  projectId={issue.project?.id}
-                  milestoneId={issue.milestoneId}
-                  onChange={(milestoneId) => updateIssue(issue.id, { milestoneId })}
-               />
+               {workspace.configured && (
+                  <MilestoneSelector
+                     projectId={issue.project?.id}
+                     milestoneId={issue.milestoneId}
+                     onChange={(milestoneId) => updateIssue(issue.id, { milestoneId })}
+                  />
+               )}
             </div>
-            {issue.project && detail?.milestone && !issue.milestoneId && (
+            {!workspace.configured && issue.project && detail?.milestone && (
                <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
                   <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
                   <span className="truncate">{detail.milestone}</span>
