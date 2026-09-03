@@ -23,11 +23,14 @@ test('Supabase authentication refresh trusts verified claims, not an unverified 
    assert.match(proxy, /setAll\(cookiesToSet, headers\)/);
    assert.match(proxy, /finalize\(NextResponse\.redirect/);
    serverRoutes.forEach((source) => assert.match(source, /auth\.getClaims\(\)/));
-   assert.match(loginActions, /emailRedirectTo: getSiteUrl\(\)/);
+   assert.match(loginActions, /const next = safeRedirectPath\(parsed\.data\.next\)/);
+   assert.match(loginActions, /new URL\(next, `\$\{getSiteUrl\(\)\}\/`\)\.toString\(\)/);
+   assert.match(loginActions, /options: \{ emailRedirectTo \}/);
    assert.match(loginActions, /status: 'check-email'/);
    assert.match(loginPage, /Confirmation email sent/);
    assert.match(loginPage, /confirmation-failed/);
    assert.match(confirmRoute, /verifyOtp\(\{ type, token_hash: tokenHash \}\)/);
+   assert.match(confirmRoute, /candidate\.origin !== site\.origin/);
 });
 
 test('Vercel production auth links use the stable project domain', async () => {
