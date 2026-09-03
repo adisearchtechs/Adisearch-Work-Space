@@ -25,7 +25,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>{isSettings ? <BackToApp /> : <OrgSwitcher />}</SidebarHeader>
-         <SidebarContent>
+         <SidebarContent className="overscroll-contain">
             {isSettings ? (
                <>
                   <NavSettings />
@@ -40,14 +40,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
          </SidebarContent>
          <SidebarFooter>
-            <div className="w-full flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-2">
                {open && (
-                  <div className="group/sidebar relative flex flex-col gap-2 rounded-lg border p-4 text-sm w-full">
+                  <div className="group/sidebar relative hidden w-full flex-col gap-2 rounded-lg border p-4 text-sm md:flex">
                      <Button
                         type="button"
                         size="icon"
                         variant="ghost"
-                        className="absolute top-1.5 right-1.5 z-10 size-7"
+                        className="absolute right-1.5 top-1.5 z-10 size-7"
                         onClick={() => setOpen(!open)}
                         aria-label="Dismiss promotion"
                      >
@@ -64,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                      </Button>
                   </div>
                )}
-               <div className="w-full flex items-center justify-between">
+               <div className="flex w-full items-center justify-between">
                   <HelpButton />
                   <Button size="icon" variant="secondary" asChild>
                      <Link
