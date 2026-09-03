@@ -36,7 +36,11 @@ export function issueDtoToIssue(
               timezone: 'UTC',
            }
          : null,
-      labels: [],
+      labels: dto.labels.map((label) => ({
+         id: label.id,
+         name: label.name,
+         color: label.color,
+      })),
       creatorId: dto.creatorId,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
