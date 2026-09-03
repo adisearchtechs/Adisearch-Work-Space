@@ -33,7 +33,8 @@ test('R2 connected accounts never fabricate provider connection state', async ()
    assert.match(connections, /providers\.github\.available/);
    assert.match(connections, /canAdministerConnections/);
    assert.match(connections, /\/api\/integrations\/github\/start/);
-   assert.match(connections, />\s*Connect GitHub\s*</);
+   assert.match(connections, /'Connect GitHub'/);
+   assert.match(connections, /'Reconnect GitHub'/);
    assert.doesNotMatch(connections, /ConnectedTrailing/);
    assert.doesNotMatch(connections, /@adisearchtechs/);
    assert.doesNotMatch(connections, /octo-relay/);
