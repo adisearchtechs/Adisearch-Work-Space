@@ -47,7 +47,7 @@ export async function PATCH(
 
    const { data: existing, error: existingError } = await supabase
       .from('issues')
-      .select('id, organization_id, assignee_id')
+      .select('id, organization_id, assignee_id, project_id, milestone_id')
       .eq('id', issueId)
       .maybeSingle();
    if (existingError) {
@@ -70,17 +70,47 @@ export async function PATCH(
       statusId = nextStatus.id;
    }
 
-   if (parsed.data.projectId) {
+   const targetProjectId =
+      parsed.data.projectId !== undefined ? parsed.data.projectId : existing.project_id;
+   const projectChanged =
+      parsed.data.projectId !== undefined && parsed.data.projectId !== existing.project_id;
+   const targetMilestoneId =
+      parsed.data.milestoneId !== undefined
+         ? parsed.data.milestoneId
+         : projectChanged
+           ? null
+           : existing.milestone_id;
+
+   if (targetProjectId) {
       const { data: project, error: projectError } = await supabase
          .from('projects')
          .select('id')
          .eq('organization_id', existing.organization_id)
-         .eq('id', parsed.data.projectId)
+         .eq('id', targetProjectId)
          .maybeSingle();
       if (projectError) {
          return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
       }
       if (!project) return NextResponse.json({ error: 'Invalid project.' }, { status: 400 });
+   }
+
+   if (targetMilestoneId) {
+      if (!targetProjectId) {
+         return NextResponse.json({ error: 'A milestone requires a project.' }, { status: 400 });
+      }
+      const { data: milestone, error: milestoneError } = await supabase
+         .from('project_milestones')
+         .select('id')
+         .eq('organization_id', existing.organization_id)
+         .eq('project_id', targetProjectId)
+         .eq('id', targetMilestoneId)
+         .maybeSingle();
+      if (milestoneError) {
+         return NextResponse.json({ error: 'Unable to update issue.' }, { status: 500 });
+      }
+      if (!milestone) {
+         return NextResponse.json({ error: 'Invalid milestone.' }, { status: 400 });
+      }
    }
 
    if (parsed.data.assigneeId) {
@@ -105,6 +135,9 @@ export async function PATCH(
       ...(parsed.data.dueDate !== undefined && { due_date: parsed.data.dueDate }),
       ...(statusId !== undefined && { status_id: statusId }),
       ...(parsed.data.projectId !== undefined && { project_id: parsed.data.projectId }),
+      ...((parsed.data.milestoneId !== undefined || projectChanged) && {
+         milestone_id: targetMilestoneId,
+      }),
       ...(parsed.data.assigneeId !== undefined && { assignee_id: parsed.data.assigneeId }),
    };
    const { data: updated, error } = await supabase
