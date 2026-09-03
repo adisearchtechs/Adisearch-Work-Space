@@ -2,6 +2,7 @@ import AccountConnections from '@/components/common/settings/account-connections
 import Integrations from '@/components/common/settings/integrations';
 import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
+import PersistentPreferences from '@/components/common/settings/persistent-preferences';
 import Profile from '@/components/common/settings/profile';
 import SettingsNotice from '@/components/common/settings/settings-notice';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
@@ -12,13 +13,6 @@ import Header from '@/components/layout/headers/settings/header';
 import { notFound } from 'next/navigation';
 import type { ComponentType, ReactNode } from 'react';
 
-const PreferencesNotice = () => (
-   <SettingsNotice
-      title="Preferences"
-      description="Persistent user preferences are not configurable yet. Existing product behavior remains unchanged."
-      milestone="R6 Settings persistence"
-   />
-);
 const NotificationsNotice = () => (
    <SettingsNotice
       title="Notifications"
@@ -79,7 +73,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'issue-templates': IssueTemplatesNotice,
    'members': WorkspaceMembersSettings,
    'notifications': NotificationsNotice,
-   'preferences': PreferencesNotice,
+   'preferences': PersistentPreferences,
    'profile': Profile,
    'project-statuses': ProjectStatusesNotice,
    'security': SecurityNotice,
