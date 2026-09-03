@@ -1,9 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { hasValidMutationOrigin } from '@/lib/api/security';
-import { parseAgentPostBody, type AgentChatDto, type AgentMessageDto } from '@/lib/agent/contracts';
+import {
+   agentChatTitleFrom,
+   parseAgentPostBody,
+   type AgentChatDto,
+   type AgentMessageDto,
+} from '@/lib/agent/contracts';
+import {
+   agentModelReadiness,
+   generateWorkspaceAgentReply,
+} from '@/lib/agent/orchestrator';
 import { authorizeAgentAccess } from '@/lib/agent/server';
 import { isSupabaseConfigured } from '@/lib/supabase/env';
-import { chatTitleFrom, getAgentReply } from '@/mock-data/agent';
 
 function unavailable() {
    return NextResponse.json({ error: 'Database is not configured.' }, { status: 503 });
@@ -51,7 +59,11 @@ export async function GET(request: NextRequest) {
       messages: messagesByConversation.get(conversation.id) ?? [],
    }));
    return NextResponse.json(
-      { chats, canWrite: context.role !== 'guest' },
+      {
+         chats,
+         canWrite: context.role !== 'guest',
+         ai: agentModelReadiness(),
+      },
       { headers: { 'Cache-Control': 'private, no-store' } }
    );
 }
@@ -60,6 +72,14 @@ export async function POST(request: NextRequest) {
    if (!isSupabaseConfigured()) return unavailable();
    if (!hasValidMutationOrigin(request)) {
       return NextResponse.json({ error: 'Invalid origin.' }, { status: 403 });
+   }
+
+   const readiness = agentModelReadiness();
+   if (!readiness.available) {
+      return NextResponse.json(
+         { error: readiness.reason, ai: readiness },
+         { status: 503, headers: { 'Cache-Control': 'private, no-store' } }
+      );
    }
 
    const context = await authorizeAgentAccess(request, true);
@@ -81,6 +101,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unable to load Agent conversation.' }, { status: 500 });
    }
 
+   let history: AgentMessageDto[] = [];
+   if (existingConversation) {
+      const { data: historyRows, error: historyError } = await context.supabase
+         .from('agent_messages')
+         .select('id, role, content, sequence')
+         .eq('organization_id', context.organizationId)
+         .eq('conversation_id', existingConversation.id)
+         .order('sequence', { ascending: false })
+         .limit(20);
+      if (historyError) {
+         return NextResponse.json({ error: 'Unable to load Agent conversation history.' }, { status: 500 });
+      }
+      history = (historyRows ?? [])
+         .slice()
+         .reverse()
+         .map((message) => ({ id: message.id, role: message.role, content: message.content }));
+   }
+
+   let generated: Awaited<ReturnType<typeof generateWorkspaceAgentReply>>;
+   try {
+      generated = await generateWorkspaceAgentReply({
+         supabase: context.supabase,
+         organizationId: context.organizationId,
+         organizationSlug: context.organizationSlug,
+         history,
+         currentInput: body.input,
+      });
+   } catch {
+      return NextResponse.json(
+         { error: 'The Agent could not produce a grounded response. No message was saved.' },
+         { status: 502 }
+      );
+   }
+
    let conversation = existingConversation;
    let createdConversation = false;
    if (!conversation) {
@@ -90,7 +144,7 @@ export async function POST(request: NextRequest) {
             id: body.conversationId,
             organization_id: context.organizationId,
             created_by: context.userId,
-            title: chatTitleFrom(body.input),
+            title: agentChatTitleFrom(body.input),
          })
          .select('id, title')
          .single();
@@ -101,7 +155,6 @@ export async function POST(request: NextRequest) {
       createdConversation = true;
    }
 
-   const reply = getAgentReply(body.input);
    const { data: messages, error: messageError } = await context.supabase
       .from('agent_messages')
       .insert([
@@ -115,7 +168,7 @@ export async function POST(request: NextRequest) {
             organization_id: context.organizationId,
             conversation_id: conversation.id,
             role: 'assistant',
-            content: reply,
+            content: generated.reply,
          },
       ])
       .select('id, role, content, sequence')
@@ -126,7 +179,8 @@ export async function POST(request: NextRequest) {
             .from('agent_conversations')
             .delete()
             .eq('id', conversation.id)
-            .eq('organization_id', context.organizationId);
+            .eq('organization_id', context.organizationId)
+            .eq('created_by', context.userId);
       }
       return NextResponse.json({ error: 'Unable to save Agent messages.' }, { status: 500 });
    }
@@ -149,6 +203,11 @@ export async function POST(request: NextRequest) {
             role: message.role,
             content: message.content,
          } satisfies AgentMessageDto)),
+         execution: {
+            model: generated.model,
+            toolCalls: generated.toolCallsUsed,
+            mode: 'read-only' as const,
+         },
       },
       { status: createdConversation ? 201 : 200 }
    );
