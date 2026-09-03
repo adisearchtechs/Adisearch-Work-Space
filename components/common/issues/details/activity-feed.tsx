@@ -5,6 +5,7 @@ import {
    Ban,
    CalendarDays,
    CircleDot,
+   Flag,
    FolderKanban,
    GitPullRequestArrow,
    Link2,
@@ -50,6 +51,7 @@ const PERSISTENT_EVENT_ICONS: Record<IssueActivityEventType, ReactNode> = {
    priority_changed: <CircleDot className="size-3.5" />,
    assignee_changed: <UserRound className="size-3.5" />,
    project_changed: <FolderKanban className="size-3.5" />,
+   milestone_changed: <Flag className="size-3.5" />,
    cycle_changed: <RefreshCcw className="size-3.5" />,
    due_date_changed: <CalendarDays className="size-3.5" />,
    relation_added: <Link2 className="size-3.5" />,
@@ -122,6 +124,8 @@ function describePersistentEvent(event: IssueActivityEventDto) {
          return `changed assignee from ${valueLabel(details.from, 'Unassigned')} to ${valueLabel(details.to, 'Unassigned')}`;
       case 'project_changed':
          return `changed project from ${valueLabel(details.from, 'No project')} to ${valueLabel(details.to, 'No project')}`;
+      case 'milestone_changed':
+         return `changed milestone from ${valueLabel(details.from, 'No milestone')} to ${valueLabel(details.to, 'No milestone')}`;
       case 'cycle_changed':
          return `changed cycle from ${valueLabel(details.from, 'No cycle')} to ${valueLabel(details.to, 'No cycle')}`;
       case 'due_date_changed':
