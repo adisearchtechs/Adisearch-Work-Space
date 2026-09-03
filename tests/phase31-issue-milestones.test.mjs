@@ -69,10 +69,12 @@ test('milestone assignments hydrate and appear in immutable issue activity', asy
    const activityContracts = await readSource('lib/issue-activity/contracts.ts');
    const activityFeed = await readSource('components/common/issues/details/activity-feed.tsx');
    const server = await readSource('lib/supabase/server.ts');
+   const invitationsType = await readSource('lib/supabase/database-with-invitations.ts');
 
    assert.match(mapper, /milestoneId: dto\.milestoneId/);
    assert.match(activityContracts, /'milestone_changed'/);
    assert.match(activityFeed, /milestone_changed: <Flag/);
    assert.match(activityFeed, /changed milestone from/);
-   assert.match(server, /DatabaseWithIssueMilestones/);
+   assert.match(server, /DatabaseWithInvitations/);
+   assert.match(invitationsType, /DatabaseWithIssueMilestones/);
 });
