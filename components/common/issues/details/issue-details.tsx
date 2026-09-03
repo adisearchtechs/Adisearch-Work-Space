@@ -31,10 +31,13 @@ export default function IssueDetails() {
    );
 
    if (!issue || (!workspace.configured && !demoDetail)) {
+      const backHref = workspace.configured
+         ? `/${orgId ?? workspace.organization.slug}/my-issues`
+         : `/${orgId ?? 'demo'}/team/CORE/all`;
       return (
          <div className="flex flex-col items-center justify-center h-full gap-2 text-sm text-muted-foreground">
             <p>Issue {issueId} not found.</p>
-            <Link href={`/${orgId ?? 'demo'}/team/CORE/all`} className="underline">
+            <Link href={backHref} className="underline">
                Back to issues
             </Link>
          </div>

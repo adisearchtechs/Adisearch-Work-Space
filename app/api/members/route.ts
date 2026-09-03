@@ -9,7 +9,11 @@ function unavailable() {
 
 export async function GET(request: NextRequest) {
    if (!isSupabaseConfigured()) return unavailable();
-   const context = await authorizeWorkspaceMemberAccess(request, false, 'Unable to load workspace members.');
+   const context = await authorizeWorkspaceMemberAccess(
+      request,
+      false,
+      'Unable to load workspace members.'
+   );
    if ('response' in context) return context.response;
 
    const [membersResult, teamMembersResult, issuesResult] = await Promise.all([
@@ -20,7 +24,7 @@ export async function GET(request: NextRequest) {
          .order('created_at'),
       context.supabase
          .from('team_members')
-         .select('user_id')
+         .select('user_id, team_id')
          .eq('organization_id', context.organizationId),
       context.supabase
          .from('issues')
@@ -29,7 +33,9 @@ export async function GET(request: NextRequest) {
    ]);
 
    const error = membersResult.error ?? teamMembersResult.error ?? issuesResult.error;
-   if (error) return NextResponse.json({ error: 'Unable to load workspace members.' }, { status: 500 });
+   if (error) {
+      return NextResponse.json({ error: 'Unable to load workspace members.' }, { status: 500 });
+   }
 
    const memberships = membersResult.data ?? [];
    const ids = memberships.map((member) => member.user_id);
@@ -41,12 +47,12 @@ export async function GET(request: NextRequest) {
    }
 
    const profileById = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
-   const countByUser = (rows: Array<{ user_id: string }> | null) => {
-      const counts = new Map<string, number>();
-      for (const row of rows ?? []) counts.set(row.user_id, (counts.get(row.user_id) ?? 0) + 1);
-      return counts;
-   };
-   const teamCounts = countByUser(teamMembersResult.data);
+   const teamIdsByUser = new Map<string, string[]>();
+   for (const row of teamMembersResult.data ?? []) {
+      const teamIds = teamIdsByUser.get(row.user_id) ?? [];
+      teamIds.push(row.team_id);
+      teamIdsByUser.set(row.user_id, teamIds);
+   }
    const issueCounts = new Map<string, number>();
    for (const row of issuesResult.data ?? []) {
       issueCounts.set(row.creator_id, (issueCounts.get(row.creator_id) ?? 0) + 1);
@@ -54,13 +60,15 @@ export async function GET(request: NextRequest) {
 
    const members: WorkspaceMemberDto[] = memberships.map((membership) => {
       const profile = profileById.get(membership.user_id);
+      const teamIds = teamIdsByUser.get(membership.user_id) ?? [];
       return {
          id: membership.user_id,
          displayName: profile?.display_name || 'Workspace member',
          avatarUrl: profile?.avatar_url ?? null,
          role: membership.role,
          joinedAt: membership.created_at,
-         teamCount: teamCounts.get(membership.user_id) ?? 0,
+         teamIds,
+         teamCount: teamIds.length,
          createdIssueCount: issueCounts.get(membership.user_id) ?? 0,
       };
    });

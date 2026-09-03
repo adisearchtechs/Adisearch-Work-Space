@@ -14,6 +14,7 @@ export type WorkspaceMemberDto = {
    avatarUrl: string | null;
    role: WorkspaceMemberRole;
    joinedAt: string;
+   teamIds: string[];
    teamCount: number;
    createdIssueCount: number;
 };

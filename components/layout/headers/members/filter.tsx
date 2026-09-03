@@ -1,5 +1,6 @@
 'use client';
 
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
 import {
    Command,
@@ -9,22 +10,23 @@ import {
    CommandSeparator,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useMembersFilterStore } from '@/store/members-filter-store';
+import {
+   type MembersRoleFilter,
+   useMembersFilterStore,
+} from '@/store/members-filter-store';
 import { useState } from 'react';
 import { ArrowUpDown, CheckIcon, ChevronRight, ListFilter, Shield } from 'lucide-react';
 
 type FilterType = 'role' | 'sort';
 
-const ROLES: Array<'Guest' | 'Member' | 'Admin' | 'Application'> = [
-   'Guest',
-   'Member',
-   'Admin',
-   'Application',
-];
+const DEMO_ROLES: MembersRoleFilter[] = ['Guest', 'Member', 'Admin', 'Application'];
+const PERSISTENT_ROLES: MembersRoleFilter[] = ['Owner', 'Admin', 'Member', 'Guest'];
 
 export function Filter() {
+   const workspace = useWorkspace();
    const [open, setOpen] = useState(false);
    const [active, setActive] = useState<FilterType | null>(null);
+   const roles = workspace.configured ? PERSISTENT_ROLES : DEMO_ROLES;
 
    const { filters, sort, toggleFilter, clearFilters, getActiveFiltersCount, setSort } =
       useMembersFilterStore();
@@ -53,7 +55,7 @@ export function Filter() {
                         >
                            <span className="flex items-center gap-2">
                               <Shield className="size-4 text-muted-foreground" />
-                              Status
+                              Role
                            </span>
                            <div className="flex items-center">
                               {filters.role.length > 0 && (
@@ -101,11 +103,11 @@ export function Filter() {
                      >
                         <ChevronRight className="size-4 rotate-180" />
                      </Button>
-                     <span className="ml-2 font-medium">Status</span>
+                     <span className="ml-2 font-medium">Role</span>
                   </div>
                   <CommandList>
                      <CommandGroup>
-                        {ROLES.map((role) => (
+                        {roles.map((role) => (
                            <CommandItem
                               key={role}
                               value={role}
@@ -119,7 +121,7 @@ export function Filter() {
                      </CommandGroup>
                   </CommandList>
                </Command>
-            ) : active === 'sort' ? (
+            ) : (
                <Command>
                   <div className="flex items-center border-b p-2">
                      <Button
@@ -134,56 +136,38 @@ export function Filter() {
                   </div>
                   <CommandList>
                      <CommandGroup heading="Name">
-                        <CommandItem
-                           onSelect={() => setSort('name-asc')}
-                           className="flex items-center justify-between"
-                        >
-                           A → Z{sort === 'name-asc' && <CheckIcon size={16} />}
+                        <CommandItem onSelect={() => setSort('name-asc')}>
+                           A → Z{sort === 'name-asc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
-                        <CommandItem
-                           onSelect={() => setSort('name-desc')}
-                           className="flex items-center justify-between"
-                        >
-                           Z → A{sort === 'name-desc' && <CheckIcon size={16} />}
+                        <CommandItem onSelect={() => setSort('name-desc')}>
+                           Z → A{sort === 'name-desc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
                      </CommandGroup>
                      <CommandSeparator />
                      <CommandGroup heading="Joined">
-                        <CommandItem
-                           onSelect={() => setSort('joined-asc')}
-                           className="flex items-center justify-between"
-                        >
+                        <CommandItem onSelect={() => setSort('joined-asc')}>
                            Oldest to Newest
-                           {sort === 'joined-asc' && <CheckIcon size={16} />}
+                           {sort === 'joined-asc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
-                        <CommandItem
-                           onSelect={() => setSort('joined-desc')}
-                           className="flex items-center justify-between"
-                        >
+                        <CommandItem onSelect={() => setSort('joined-desc')}>
                            Newest to Oldest
-                           {sort === 'joined-desc' && <CheckIcon size={16} />}
+                           {sort === 'joined-desc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
                      </CommandGroup>
                      <CommandSeparator />
                      <CommandGroup heading="Teams">
-                        <CommandItem
-                           onSelect={() => setSort('teams-asc')}
-                           className="flex items-center justify-between"
-                        >
+                        <CommandItem onSelect={() => setSort('teams-asc')}>
                            Lowest to Highest
-                           {sort === 'teams-asc' && <CheckIcon size={16} />}
+                           {sort === 'teams-asc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
-                        <CommandItem
-                           onSelect={() => setSort('teams-desc')}
-                           className="flex items-center justify-between"
-                        >
+                        <CommandItem onSelect={() => setSort('teams-desc')}>
                            Highest to Lowest
-                           {sort === 'teams-desc' && <CheckIcon size={16} />}
+                           {sort === 'teams-desc' && <CheckIcon size={16} className="ml-auto" />}
                         </CommandItem>
                      </CommandGroup>
                   </CommandList>
                </Command>
-            ) : null}
+            )}
          </PopoverContent>
       </Popover>
    );
