@@ -144,6 +144,20 @@ export function githubCallbackUrl() {
    return new URL('/api/integrations/github/callback', siteOrigin).toString();
 }
 
+export function githubWorkspaceSettingsUrl(
+   organizationSlug: string,
+   result: 'connected' | 'error' | 'cancelled'
+) {
+   const { siteOrigin } = requireConfiguration();
+   const url = new URL(
+      `/${encodeURIComponent(organizationSlug)}/settings/connected-accounts`,
+      siteOrigin
+   );
+   url.searchParams.set('integration', 'github');
+   url.searchParams.set('result', result);
+   return url;
+}
+
 export function githubUserAuthorizationUrl(state: string, pkceVerifier: string) {
    const { clientId } = requireConfiguration();
    const url = new URL('/login/oauth/authorize', GITHUB_WEB_ORIGIN);
@@ -166,20 +180,21 @@ function githubHeaders(authorization: string) {
 
 export async function exchangeGithubUserCode(code: string, pkceVerifier: string) {
    const { clientId, clientSecret } = requireConfiguration();
+   const body = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: githubCallbackUrl(),
+      code_verifier: pkceVerifier,
+   });
    const response = await fetch(new URL('/login/oauth/access_token', GITHUB_WEB_ORIGIN), {
       method: 'POST',
       cache: 'no-store',
       headers: {
          Accept: 'application/json',
-         'Content-Type': 'application/json',
+         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
-         client_id: clientId,
-         client_secret: clientSecret,
-         code,
-         redirect_uri: githubCallbackUrl(),
-         code_verifier: pkceVerifier,
-      }),
+      body,
    });
 
    if (!response.ok) throw new Error('GITHUB_USER_AUTHORIZATION_FAILED');
