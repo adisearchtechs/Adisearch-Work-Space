@@ -12,64 +12,77 @@ async function authorizeIssueLabelMutation(
    params: Promise<{ issueId: string; labelId: string }>
 ) {
    if (!isSupabaseConfigured()) {
-      return { response: unavailable() } as const;
+      return { ok: false, response: unavailable() } as const;
    }
    if (!hasValidMutationOrigin(request)) {
-      return { response: NextResponse.json({ error: 'Invalid origin.' }, { status: 403 }) } as const;
+      return {
+         ok: false,
+         response: NextResponse.json({ error: 'Invalid origin.' }, { status: 403 }),
+      } as const;
    }
 
    const { issueId, labelId } = await params;
    if (!isUuid(issueId) || !isUuid(labelId)) {
-      return { response: NextResponse.json({ error: 'Invalid issue label reference.' }, { status: 400 }) } as const;
+      return {
+         ok: false,
+         response: NextResponse.json({ error: 'Invalid issue label reference.' }, { status: 400 }),
+      } as const;
    }
 
-   const context = await authorizeWorkspaceLabelAccess(
+   const workspace = await authorizeWorkspaceLabelAccess(
       request,
       true,
       'Unable to update issue labels.'
    );
-   if ('response' in context) return context;
+   if ('response' in workspace) {
+      return { ok: false, response: workspace.response } as const;
+   }
 
    const [{ data: issue, error: issueError }, { data: label, error: labelError }] =
       await Promise.all([
-         context.supabase
+         workspace.supabase
             .from('issues')
             .select('id')
-            .eq('organization_id', context.organizationId)
+            .eq('organization_id', workspace.organizationId)
             .eq('id', issueId)
             .maybeSingle(),
-         context.supabase
+         workspace.supabase
             .from('labels')
             .select('id, name, color')
-            .eq('organization_id', context.organizationId)
+            .eq('organization_id', workspace.organizationId)
             .eq('id', labelId)
             .maybeSingle(),
       ]);
 
    if (issueError || labelError) {
       return {
+         ok: false,
          response: NextResponse.json({ error: 'Unable to update issue labels.' }, { status: 500 }),
       } as const;
    }
    if (!issue || !label) {
-      return { response: NextResponse.json({ error: 'Not found.' }, { status: 404 }) } as const;
+      return {
+         ok: false,
+         response: NextResponse.json({ error: 'Not found.' }, { status: 404 }),
+      } as const;
    }
 
-   return { ...context, issueId, label } as const;
+   return { ok: true, workspace, issueId, label } as const;
 }
 
 export async function POST(
    request: NextRequest,
    { params }: { params: Promise<{ issueId: string; labelId: string }> }
 ) {
-   const context = await authorizeIssueLabelMutation(request, params);
-   if ('response' in context) return context.response;
+   const authorized = await authorizeIssueLabelMutation(request, params);
+   if (!authorized.ok) return authorized.response;
 
-   const { error } = await context.supabase.from('issue_labels').upsert(
+   const { workspace, issueId, label } = authorized;
+   const { error } = await workspace.supabase.from('issue_labels').upsert(
       {
-         organization_id: context.organizationId,
-         issue_id: context.issueId,
-         label_id: context.label.id,
+         organization_id: workspace.organizationId,
+         issue_id: issueId,
+         label_id: label.id,
       },
       { onConflict: 'issue_id,label_id', ignoreDuplicates: true }
    );
@@ -78,7 +91,7 @@ export async function POST(
    }
 
    return NextResponse.json(
-      { label: { id: context.label.id, name: context.label.name, color: context.label.color } },
+      { label: { id: label.id, name: label.name, color: label.color } },
       { status: 200 }
    );
 }
@@ -87,15 +100,16 @@ export async function DELETE(
    request: NextRequest,
    { params }: { params: Promise<{ issueId: string; labelId: string }> }
 ) {
-   const context = await authorizeIssueLabelMutation(request, params);
-   if ('response' in context) return context.response;
+   const authorized = await authorizeIssueLabelMutation(request, params);
+   if (!authorized.ok) return authorized.response;
 
-   const { error } = await context.supabase
+   const { workspace, issueId, label } = authorized;
+   const { error } = await workspace.supabase
       .from('issue_labels')
       .delete()
-      .eq('organization_id', context.organizationId)
-      .eq('issue_id', context.issueId)
-      .eq('label_id', context.label.id);
+      .eq('organization_id', workspace.organizationId)
+      .eq('issue_id', issueId)
+      .eq('label_id', label.id);
    if (error) {
       return NextResponse.json({ error: 'Unable to remove issue label.' }, { status: 500 });
    }
