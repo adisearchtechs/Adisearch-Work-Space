@@ -2,6 +2,7 @@
 
 import {
    Box,
+   ClipboardList,
    Compass,
    ContactRound,
    GitBranch,
@@ -94,6 +95,14 @@ export function NavWorkspace() {
                   <Link href={`/${orgId}/dependencies`}>
                      <GitBranch />
                      <span>Dependencies</span>
+                  </Link>
+               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+               <SidebarMenuButton asChild>
+                  <Link href={`/${orgId}/status-report`}>
+                     <ClipboardList />
+                     <span>Status report</span>
                   </Link>
                </SidebarMenuButton>
             </SidebarMenuItem>
