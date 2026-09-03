@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { WorkspaceProvider } from '@/components/providers/workspace-provider';
 import { SaasTeamsProvider } from '@/components/providers/saas-teams-provider';
+import { SaasMembersProvider } from '@/components/providers/saas-members-provider';
 import { SaasSavedViewsProvider } from '@/components/providers/saas-saved-views-provider';
 import { SaasNotificationsProvider } from '@/components/providers/saas-notifications-provider';
 import { SaasIssueSubscriptionsProvider } from '@/components/providers/saas-issue-subscriptions-provider';
@@ -25,15 +26,17 @@ export default async function OrganizationLayout({
    return (
       <WorkspaceProvider value={workspace}>
          <SaasTeamsProvider>
-            <SaasProjectsProvider>
-               <SaasIssuesProvider>
-                  <SaasSavedViewsProvider>
-                     <SaasIssueSubscriptionsProvider>
-                        <SaasNotificationsProvider>{children}</SaasNotificationsProvider>
-                     </SaasIssueSubscriptionsProvider>
-                  </SaasSavedViewsProvider>
-               </SaasIssuesProvider>
-            </SaasProjectsProvider>
+            <SaasMembersProvider>
+               <SaasProjectsProvider>
+                  <SaasIssuesProvider>
+                     <SaasSavedViewsProvider>
+                        <SaasIssueSubscriptionsProvider>
+                           <SaasNotificationsProvider>{children}</SaasNotificationsProvider>
+                        </SaasIssueSubscriptionsProvider>
+                     </SaasSavedViewsProvider>
+                  </SaasIssuesProvider>
+               </SaasProjectsProvider>
+            </SaasMembersProvider>
          </SaasTeamsProvider>
       </WorkspaceProvider>
    );
