@@ -1,3 +1,4 @@
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import { groupIssuesByStatus, Issue, issues as mockIssues } from '@/mock-data/issues';
 import { LabelInterface } from '@/mock-data/labels';
 import { Priority } from '@/mock-data/priorities';
@@ -319,12 +320,17 @@ export const useIssuesStore = create<IssuesState>((set, get) => ({
 
    // Project management
    updateIssueProject: (issueId: string, newProject: Project | undefined) => {
-      get().updateIssue(issueId, { project: newProject });
+      get().updateIssue(
+         issueId,
+         { project: newProject, milestoneId: null } as Partial<WorkspaceIssue> as Partial<Issue>
+      );
    },
    clearProjectReferences: (projectId: string) => {
       set((state) => {
          const issues = state.issues.map((issue) =>
-            issue.project?.id === projectId ? { ...issue, project: undefined } : issue
+            issue.project?.id === projectId
+               ? ({ ...issue, project: undefined, milestoneId: null } as WorkspaceIssue)
+               : issue
          );
          return { issues, issuesByStatus: groupIssuesByStatus(issues) };
       });

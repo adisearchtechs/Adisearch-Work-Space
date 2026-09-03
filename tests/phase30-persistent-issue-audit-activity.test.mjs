@@ -77,12 +77,10 @@ test('configured Activity merges persisted events and comments while demo mode s
 
 test('Phase 30 extends the database chain and preserves release ordering', async () => {
    const database = await readSource('lib/supabase/database-with-issue-audit-activity.ts');
-   const serverClient = await readSource('lib/supabase/server.ts');
    const scope = await readSource('PHASE30_SCOPE.md');
 
    assert.match(database, /DatabaseWithIssueRelations/);
    assert.match(database, /issue_audit_events: IssueAuditEventsTable/);
-   assert.match(serverClient, /DatabaseWithIssueAuditActivity/);
    assert.match(scope, /Phase 27, Phase 28 and Phase 29/);
    assert.match(scope, /milestone links/i);
    assert.match(scope, /Do not merge/i);

@@ -23,8 +23,13 @@ export const createIssueSchema = z
          .regex(/^[a-z0-9-]+$/),
       priority: issuePrioritySchema.default('no-priority'),
       projectId: z.string().uuid().nullable().optional(),
+      milestoneId: z.string().uuid().nullable().optional(),
    })
-   .strict();
+   .strict()
+   .refine(
+      (value) => value.milestoneId == null || value.projectId != null,
+      'A milestone requires a project.'
+   );
 
 export const updateIssueSchema = z
    .object({
@@ -39,6 +44,7 @@ export const updateIssueSchema = z
       priority: issuePrioritySchema.optional(),
       dueDate: z.string().date().nullable().optional(),
       projectId: z.string().uuid().nullable().optional(),
+      milestoneId: z.string().uuid().nullable().optional(),
       assigneeId: z.string().uuid().nullable().optional(),
    })
    .strict()
@@ -58,6 +64,7 @@ export type IssueDto = {
    rank: string;
    dueDate?: string;
    projectId: string | null;
+   milestoneId: string | null;
    assignee: {
       id: string;
       displayName: string;

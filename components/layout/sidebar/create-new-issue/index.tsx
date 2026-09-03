@@ -7,7 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RiEditLine } from '@remixicon/react';
 import { useState, useEffect, useCallback } from 'react';
-import { Issue } from '@/mock-data/issues';
 import { priorities } from '@/mock-data/priorities';
 import { status } from '@/mock-data/status';
 import { useIssuesStore } from '@/store/issues-store';
@@ -18,12 +17,14 @@ import { StatusSelector } from './status-selector';
 import { PrioritySelector } from './priority-selector';
 import { AssigneeSelector } from './assignee-selector';
 import { ProjectSelector } from './project-selector';
+import { MilestoneSelector } from './milestone-selector';
 import { LabelSelector } from './label-selector';
 import { ranks } from '@/mock-data/issues';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import type { IssueDto } from '@/lib/issues/contracts';
 import { issueDtoToIssue } from '@/lib/issues/mapper';
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import { useProjectsStore } from '@/store/projects-store';
 
 export function CreateIssueTrigger() {
@@ -65,7 +66,7 @@ export function CreateNewIssue() {
       return identifier;
    }, [getAllIssues]);
 
-   const createDefaultData = useCallback(() => {
+   const createDefaultData = useCallback((): WorkspaceIssue => {
       const identifier = generateUniqueIdentifier();
       return {
          id: uuidv4(),
@@ -79,12 +80,13 @@ export function CreateNewIssue() {
          createdAt: new Date().toISOString(),
          cycleId: '',
          project: undefined,
+         milestoneId: null,
          subissues: [],
          rank: ranks[ranks.length - 1],
       };
    }, [defaultStatus, generateUniqueIdentifier]);
 
-   const [addIssueForm, setAddIssueForm] = useState<Issue>(createDefaultData());
+   const [addIssueForm, setAddIssueForm] = useState<WorkspaceIssue>(createDefaultData());
 
    useEffect(() => {
       setAddIssueForm(createDefaultData());
@@ -111,6 +113,7 @@ export function CreateNewIssue() {
                   statusSlug: addIssueForm.status.id,
                   priority: addIssueForm.priority.id,
                   projectId: addIssueForm.project?.id ?? null,
+                  milestoneId: addIssueForm.milestoneId ?? null,
                }),
             });
 
@@ -192,8 +195,17 @@ export function CreateNewIssue() {
                   <ProjectSelector
                      project={addIssueForm.project}
                      onChange={(newProject) =>
-                        setAddIssueForm({ ...addIssueForm, project: newProject })
+                        setAddIssueForm({
+                           ...addIssueForm,
+                           project: newProject,
+                           milestoneId: null,
+                        })
                      }
+                  />
+                  <MilestoneSelector
+                     projectId={addIssueForm.project?.id}
+                     milestoneId={addIssueForm.milestoneId}
+                     onChange={(milestoneId) => setAddIssueForm({ ...addIssueForm, milestoneId })}
                   />
                   <LabelSelector
                      selectedLabels={addIssueForm.labels}

@@ -4,12 +4,12 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { issueDtoToIssue } from '@/lib/issues/mapper';
 import type { IssueDto } from '@/lib/issues/contracts';
-import type { Issue } from '@/mock-data/issues';
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import { useIssuesStore } from '@/store/issues-store';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { useProjectsStore } from '@/store/projects-store';
 
-function supportedChanges(changes: Partial<Issue>) {
+function supportedChanges(changes: Partial<WorkspaceIssue>) {
    return {
       ...('title' in changes && changes.title !== undefined && { title: changes.title }),
       ...('description' in changes &&
@@ -20,6 +20,7 @@ function supportedChanges(changes: Partial<Issue>) {
       ...('priority' in changes && changes.priority && { priority: changes.priority.id }),
       ...('dueDate' in changes && { dueDate: changes.dueDate ?? null }),
       ...('project' in changes && { projectId: changes.project?.id ?? null }),
+      ...('milestoneId' in changes && { milestoneId: changes.milestoneId ?? null }),
       ...('assignee' in changes && { assigneeId: changes.assignee?.id ?? null }),
    };
 }
@@ -54,7 +55,7 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
       store.replaceIssues([]);
       store.setPersistenceAdapter({
          async update(id, changes) {
-            const body = supportedChanges(changes);
+            const body = supportedChanges(changes as Partial<WorkspaceIssue>);
             if (Object.keys(body).length === 0) return;
             await mutation(`/api/issues/${encodeURIComponent(id)}`, 'PATCH', body);
          },

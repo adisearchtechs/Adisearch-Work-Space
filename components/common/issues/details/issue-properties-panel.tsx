@@ -1,12 +1,13 @@
 'use client';
 
 import { CyclePlayIcon } from '@/components/common/cycles/cycle-line';
+import { MilestoneSelector } from '@/components/layout/sidebar/create-new-issue/milestone-selector';
 import { ProjectSelector } from '@/components/layout/sidebar/create-new-issue/project-selector';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import { getCycleById } from '@/mock-data/cycles';
 import { IssueDetail } from '@/mock-data/issue-details';
-import { Issue } from '@/mock-data/issues';
 import { useIssuesStore } from '@/store/issues-store';
 import { Ban, GitPullRequestArrow, Plus } from 'lucide-react';
 import { AssigneeUser } from '../assignee-user';
@@ -16,7 +17,7 @@ import { StatusSelector } from '../status-selector';
 import { IssueRefRow } from './content-blocks';
 
 interface IssuePropertiesPanelProps {
-   issue: Issue;
+   issue: WorkspaceIssue;
    detail: IssueDetail | null;
 }
 
@@ -33,6 +34,10 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
    const workspace = useWorkspace();
    const cycle = detail && issue.cycleId ? getCycleById(issue.cycleId) : undefined;
    const updateIssueProject = useIssuesStore((state) => state.updateIssueProject);
+   const updateIssue = useIssuesStore((state) => state.updateIssue) as (
+      id: string,
+      changes: Partial<WorkspaceIssue>
+   ) => void;
 
    return (
       <div className="flex flex-col gap-7">
@@ -71,11 +76,20 @@ export function IssuePropertiesPanel({ issue, detail }: IssuePropertiesPanelProp
          </Section>
 
          <Section title="Project">
-            <ProjectSelector
-               project={issue.project}
-               onChange={(project) => updateIssueProject(issue.id, project)}
-            />
-            {issue.project && detail?.milestone && (
+            <div className="flex flex-wrap items-center gap-1.5">
+               <ProjectSelector
+                  project={issue.project}
+                  onChange={(project) => updateIssueProject(issue.id, project)}
+               />
+               {workspace.configured && (
+                  <MilestoneSelector
+                     projectId={issue.project?.id}
+                     milestoneId={issue.milestoneId}
+                     onChange={(milestoneId) => updateIssue(issue.id, { milestoneId })}
+                  />
+               )}
+            </div>
+            {!workspace.configured && issue.project && detail?.milestone && (
                <div className="flex items-center gap-2 text-sm mt-1.5 pl-6 text-muted-foreground">
                   <span className="size-2 rotate-45 border border-amber-400 shrink-0" />
                   <span className="truncate">{detail.milestone}</span>

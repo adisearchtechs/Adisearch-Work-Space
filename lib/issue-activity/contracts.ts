@@ -6,6 +6,7 @@ export const ISSUE_ACTIVITY_EVENT_TYPES = [
    'priority_changed',
    'assignee_changed',
    'project_changed',
+   'milestone_changed',
    'cycle_changed',
    'due_date_changed',
    'relation_added',
