@@ -74,6 +74,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid origin.' }, { status: 403 });
    }
 
+   const context = await authorizeAgentAccess(request, true);
+   if (!context.ok) return context.response;
+
    const readiness = agentModelReadiness();
    if (!readiness.available) {
       return NextResponse.json(
@@ -82,8 +85,6 @@ export async function POST(request: NextRequest) {
       );
    }
 
-   const context = await authorizeAgentAccess(request, true);
-   if (!context.ok) return context.response;
    const value = await request.json().catch(() => null);
    const body = parseAgentPostBody(value);
    if (!body) {
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
    } catch {
       return NextResponse.json(
          { error: 'The Agent could not produce a grounded response. No message was saved.' },
-         { status: 502 }
+         { status: 502, headers: { 'Cache-Control': 'private, no-store' } }
       );
    }
 
@@ -209,6 +210,9 @@ export async function POST(request: NextRequest) {
             mode: 'read-only' as const,
          },
       },
-      { status: createdConversation ? 201 : 200 }
+      {
+         status: createdConversation ? 201 : 200,
+         headers: { 'Cache-Control': 'private, no-store' },
+      }
    );
 }
