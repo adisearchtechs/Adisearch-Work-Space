@@ -75,6 +75,7 @@ test('R3 invitation API uses admin authorization, bounded validation and truthfu
    const contracts = await readSource('lib/invitations/contracts.ts');
    const token = await readSource('lib/invitations/token.ts');
    const supabaseServer = await readSource('lib/supabase/server.ts');
+   const integrationsType = await readSource('lib/supabase/database-with-integrations.ts');
 
    assert.match(route, /authorizeWorkspaceMemberAccess\([\s\S]*?true/);
    assert.match(route, /hasValidMutationOrigin\(request\)/);
@@ -88,6 +89,7 @@ test('R3 invitation API uses admin authorization, bounded validation and truthfu
    assert.match(contracts, /teamIds: z\.array\(z\.string\(\)\.uuid\(\)\)\.max\(50\)/);
    assert.match(token, /randomBytes\(32\)\.toString\('base64url'\)/);
    assert.match(token, /createHash\('sha256'\)/);
-   assert.match(supabaseServer, /DatabaseWithInvitations/);
+   assert.match(supabaseServer, /DatabaseWithIntegrations/);
+   assert.match(integrationsType, /DatabaseWithInvitations/);
    assert.doesNotMatch(route, /service[_-]?role/i);
 });
