@@ -70,8 +70,14 @@ test('R4A generates a grounded model reply before any new Agent messages are per
    assert.doesNotMatch(route, /getAgentReply/);
 
    const generation = route.indexOf('generated = await generateWorkspaceAgentReply');
-   const persistence = route.indexOf('const { data: messages, error: messageError }');
-   assert.ok(generation >= 0 && persistence > generation, 'Model generation must precede message persistence');
+   const conversationPersistence = route.indexOf(".from('agent_conversations')", generation);
+   const messagePersistence = route.indexOf(".from('agent_messages')", generation);
+   assert.ok(
+      generation >= 0 &&
+         conversationPersistence > generation &&
+         messagePersistence > generation,
+      'Model generation must precede new conversation and message persistence'
+   );
 });
 
 test('R4A client displays the server response, rolls back failures, and contains no fake write affordances', async () => {
