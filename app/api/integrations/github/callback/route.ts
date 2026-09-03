@@ -5,6 +5,7 @@ import {
    GITHUB_STATE_COOKIE,
    exchangeGithubUserCode,
    githubAppReadiness,
+   githubWorkspaceSettingsUrl,
    hashGithubOAuthState,
    opaqueTokensMatch,
    verifyGithubInstallationBelongsToApp,
@@ -39,10 +40,7 @@ function callbackError(request: NextRequest, message: string, status = 400) {
 }
 
 function settingsRedirect(request: NextRequest, slug: string, result: 'connected' | 'error' | 'cancelled') {
-   const url = new URL(`/${encodeURIComponent(slug)}/settings/connected-accounts`, request.nextUrl.origin);
-   url.searchParams.set('integration', 'github');
-   url.searchParams.set('result', result);
-   const response = NextResponse.redirect(url);
+   const response = NextResponse.redirect(githubWorkspaceSettingsUrl(slug, result));
    response.headers.set('Cache-Control', 'private, no-store');
    return clearFlowCookies(response, request);
 }
