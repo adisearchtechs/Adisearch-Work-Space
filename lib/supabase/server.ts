@@ -1,13 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { requireSupabaseConfig } from '@/lib/supabase/env';
-import type { DatabaseWithIntegrations } from '@/lib/supabase/database-with-integrations';
+import type { DatabaseWithPreferences } from '@/lib/supabase/database-with-preferences';
 
 export async function createClient() {
    const cookieStore = await cookies();
    const { url, publishableKey } = requireSupabaseConfig();
 
-   return createServerClient<DatabaseWithIntegrations>(url, publishableKey, {
+   return createServerClient<DatabaseWithPreferences>(url, publishableKey, {
       cookies: {
          getAll() {
             return cookieStore.getAll();
