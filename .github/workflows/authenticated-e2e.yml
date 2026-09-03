@@ -46,49 +46,6 @@ jobs:
             exit 1
           fi
 
-      - name: Preflight dedicated identities against Supabase Auth
-        shell: bash
-        run: |
-          set -euo pipefail
-          node <<'NODE'
-          const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-          const apiKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-          const identities = [
-            ['PRIMARY', process.env.E2E_PRIMARY_EMAIL, process.env.E2E_PRIMARY_PASSWORD],
-            ['SECONDARY', process.env.E2E_SECONDARY_EMAIL, process.env.E2E_SECONDARY_PASSWORD],
-          ];
-
-          let failed = false;
-          for (const [label, email, password] of identities) {
-            const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
-              method: 'POST',
-              headers: {
-                apikey: apiKey,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email, password }),
-            });
-
-            if (response.ok) {
-              console.log(`${label} E2E credentials accepted by Supabase Auth.`);
-              continue;
-            }
-
-            let errorCode = 'unknown_error';
-            try {
-              const body = await response.json();
-              errorCode = body.error_code || body.code || errorCode;
-            } catch {}
-
-            console.error(
-              `::error::${label} E2E credentials rejected by Supabase Auth (${response.status}, ${errorCode}).`
-            );
-            failed = true;
-          }
-
-          if (failed) process.exit(1);
-          NODE
-
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -103,6 +60,48 @@ jobs:
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate dedicated identities through Supabase SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js';
+
+          const identities = [
+            ['PRIMARY', process.env.E2E_PRIMARY_EMAIL, process.env.E2E_PRIMARY_PASSWORD],
+            ['SECONDARY', process.env.E2E_SECONDARY_EMAIL, process.env.E2E_SECONDARY_PASSWORD],
+          ];
+
+          let failed = false;
+          for (const [label, email, password] of identities) {
+            const client = createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL,
+              process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+              {
+                auth: {
+                  persistSession: false,
+                  autoRefreshToken: false,
+                  detectSessionInUrl: false,
+                },
+              }
+            );
+
+            const { error } = await client.auth.signInWithPassword({ email, password });
+            if (!error) {
+              console.log(`${label} E2E credentials accepted by Supabase Auth.`);
+              continue;
+            }
+
+            const code = error.code || error.name || 'unknown_error';
+            console.error(
+              `::error::${label} E2E credentials rejected by Supabase Auth (${error.status || 'no_status'}, ${code}).`
+            );
+            failed = true;
+          }
+
+          if (failed) process.exit(1);
+          NODE
 
       - name: Build production application against real Supabase
         run: pnpm build
