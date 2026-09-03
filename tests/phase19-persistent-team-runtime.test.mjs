@@ -54,7 +54,12 @@ test('configured team overview uses real tenant metadata without mock resource l
       overview,
       /fetch\(`\/api\/teams\/\$\{encodeURIComponent\(resolvedTeam\.id\)\}\$\{query\}`/
    );
-   assert.match(overview, /resolvedTeam\.usage\.issues/);
+   assert.match(
+      overview,
+      /fetch\([\s\S]*`\/api\/teams\/\$\{encodeURIComponent\(resolvedTeam\.id\)\}\/dashboard\$\{query\}`/
+   );
+   assert.match(overview, /dashboard\.work\.active/);
+   assert.match(overview, /dashboard\.projects\.length/);
    assert.match(overview, /team\.members\.slice\(0, 8\)/);
    assert.match(overview, /settings\/teams\/\$\{resolvedTeam\.id\}/);
    assert.doesNotMatch(overview, /documentFolders/);
