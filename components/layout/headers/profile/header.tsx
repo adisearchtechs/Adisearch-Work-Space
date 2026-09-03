@@ -1,13 +1,15 @@
 'use client';
 
 import { IssueFilterTrigger } from '@/components/common/issues/issue-filter-trigger';
+import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import type { WorkspaceMemberDto } from '@/lib/workspace-members/contracts';
+import { cn } from '@/lib/utils';
 import { issueCreatorIndex } from '@/mock-data/issues';
 import { User, users } from '@/mock-data/users';
-import { cn } from '@/lib/utils';
 import { useIssuesStore } from '@/store/issues-store';
 import { useRightPanelStore } from '@/store/right-panel-store';
 import { useSearchStore } from '@/store/search-store';
@@ -59,9 +61,7 @@ function HeaderSearch() {
    const searchContainerRef = useRef<HTMLDivElement>(null);
 
    useEffect(() => {
-      if (isSearchOpen && searchInputRef.current) {
-         searchInputRef.current.focus();
-      }
+      if (isSearchOpen && searchInputRef.current) searchInputRef.current.focus();
    }, [isSearchOpen]);
 
    useEffect(() => {
@@ -100,15 +100,10 @@ function HeaderSearch() {
          </div>
       );
    }
+
    return (
       <>
-         <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSearch}
-            className="h-8 w-8"
-            aria-label="Search"
-         >
+         <Button variant="ghost" size="icon" onClick={toggleSearch} className="h-8 w-8" aria-label="Search">
             <SearchIcon className="h-4 w-4" />
          </Button>
          <Notifications />
@@ -116,20 +111,36 @@ function HeaderSearch() {
    );
 }
 
-export default function Header({ member }: { member: User }) {
+type ProfileMember = User | WorkspaceMemberDto;
+
+function isPersistentMember(member: ProfileMember): member is WorkspaceMemberDto {
+   return 'displayName' in member;
+}
+
+export default function Header({ member }: { member: ProfileMember }) {
+   const workspace = useWorkspace();
    const { orgId } = useParams<{ orgId: string }>();
    const [activeTab] = useQueryState('tab', parseAsString.withDefault('assigned'));
    const { issues } = useIssuesStore();
    const { openPanel, togglePanel } = useRightPanelStore();
+   const persistentMember = isPersistentMember(member) ? member : null;
+   const displayName = persistentMember?.displayName ?? (member as User).name;
+   const avatarUrl = persistentMember?.avatarUrl ?? (member as User).avatarUrl;
 
-   const memberIndex = Math.max(
-      0,
-      users.findIndex((candidate) => candidate.id === member.id)
-   );
-   const count =
-      activeTab === 'created'
-         ? issues.filter((issue) => issueCreatorIndex(issue, users.length) === memberIndex).length
-         : issues.filter((issue) => issue.assignee?.id === member.id).length;
+   let count: number;
+   if (workspace.configured && persistentMember) {
+      count =
+         activeTab === 'created'
+            ? issues.filter((issue) => issue.creatorId === persistentMember.id).length
+            : issues.filter((issue) => issue.assignee?.id === persistentMember.id).length;
+   } else {
+      const demoMember = member as User;
+      const memberIndex = Math.max(0, users.findIndex((candidate) => candidate.id === demoMember.id));
+      count =
+         activeTab === 'created'
+            ? issues.filter((issue) => issueCreatorIndex(issue, users.length) === memberIndex).length
+            : issues.filter((issue) => issue.assignee?.id === demoMember.id).length;
+   }
 
    return (
       <>
@@ -137,21 +148,20 @@ export default function Header({ member }: { member: User }) {
             <div className="flex items-center gap-2 min-w-0">
                <SidebarTrigger className="" />
                <div className="flex items-center gap-1.5 text-sm min-w-0">
-                  <Link
-                     href={`/${orgId}/members`}
-                     className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <Link href={`/${orgId}/members`} className="text-muted-foreground hover:text-foreground transition-colors">
                      Members
                   </Link>
                   <ChevronRight className="size-3.5 text-muted-foreground shrink-0" />
                   <Avatar className="size-5 shrink-0">
-                     <AvatarImage src={member.avatarUrl} alt={member.name} />
-                     <AvatarFallback>{member.name[0]}</AvatarFallback>
+                     {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
+                     <AvatarFallback>{displayName[0] ?? '?'}</AvatarFallback>
                   </Avatar>
-                  <span className="font-medium truncate">{member.name}</span>
-                  <Button variant="ghost" size="icon" className="size-6 text-muted-foreground">
-                     <Star className="size-3.5" />
-                  </Button>
+                  <span className="font-medium truncate">{displayName}</span>
+                  {!workspace.configured && (
+                     <Button variant="ghost" size="icon" className="size-6 text-muted-foreground">
+                        <Star className="size-3.5" />
+                     </Button>
+                  )}
                </div>
             </div>
             <div className="flex items-center gap-2">
