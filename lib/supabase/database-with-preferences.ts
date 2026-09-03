@@ -21,6 +21,8 @@ type UserPreferencesTable = {
       custom_sidebar_accent: string;
       custom_sidebar_background: string;
       custom_sidebar_contrast: number;
+      notify_issue_assignment: boolean;
+      notify_issue_status: boolean;
       created_at: string;
       updated_at: string;
    };
@@ -36,6 +38,8 @@ type UserPreferencesTable = {
       custom_sidebar_accent?: string;
       custom_sidebar_background?: string;
       custom_sidebar_contrast?: number;
+      notify_issue_assignment?: boolean;
+      notify_issue_status?: boolean;
       created_at?: string;
       updated_at?: string;
    };
@@ -50,6 +54,8 @@ type UserPreferencesTable = {
       custom_sidebar_accent?: string;
       custom_sidebar_background?: string;
       custom_sidebar_contrast?: number;
+      notify_issue_assignment?: boolean;
+      notify_issue_status?: boolean;
       updated_at?: string;
    };
    Relationships: Relationship[];
