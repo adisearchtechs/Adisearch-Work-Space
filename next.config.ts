@@ -1,13 +1,5 @@
 import type { NextConfig } from 'next';
 
-const isVercelRuntime =
-   process.env.VERCEL === '1' &&
-   (process.env.VERCEL_ENV === 'preview' || process.env.VERCEL_ENV === 'production');
-
-if (isVercelRuntime && !process.env.OPENAI_API_KEY?.trim()) {
-   throw new Error('OPENAI_API_KEY is required for Vercel preview and production deployments.');
-}
-
 const scriptSources = ["'self'", "'unsafe-inline'"];
 if (process.env.NODE_ENV !== 'production') {
    scriptSources.push("'unsafe-eval'");
