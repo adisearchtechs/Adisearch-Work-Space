@@ -93,8 +93,12 @@ test('authenticated persistence, CRUD, and tenant isolation are enforced end to 
     await primaryPage.goto(`${APP_ORIGIN}/${primarySlug}/settings/profile`);
     await primaryPage.getByLabel('Display name').fill(nextDisplayName);
     await primaryPage.getByLabel('Time zone').fill(nextTimezone);
+    const profileSave = primaryPage.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/profile') && response.request().method() === 'PATCH'
+    );
     await primaryPage.getByRole('button', { name: 'Save profile' }).click();
-    await expect(primaryPage.getByText('Saved.', { exact: true })).toBeVisible();
+    expect((await profileSave).status()).toBe(200);
     await primaryPage.reload();
     await expect(primaryPage.getByLabel('Display name')).toHaveValue(nextDisplayName);
     await expect(primaryPage.getByLabel('Time zone')).toHaveValue(nextTimezone);
@@ -114,8 +118,13 @@ test('authenticated persistence, CRUD, and tenant isolation are enforced end to 
     const nextWorkspaceName = `E2E Workspace ${unique}`;
     await primaryPage.goto(`${APP_ORIGIN}/${primarySlug}/settings/workspace`);
     await primaryPage.getByLabel('Workspace name').fill(nextWorkspaceName);
+    const workspaceSave = primaryPage.waitForResponse(
+      (response) =>
+        response.url().includes('/api/workspace-settings?') &&
+        response.request().method() === 'PATCH'
+    );
     await primaryPage.getByRole('button', { name: 'Save workspace' }).click();
-    await expect(primaryPage.getByText('Saved.', { exact: true })).toBeVisible();
+    expect((await workspaceSave).status()).toBe(200);
     await primaryPage.reload();
     await expect(primaryPage.getByLabel('Workspace name')).toHaveValue(nextWorkspaceName);
     await expect(primaryPage.getByLabel('Workspace URL slug')).toHaveValue(primarySlug);
