@@ -117,7 +117,9 @@ export const AGENT_READ_TOOLS = [
       strict: true,
       parameters: {
          type: 'object',
-         properties: { limit: { type: ['integer', 'null'], minimum: 1, maximum: MAX_TOOL_ROWS } },
+         properties: {
+            limit: { type: ['integer', 'null'], minimum: 1, maximum: MAX_TOOL_ROWS },
+         },
          required: ['limit'],
          additionalProperties: false,
       },
@@ -226,8 +228,12 @@ async function statusContext(supabase: AgentSupabase, organizationId: string) {
    return {
       rows,
       byId: new Map(rows.map((row) => [row.id, row])),
-      openIds: rows.filter((row) => !CLOSED_STATUS_CATEGORIES.has(row.category)).map((row) => row.id),
-      closedIds: rows.filter((row) => CLOSED_STATUS_CATEGORIES.has(row.category)).map((row) => row.id),
+      openIds: rows
+         .filter((row) => !CLOSED_STATUS_CATEGORIES.has(row.category))
+         .map((row) => row.id),
+      closedIds: rows
+         .filter((row) => CLOSED_STATUS_CATEGORIES.has(row.category))
+         .map((row) => row.id),
    };
 }
 
@@ -245,7 +251,10 @@ async function listIssues(
 
    let query = supabase
       .from('issues')
-      .select('id, team_id, issue_number, title, status_id, priority, project_id, milestone_id, cycle_id, due_date, created_at', { count: 'exact' })
+      .select(
+         'id, team_id, issue_number, title, status_id, priority, project_id, milestone_id, cycle_id, due_date, created_at',
+         { count: 'exact' }
+      )
       .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -257,7 +266,12 @@ async function listIssues(
       if (statuses.closedIds.length === 0) return { count: 0, issues: [], team };
       query = query.in('status_id', statuses.closedIds);
    }
-   if (search) query = query.ilike('title', `%${search.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`);
+   if (search) {
+      query = query.ilike(
+         'title',
+         `%${search.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`
+      );
+   }
 
    const { data, error, count } = await query;
    assertReadSuccess(error, 'issues');
@@ -270,11 +284,15 @@ async function listIssues(
          const status = statuses.byId.get(issue.status_id);
          return {
             id: issue.id,
-            identifier: issueTeam ? `${issueTeam.issue_prefix}-${issue.issue_number}` : String(issue.issue_number),
+            identifier: issueTeam
+               ? `${issueTeam.issue_prefix}-${issue.issue_number}`
+               : String(issue.issue_number),
             title: issue.title,
             priority: issue.priority,
             status: status ? { name: status.name, category: status.category } : null,
-            team: issueTeam ? { id: issueTeam.id, key: issueTeam.key, name: issueTeam.name } : null,
+            team: issueTeam
+               ? { id: issueTeam.id, key: issueTeam.key, name: issueTeam.name }
+               : null,
             projectId: issue.project_id,
             milestoneId: issue.milestone_id,
             cycleId: issue.cycle_id,
@@ -300,7 +318,9 @@ async function getIssue(
 
    const { data: issue, error } = await supabase
       .from('issues')
-      .select('id, issue_number, title, description, status_id, priority, project_id, milestone_id, cycle_id, assignee_id, due_date, created_at, updated_at')
+      .select(
+         'id, issue_number, title, description, status_id, priority, project_id, milestone_id, cycle_id, assignee_id, due_date, created_at, updated_at'
+      )
       .eq('organization_id', organizationId)
       .eq('team_id', team.id)
       .eq('issue_number', number)
@@ -315,7 +335,9 @@ async function getIssue(
          ...issue,
          identifier: `${team.issue_prefix}-${issue.issue_number}`,
          team: { id: team.id, key: team.key, name: team.name },
-         status: status ? { name: status.name, slug: status.slug, category: status.category } : null,
+         status: status
+            ? { name: status.name, slug: status.slug, category: status.category }
+            : null,
       },
    };
 }
@@ -331,13 +353,21 @@ async function searchProjects(
    if (teamValue && !team) return { count: 0, projects: [] };
    let query = supabase
       .from('projects')
-      .select('id, team_id, name, description, status, target_date, lead_id, created_at, updated_at', { count: 'exact' })
+      .select(
+         'id, team_id, name, description, status, target_date, lead_id, created_at, updated_at',
+         { count: 'exact' }
+      )
       .eq('organization_id', organizationId)
       .order('updated_at', { ascending: false })
       .limit(limit);
    if (team) query = query.eq('team_id', team.id);
    const search = stringArg(args, 'search');
-   if (search) query = query.ilike('name', `%${search.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`);
+   if (search) {
+      query = query.ilike(
+         'name',
+         `%${search.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`
+      );
+   }
    const { data, error, count } = await query;
    assertReadSuccess(error, 'projects');
    return { count: count ?? 0, projects: data ?? [] };
@@ -354,7 +384,9 @@ async function getProject(
       .from('projects')
       .select('id, team_id, name, description, status, target_date, lead_id, created_at, updated_at')
       .eq('organization_id', organizationId);
-   query = UUID.test(projectValue) ? query.eq('id', projectValue) : query.ilike('name', projectValue);
+   query = UUID.test(projectValue)
+      ? query.eq('id', projectValue)
+      : query.ilike('name', projectValue);
    const { data: project, error } = await query.limit(1).maybeSingle();
    assertReadSuccess(error, 'project');
    if (!project) return { project: null };
@@ -400,9 +432,11 @@ async function listCycles(
    if (teamValue && !team) return { count: 0, cycles: [] };
    let query = supabase
       .from('cycles')
-      .select('id, team_id, name, start_date, end_date, created_at, updated_at', { count: 'exact' })
+      .select('id, team_id, name, starts_at, ends_at, created_at, updated_at', {
+         count: 'exact',
+      })
       .eq('organization_id', organizationId)
-      .order('start_date', { ascending: false })
+      .order('starts_at', { ascending: false })
       .limit(limitArg(args));
    if (team) query = query.eq('team_id', team.id);
    const { data, error, count } = await query;
@@ -412,7 +446,12 @@ async function listCycles(
       count: count ?? 0,
       cycles: (data ?? []).map((cycle) => ({
          ...cycle,
-         status: cycle.start_date > today ? 'upcoming' : cycle.end_date < today ? 'completed' : 'current',
+         status:
+            cycle.starts_at > today
+               ? 'upcoming'
+               : cycle.ends_at < today
+                 ? 'completed'
+                 : 'current',
       })),
    };
 }
@@ -433,7 +472,9 @@ async function inspectDependencies(
    assertReadSuccess(error, 'dependencies');
    if (!relations?.length) return { count: 0, dependencies: [] };
 
-   const issueIds = [...new Set(relations.flatMap((row) => [row.source_issue_id, row.target_issue_id]))];
+   const issueIds = [
+      ...new Set(relations.flatMap((row) => [row.source_issue_id, row.target_issue_id])),
+   ];
    const [issuesResult, teams, statuses] = await Promise.all([
       supabase
          .from('issues')
@@ -458,23 +499,31 @@ async function inspectDependencies(
          !targetStatus ||
          CLOSED_STATUS_CATEGORIES.has(sourceStatus.category) ||
          CLOSED_STATUS_CATEGORIES.has(targetStatus.category)
-      ) return [];
+      ) {
+         return [];
+      }
       const sourceTeam = teamById.get(source.team_id);
       const targetTeam = teamById.get(target.team_id);
-      return [{
-         id: relation.id,
-         blocking: {
-            identifier: sourceTeam ? `${sourceTeam.issue_prefix}-${source.issue_number}` : String(source.issue_number),
-            title: source.title,
-            projectId: source.project_id,
+      return [
+         {
+            id: relation.id,
+            blocking: {
+               identifier: sourceTeam
+                  ? `${sourceTeam.issue_prefix}-${source.issue_number}`
+                  : String(source.issue_number),
+               title: source.title,
+               projectId: source.project_id,
+            },
+            blocked: {
+               identifier: targetTeam
+                  ? `${targetTeam.issue_prefix}-${target.issue_number}`
+                  : String(target.issue_number),
+               title: target.title,
+               projectId: target.project_id,
+               dueDate: target.due_date,
+            },
          },
-         blocked: {
-            identifier: targetTeam ? `${targetTeam.issue_prefix}-${target.issue_number}` : String(target.issue_number),
-            title: target.title,
-            projectId: target.project_id,
-            dueDate: target.due_date,
-         },
-      }];
+      ];
    });
    return { count: active.length, dependencies: active };
 }
@@ -483,14 +532,43 @@ async function portfolioSummary(supabase: AgentSupabase, organizationId: string)
    const statuses = await statusContext(supabase, organizationId);
    const today = new Date().toISOString().slice(0, 10);
    const [issues, projects, teams, milestones, cycles, reviews] = await Promise.all([
-      supabase.from('issues').select('status_id').eq('organization_id', organizationId).limit(5000),
-      supabase.from('projects').select('status').eq('organization_id', organizationId).limit(2000),
-      supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', organizationId),
-      supabase.from('project_milestones').select('completed').eq('organization_id', organizationId).limit(3000),
-      supabase.from('cycles').select('start_date, end_date').eq('organization_id', organizationId).limit(2000),
-      supabase.from('reviews').select('status').eq('organization_id', organizationId).limit(2000),
+      supabase
+         .from('issues')
+         .select('status_id')
+         .eq('organization_id', organizationId)
+         .limit(5000),
+      supabase
+         .from('projects')
+         .select('status')
+         .eq('organization_id', organizationId)
+         .limit(2000),
+      supabase
+         .from('teams')
+         .select('id', { count: 'exact', head: true })
+         .eq('organization_id', organizationId),
+      supabase
+         .from('project_milestones')
+         .select('completed')
+         .eq('organization_id', organizationId)
+         .limit(3000),
+      supabase
+         .from('cycles')
+         .select('starts_at, ends_at')
+         .eq('organization_id', organizationId)
+         .limit(2000),
+      supabase
+         .from('reviews')
+         .select('status')
+         .eq('organization_id', organizationId)
+         .limit(2000),
    ]);
-   const error = issues.error ?? projects.error ?? teams.error ?? milestones.error ?? cycles.error ?? reviews.error;
+   const error =
+      issues.error ??
+      projects.error ??
+      teams.error ??
+      milestones.error ??
+      cycles.error ??
+      reviews.error;
    assertReadSuccess(error, 'portfolio');
    const issueRows = issues.data ?? [];
    return {
@@ -512,7 +590,9 @@ async function portfolioSummary(supabase: AgentSupabase, organizationId: string)
       },
       cycles: {
          total: cycles.data?.length ?? 0,
-         current: (cycles.data ?? []).filter((row) => row.start_date <= today && row.end_date >= today).length,
+         current: (cycles.data ?? []).filter(
+            (row) => row.starts_at <= today && row.ends_at >= today
+         ).length,
       },
       reviews: Object.fromEntries(
          [...new Set((reviews.data ?? []).map((row) => row.status))].map((status) => [
@@ -559,7 +639,10 @@ async function listReviews(
 ) {
    let query = supabase
       .from('reviews')
-      .select('id, title, status, issue_id, external_provider, external_url, repository, external_number, checks_passed, checks_total, updated_at', { count: 'exact' })
+      .select(
+         'id, title, status, issue_id, external_provider, external_url, repository, external_number, checks_passed, checks_total, updated_at',
+         { count: 'exact' }
+      )
       .eq('organization_id', organizationId)
       .order('updated_at', { ascending: false })
       .limit(limitArg(args));
