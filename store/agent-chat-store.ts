@@ -1,9 +1,7 @@
 import { create } from 'zustand';
-import { chatTitleFrom, getAgentReply } from '@/mock-data/agent';
-import type { AgentChatDto, AgentMessageDto } from '@/lib/agent/contracts';
+import { agentChatTitleFrom, type AgentChatDto, type AgentMessageDto } from '@/lib/agent/contracts';
 
 export interface AgentMessage extends AgentMessageDto {
-   /** True while the assistant reply is still being "typed". */
    streaming?: boolean;
 }
 
@@ -14,6 +12,7 @@ export interface AgentChat {
 }
 
 type PersistenceStatus = 'idle' | 'loading' | 'ready' | 'error';
+type AgentAvailability = { available: true; model: string } | { available: false; reason: string };
 
 interface AgentChatState {
    chats: AgentChat[];
@@ -21,13 +20,11 @@ interface AgentChatState {
    persistenceOrganization: string | null;
    persistenceStatus: PersistenceStatus;
    persistenceError: string | null;
+   agentAvailability: AgentAvailability | null;
    connectPersistence: (organizationSlug: string | null) => void;
    setActiveChat: (chatId: string | null) => void;
    startNewChat: () => void;
-   /** Sends locally immediately and queues configured-workspace persistence. */
-   sendMessage: (input: string) => { chatId: string; assistantMessageId: string; reply: string };
-   appendToMessage: (chatId: string, messageId: string, chunk: string) => void;
-   finishMessage: (chatId: string, messageId: string) => void;
+   sendMessage: (input: string) => { chatId: string; assistantMessageId: string } | null;
 }
 
 let persistenceQueue = Promise.resolve();
@@ -38,23 +35,36 @@ const asChat = (chat: AgentChatDto): AgentChat => ({
    messages: chat.messages,
 });
 
+function errorMessage(payload: unknown, fallback: string) {
+   if (payload && typeof payload === 'object' && 'error' in payload) {
+      const error = (payload as { error?: unknown }).error;
+      if (typeof error === 'string' && error.trim()) return error;
+   }
+   return fallback;
+}
+
 export const useAgentChatStore = create<AgentChatState>((set, get) => ({
    chats: [],
    activeChatId: null,
    persistenceOrganization: null,
    persistenceStatus: 'idle',
    persistenceError: null,
+   agentAvailability: null,
 
    connectPersistence: (organizationSlug) => {
       const state = get();
       if (!organizationSlug) {
-         if (state.persistenceOrganization !== null) {
+         if (state.persistenceOrganization !== null || state.agentAvailability !== null) {
             set({
                chats: [],
                activeChatId: null,
                persistenceOrganization: null,
                persistenceStatus: 'idle',
                persistenceError: null,
+               agentAvailability: {
+                  available: false,
+                  reason: 'Open a configured workspace to use the real Agent.',
+               },
             });
          }
          return;
@@ -72,6 +82,7 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
          persistenceOrganization: organizationSlug,
          persistenceStatus: 'loading',
          persistenceError: null,
+         agentAvailability: null,
       });
       const endpoint = `/api/agent?organization=${encodeURIComponent(organizationSlug)}`;
       void fetch(endpoint, {
@@ -79,21 +90,38 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
          headers: { Accept: 'application/json' },
       })
          .then(async (response) => {
-            if (!response.ok) throw new Error(String(response.status));
-            return (await response.json()) as { chats: AgentChatDto[] };
+            const payload = (await response.json().catch(() => ({}))) as {
+               chats?: AgentChatDto[];
+               canWrite?: boolean;
+               ai?: AgentAvailability;
+               error?: string;
+            };
+            if (!response.ok) throw new Error(payload.error || String(response.status));
+            return payload;
          })
          .then((payload) => {
             if (get().persistenceOrganization !== organizationSlug) return;
-            const remoteChats = payload.chats.map(asChat);
+            const remoteChats = (payload.chats ?? []).map(asChat);
             set((current) => {
                const localById = new Map(current.chats.map((chat) => [chat.id, chat]));
                const mergedRemote = remoteChats.map((chat) => localById.get(chat.id) ?? chat);
                const remoteIds = new Set(remoteChats.map((chat) => chat.id));
                const localOnly = current.chats.filter((chat) => !remoteIds.has(chat.id));
+               const availability: AgentAvailability =
+                  payload.canWrite === false
+                     ? {
+                          available: false,
+                          reason: 'Read-only workspace members cannot send Agent messages.',
+                       }
+                     : payload.ai ?? {
+                          available: false,
+                          reason: 'Agent model readiness could not be determined.',
+                       };
                return {
                   chats: [...localOnly, ...mergedRemote],
                   persistenceStatus: 'ready',
                   persistenceError: null,
+                  agentAvailability: availability,
                };
             });
          })
@@ -102,6 +130,10 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
             set({
                persistenceStatus: 'error',
                persistenceError: 'Conversation history could not be loaded.',
+               agentAvailability: {
+                  available: false,
+                  reason: 'Agent availability could not be verified.',
+               },
             });
          });
    },
@@ -112,10 +144,21 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
 
    sendMessage: (input) => {
       const state = get();
-      const reply = getAgentReply(input);
+      const organizationSlug = state.persistenceOrganization;
+      if (!organizationSlug || state.agentAvailability?.available !== true) {
+         set({
+            persistenceError:
+               state.agentAvailability?.available === false
+                  ? state.agentAvailability.reason
+                  : 'The Agent is not ready yet.',
+         });
+         return null;
+      }
+
       const assistantMessageId = crypto.randomUUID();
+      const userMessageId = crypto.randomUUID();
       const userMessage: AgentMessage = {
-         id: crypto.randomUUID(),
+         id: userMessageId,
          role: 'user',
          content: input,
       };
@@ -135,73 +178,78 @@ export const useAgentChatStore = create<AgentChatState>((set, get) => ({
                   ? { ...chat, messages: [...chat.messages, userMessage, assistantMessage] }
                   : chat
             ),
+            persistenceError: null,
          });
       } else {
          const chat: AgentChat = {
             id: chatId,
-            title: chatTitleFrom(input),
+            title: agentChatTitleFrom(input),
             messages: [userMessage, assistantMessage],
          };
-         set({ chats: [chat, ...state.chats], activeChatId: chat.id });
+         set({ chats: [chat, ...state.chats], activeChatId: chat.id, persistenceError: null });
       }
 
-      const organizationSlug = state.persistenceOrganization;
-      if (organizationSlug) {
-         const endpoint = `/api/agent?organization=${encodeURIComponent(organizationSlug)}`;
-         persistenceQueue = persistenceQueue
-            .then(async () => {
-               const response = await fetch(endpoint, {
-                  method: 'POST',
-                  credentials: 'same-origin',
-                  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                  body: JSON.stringify({ conversationId: chatId, input }),
-               });
-               const payload = (await response.json().catch(() => ({}))) as { error?: string };
-               if (!response.ok) throw new Error(payload.error || String(response.status));
-               if (get().persistenceOrganization === organizationSlug) {
-                  set({ persistenceStatus: 'ready', persistenceError: null });
-               }
-            })
-            .catch(() => {
-               if (get().persistenceOrganization === organizationSlug) {
-                  set({
-                     persistenceStatus: 'error',
-                     persistenceError: 'This conversation could not be saved.',
-                  });
-               }
+      const endpoint = `/api/agent?organization=${encodeURIComponent(organizationSlug)}`;
+      persistenceQueue = persistenceQueue
+         .then(async () => {
+            const response = await fetch(endpoint, {
+               method: 'POST',
+               credentials: 'same-origin',
+               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+               body: JSON.stringify({ conversationId: chatId, input }),
             });
-      }
+            const payload = (await response.json().catch(() => ({}))) as {
+               conversation?: { id: string; title: string };
+               messages?: AgentMessageDto[];
+               error?: string;
+            };
+            if (!response.ok) throw new Error(errorMessage(payload, 'The Agent request failed.'));
+            const persistedUser = payload.messages?.find((message) => message.role === 'user');
+            const persistedAssistant = payload.messages?.find((message) => message.role === 'assistant');
+            if (!persistedUser || !persistedAssistant) {
+               throw new Error('The Agent returned an incomplete response.');
+            }
 
-      return { chatId, assistantMessageId, reply };
+            if (get().persistenceOrganization !== organizationSlug) return;
+            set((current) => ({
+               chats: current.chats.map((chat) =>
+                  chat.id === chatId
+                     ? {
+                          ...chat,
+                          title: payload.conversation?.title ?? chat.title,
+                          messages: chat.messages.map((message) => {
+                             if (message.id === userMessageId) return persistedUser;
+                             if (message.id === assistantMessageId) {
+                                return { ...persistedAssistant, streaming: false };
+                             }
+                             return message;
+                          }),
+                       }
+                     : chat
+               ),
+               persistenceStatus: 'ready',
+               persistenceError: null,
+            }));
+         })
+         .catch((error: unknown) => {
+            if (get().persistenceOrganization !== organizationSlug) return;
+            const message = error instanceof Error ? error.message : 'The Agent request failed.';
+            set((current) => ({
+               chats: current.chats.map((chat) =>
+                  chat.id === chatId
+                     ? {
+                          ...chat,
+                          messages: chat.messages.filter(
+                             (item) => item.id !== userMessageId && item.id !== assistantMessageId
+                          ),
+                       }
+                     : chat
+               ),
+               persistenceStatus: 'error',
+               persistenceError: message,
+            }));
+         });
+
+      return { chatId, assistantMessageId };
    },
-
-   appendToMessage: (chatId, messageId, chunk) =>
-      set((state) => ({
-         chats: state.chats.map((chat) =>
-            chat.id === chatId
-               ? {
-                    ...chat,
-                    messages: chat.messages.map((message) =>
-                       message.id === messageId
-                          ? { ...message, content: message.content + chunk }
-                          : message
-                    ),
-                 }
-               : chat
-         ),
-      })),
-
-   finishMessage: (chatId, messageId) =>
-      set((state) => ({
-         chats: state.chats.map((chat) =>
-            chat.id === chatId
-               ? {
-                    ...chat,
-                    messages: chat.messages.map((message) =>
-                       message.id === messageId ? { ...message, streaming: false } : message
-                    ),
-                 }
-               : chat
-         ),
-      })),
 }));

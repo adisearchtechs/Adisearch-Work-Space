@@ -32,3 +32,8 @@ export function parseAgentPostBody(value: unknown): AgentPostBody | null {
    if (input.length < 1 || input.length > MAX_AGENT_INPUT_CHARS) return null;
    return { conversationId: record.conversationId, input };
 }
+
+export function agentChatTitleFrom(input: string) {
+   const clean = input.trim().replace(/\s+/g, ' ');
+   return clean.length > 42 ? `${clean.slice(0, 42)}…` : clean || 'New chat';
+}
