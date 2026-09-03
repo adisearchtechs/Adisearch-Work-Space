@@ -2,13 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Calendar, Check, Flag, Plus, Trash2 } from 'lucide-react';
+import { ArrowRight, Calendar, Check, Flag, Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { ProjectSidePanel } from '@/components/common/projects/details/project-side-panel';
 import { useProjectMilestones } from '@/components/common/projects/details/use-project-milestones';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { WorkspaceIssue } from '@/lib/issues/types';
 import type { ProjectMilestoneDto } from '@/lib/project-milestones/contracts';
 import { getProjectDetail } from '@/mock-data/project-details';
 import { useIssuesStore } from '@/store/issues-store';
@@ -25,6 +28,7 @@ function formatTargetDate(value: string | null) {
 }
 
 export default function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
+   const { orgId } = useParams<{ orgId: string }>();
    const workspace = useWorkspace();
    const storedProject = useProjectsStore((state) =>
       state.projects.find((item) => item.id === projectId)
@@ -265,6 +269,20 @@ export default function ProjectMilestones({ projectId }: ProjectMilestonesProps)
                      <div className="divide-y">
                         {displayedMilestones.map((milestone) => {
                            const pending = pendingIds.has(milestone.id);
+                           const milestoneIssues = issues.filter(
+                              (issue) => (issue as WorkspaceIssue).milestoneId === milestone.id
+                           );
+                           const canceledCount = milestoneIssues.filter(
+                              (issue) => issue.status.category === 'canceled'
+                           ).length;
+                           const plannedCount = Math.max(0, milestoneIssues.length - canceledCount);
+                           const completedCount = milestoneIssues.filter(
+                              (issue) => issue.status.category === 'completed'
+                           ).length;
+                           const progress =
+                              plannedCount === 0
+                                 ? 0
+                                 : Math.round((completedCount / plannedCount) * 100);
                            return (
                               <div key={milestone.id} className="flex items-center gap-3 px-4 py-3.5">
                                  <button
@@ -288,18 +306,32 @@ export default function ProjectMilestones({ projectId }: ProjectMilestonesProps)
                                  </button>
 
                                  <div className="min-w-0 flex-1">
-                                    <p
+                                    <Link
+                                       href={`/${orgId}/project/${project.id}/milestones/${milestone.id}`}
                                        className={cn(
-                                          'truncate text-sm font-medium',
+                                          'truncate text-sm font-medium hover:underline',
                                           milestone.completed && 'text-muted-foreground line-through'
                                        )}
                                     >
                                        {milestone.name}
-                                    </p>
-                                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                                       <Calendar className="size-3" />
-                                       {formatTargetDate(milestone.targetDate)}
-                                    </p>
+                                    </Link>
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                       <span className="flex items-center gap-1.5">
+                                          <Calendar className="size-3" />
+                                          {formatTargetDate(milestone.targetDate)}
+                                       </span>
+                                       <span>
+                                          {milestoneIssues.length} {milestoneIssues.length === 1 ? 'issue' : 'issues'}
+                                       </span>
+                                       {plannedCount > 0 && <span>{progress}% complete</span>}
+                                    </div>
+                                    <div className="mt-2 h-1 max-w-64 overflow-hidden rounded-full bg-muted">
+                                       <div
+                                          className="h-full rounded-full bg-foreground transition-[width]"
+                                          style={{ width: `${progress}%` }}
+                                          aria-hidden="true"
+                                       />
+                                    </div>
                                  </div>
 
                                  <span
@@ -312,6 +344,15 @@ export default function ProjectMilestones({ projectId }: ProjectMilestonesProps)
                                  >
                                     {milestone.completed ? 'Completed' : 'Open'}
                                  </span>
+
+                                 <Button variant="ghost" size="icon" className="size-8 text-muted-foreground" asChild>
+                                    <Link
+                                       href={`/${orgId}/project/${project.id}/milestones/${milestone.id}`}
+                                       aria-label={`Open ${milestone.name} plan`}
+                                    >
+                                       <ArrowRight className="size-4" />
+                                    </Link>
+                                 </Button>
 
                                  {canPersist && (
                                     <Button
