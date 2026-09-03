@@ -4,6 +4,7 @@ import {
    Box,
    Compass,
    ContactRound,
+   GitBranch,
    Layers,
    LayoutDashboard,
    LayoutList,
@@ -85,6 +86,14 @@ export function NavWorkspace() {
                   <Link href={`/${orgId}`}>
                      <LayoutDashboard />
                      <span>Overview</span>
+                  </Link>
+               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+               <SidebarMenuButton asChild>
+                  <Link href={`/${orgId}/dependencies`}>
+                     <GitBranch />
+                     <span>Dependencies</span>
                   </Link>
                </SidebarMenuButton>
             </SidebarMenuItem>
