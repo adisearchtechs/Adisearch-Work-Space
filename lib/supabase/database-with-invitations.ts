@@ -35,6 +35,8 @@ type OrganizationInvitationsTable = {
       revoked_at?: string | null;
    };
    Update: {
+      token_hash?: string;
+      expires_at?: string;
       revoked_at?: string | null;
    };
    Relationships: Relationship[];
@@ -85,6 +87,20 @@ type InvitationFunctions = {
       Returns: Array<{
          invitation_id: string;
          revoked_at: string;
+      }>;
+   };
+   reissue_organization_invitation: {
+      Args: {
+         p_invitation_id: string;
+         p_organization_id: string;
+         p_token_hash: string;
+         p_expires_at: string;
+      };
+      Returns: Array<{
+         invitation_id: string;
+         email: string;
+         role: Exclude<OrganizationRole, 'owner'>;
+         expires_at: string;
       }>;
    };
    accept_organization_invitation: {
