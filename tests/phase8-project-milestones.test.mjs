@@ -53,6 +53,17 @@ test('configured project milestone UI is server-backed and supports create, comp
    assert.match(header, /\{ label: 'Milestones', segment: 'milestones' \}/);
 });
 
+test('milestone loading state cannot abort its own in-flight request', async () => {
+   const hook = await readSource('components/common/projects/details/use-project-milestones.ts');
+   const dependencyBlock = hook.match(/return \(\) => controller\.abort\(\);\s*\}, \[([\s\S]*?)\]\);/);
+
+   assert.ok(dependencyBlock, 'milestone loading effect dependency list should be discoverable');
+   assert.doesNotMatch(dependencyBlock[1], /^\s*loading,\s*$/m);
+   assert.match(hook, /current\.loadingByProject\[projectId\]/);
+   assert.match(hook, /setLoading\(projectId, true\)/);
+   assert.match(hook, /replaceMilestones\(projectId, loadedMilestones\)/);
+});
+
 test('project milestone migration is tenant scoped, indexed and RLS protected', async () => {
    const migration = await readSource(
       'supabase/migrations/20260901212039_add_project_milestones.sql'
