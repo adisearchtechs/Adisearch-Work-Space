@@ -1,14 +1,27 @@
 'use client';
 
 import type { WorkspaceMemberDto } from '@/lib/workspace-members/contracts';
-import { useMembersFilterStore } from '@/store/members-filter-store';
+import {
+   type MembersRoleFilter,
+   useMembersFilterStore,
+} from '@/store/members-filter-store';
 import { useWorkspaceMembersStore } from '@/store/workspace-members-store';
 import { ArrowDown } from 'lucide-react';
 import { useMemo } from 'react';
 import PersistentMemberLine from './persistent-member-line';
 
-const roleLabel = (role: WorkspaceMemberDto['role']) =>
-   role.charAt(0).toUpperCase() + role.slice(1);
+const roleLabel = (role: WorkspaceMemberDto['role']): MembersRoleFilter => {
+   switch (role) {
+      case 'owner':
+         return 'Owner';
+      case 'admin':
+         return 'Admin';
+      case 'member':
+         return 'Member';
+      case 'guest':
+         return 'Guest';
+   }
+};
 
 export default function PersistentMembers() {
    const { members, loading } = useWorkspaceMembersStore();
