@@ -10,10 +10,12 @@ import {
    CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useWorkspace } from '@/components/providers/workspace-provider';
+import type { WorkspaceLabelDto } from '@/lib/workspace-labels/contracts';
 import { useIssuesStore } from '@/store/issues-store';
-import { LabelInterface, labels } from '@/mock-data/labels';
+import { LabelInterface, labels as demoLabels } from '@/mock-data/labels';
 import { CheckIcon, TagIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface LabelSelectorProps {
@@ -23,21 +25,56 @@ interface LabelSelectorProps {
 
 export function LabelSelector({ selectedLabels, onChange }: LabelSelectorProps) {
    const id = useId();
-   const [open, setOpen] = useState<boolean>(false);
+   const workspace = useWorkspace();
+   const [open, setOpen] = useState(false);
+   const [workspaceLabels, setWorkspaceLabels] = useState<WorkspaceLabelDto[]>([]);
+   const [loading, setLoading] = useState(false);
+   const filterByLabel = useIssuesStore((state) => state.filterByLabel);
 
-   const { filterByLabel } = useIssuesStore();
+   useEffect(() => {
+      if (!workspace.configured || !open) return;
+      const controller = new AbortController();
+      setLoading(true);
+      void fetch(`/api/labels?organization=${encodeURIComponent(workspace.organization.slug)}`, {
+         credentials: 'same-origin',
+         signal: controller.signal,
+         headers: { Accept: 'application/json' },
+      })
+         .then(async (response) => {
+            if (!response.ok) throw new Error(`Label load failed with ${response.status}.`);
+            return (await response.json()) as { labels: WorkspaceLabelDto[] };
+         })
+         .then((result) => {
+            if (!controller.signal.aborted) setWorkspaceLabels(result.labels);
+         })
+         .catch((error: unknown) => {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            if (!controller.signal.aborted) setWorkspaceLabels([]);
+         })
+         .finally(() => {
+            if (!controller.signal.aborted) setLoading(false);
+         });
+      return () => controller.abort();
+   }, [open, workspace.configured, workspace.organization.slug]);
+
+   const availableLabels = useMemo(
+      () =>
+         workspace.configured
+            ? workspaceLabels.map((label) => ({
+                 label: { id: label.id, name: label.name, color: label.color } satisfies LabelInterface,
+                 count: label.usage.issues,
+              }))
+            : demoLabels.map((label) => ({ label, count: filterByLabel(label.id).length })),
+      [filterByLabel, workspace.configured, workspaceLabels]
+   );
 
    const handleLabelToggle = (label: LabelInterface) => {
-      const isSelected = selectedLabels.some((l) => l.id === label.id);
-      let newLabels: LabelInterface[];
-
-      if (isSelected) {
-         newLabels = selectedLabels.filter((l) => l.id !== label.id);
-      } else {
-         newLabels = [...selectedLabels, label];
-      }
-
-      onChange(newLabels);
+      const isSelected = selectedLabels.some((item) => item.id === label.id);
+      onChange(
+         isSelected
+            ? selectedLabels.filter((item) => item.id !== label.id)
+            : [...selectedLabels, label]
+      );
    };
 
    return (
@@ -61,7 +98,7 @@ export function LabelSelector({ selectedLabels, onChange }: LabelSelectorProps) 
                         {selectedLabels.map((label) => (
                            <div
                               key={label.id}
-                              className={`size-3 rounded-full`}
+                              className="size-3 rounded-full"
                               style={{ backgroundColor: label.color }}
                            />
                         ))}
@@ -76,28 +113,26 @@ export function LabelSelector({ selectedLabels, onChange }: LabelSelectorProps) 
                <Command>
                   <CommandInput placeholder="Search labels..." />
                   <CommandList>
-                     <CommandEmpty>No labels found.</CommandEmpty>
+                     <CommandEmpty>{loading ? 'Loading labels…' : 'No labels found.'}</CommandEmpty>
                      <CommandGroup>
-                        {labels.map((label) => {
-                           const isSelected = selectedLabels.some((l) => l.id === label.id);
+                        {availableLabels.map(({ label, count }) => {
+                           const isSelected = selectedLabels.some((item) => item.id === label.id);
                            return (
                               <CommandItem
                                  key={label.id}
-                                 value={label.id}
+                                 value={`${label.name} ${label.id}`}
                                  onSelect={() => handleLabelToggle(label)}
                                  className="flex items-center justify-between"
                               >
                                  <div className="flex items-center gap-2">
                                     <div
-                                       className={`size-3 rounded-full`}
+                                       className="size-3 rounded-full"
                                        style={{ backgroundColor: label.color }}
                                     />
                                     <span>{label.name}</span>
                                  </div>
                                  {isSelected && <CheckIcon size={16} className="ml-auto" />}
-                                 <span className="text-muted-foreground text-xs">
-                                    {filterByLabel(label.id).length}
-                                 </span>
+                                 <span className="text-muted-foreground text-xs">{count}</span>
                               </CommandItem>
                            );
                         })}
