@@ -31,9 +31,10 @@ test('issue collection validates and returns tenant-scoped project links', async
 test('issue updates validate project ownership and persist removal', async () => {
    const route = await readSource('app/api/issues/[issueId]/route.ts');
 
+   assert.match(route, /const targetProjectId =/);
    assert.match(
       route,
-      /\.from\('projects'\)[\s\S]*\.eq\('organization_id', existing\.organization_id\)[\s\S]*\.eq\('id', parsed\.data\.projectId\)/
+      /\.from\('projects'\)[\s\S]*\.eq\('organization_id', existing\.organization_id\)[\s\S]*\.eq\('id', targetProjectId\)/
    );
    assert.match(route, /parsed\.data\.projectId !== undefined/);
    assert.match(route, /project_id: parsed\.data\.projectId/);
