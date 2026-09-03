@@ -70,18 +70,18 @@ const ProjectStatusesNotice = () => (
 
 const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'agent-personalization': AgentPersonalizationNotice,
-   ai: AiNotice,
+   'ai': AiNotice,
    'code-and-reviews': CodeReviewsNotice,
    'connected-accounts': AccountConnections,
-   integrations: Integrations,
+   'integrations': Integrations,
    'issue-labels': IssueLabelsSettings,
    'issue-templates': IssueTemplatesNotice,
-   members: WorkspaceMembersSettings,
-   notifications: NotificationsNotice,
-   preferences: PreferencesNotice,
-   profile: Profile,
+   'members': WorkspaceMembersSettings,
+   'notifications': NotificationsNotice,
+   'preferences': PreferencesNotice,
+   'profile': Profile,
    'project-statuses': ProjectStatusesNotice,
-   security: SecurityNotice,
+   'security': SecurityNotice,
 };
 
 export default async function SettingsSectionPage({
