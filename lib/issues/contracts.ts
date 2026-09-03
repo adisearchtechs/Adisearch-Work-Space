@@ -24,6 +24,8 @@ export const createIssueSchema = z
       priority: issuePrioritySchema.default('no-priority'),
       projectId: z.string().uuid().nullable().optional(),
       milestoneId: z.string().uuid().nullable().optional(),
+      assigneeId: z.string().uuid().nullable().optional(),
+      labelIds: z.array(z.string().uuid()).max(50).default([]),
    })
    .strict()
    .refine(
@@ -50,6 +52,12 @@ export const updateIssueSchema = z
    .strict()
    .refine((value) => Object.keys(value).length > 0, 'No supported changes supplied.');
 
+export type IssueLabelDto = {
+   id: string;
+   name: string;
+   color: string;
+};
+
 export type IssueDto = {
    id: string;
    identifier: string;
@@ -70,4 +78,5 @@ export type IssueDto = {
       displayName: string;
       avatarUrl: string | null;
    } | null;
+   labels: IssueLabelDto[];
 };

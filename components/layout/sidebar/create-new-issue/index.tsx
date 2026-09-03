@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RiEditLine } from '@remixicon/react';
@@ -11,6 +10,7 @@ import { priorities } from '@/mock-data/priorities';
 import { status } from '@/mock-data/status';
 import { useIssuesStore } from '@/store/issues-store';
 import { useCreateIssueStore } from '@/store/create-issue-store';
+import { useTeamsStore } from '@/store/teams-store';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { StatusSelector } from './status-selector';
@@ -46,12 +46,25 @@ export function CreateIssueTrigger() {
 }
 
 export function CreateNewIssue() {
-   const [createMore, setCreateMore] = useState<boolean>(false);
+   const [createMore, setCreateMore] = useState(false);
    const [submitting, setSubmitting] = useState(false);
+   const [teamKey, setTeamKey] = useState('CORE');
    const workspace = useWorkspace();
    const { isOpen, defaultStatus, openModal, closeModal } = useCreateIssueStore();
    const { addIssue, getAllIssues } = useIssuesStore();
    const projects = useProjectsStore((state) => state.projects);
+   const teams = useTeamsStore((state) => state.teams);
+   const teamsLoading = useTeamsStore((state) => state.loading);
+   const teamsWorkspaceSlug = useTeamsStore((state) => state.workspaceSlug);
+   const teamsReady =
+      !workspace.configured ||
+      (teamsWorkspaceSlug === workspace.organization.slug && !teamsLoading);
+
+   useEffect(() => {
+      if (!workspace.configured || !teamsReady || teams.length === 0) return;
+      if (teams.some((team) => team.key === teamKey)) return;
+      setTeamKey(teams.find((team) => team.key === 'CORE')?.key ?? teams[0].key);
+   }, [teamKey, teams, teamsReady, workspace.configured]);
 
    const generateUniqueIdentifier = useCallback(() => {
       const identifiers = getAllIssues().map((issue) => issue.identifier);
@@ -73,9 +86,9 @@ export function CreateNewIssue() {
          identifier: `LNUI-${identifier}`,
          title: '',
          description: '',
-         status: defaultStatus || status.find((s) => s.id === 'to-do')!,
+         status: defaultStatus || status.find((item) => item.id === 'to-do')!,
          assignee: null,
-         priority: priorities.find((p) => p.id === 'no-priority')!,
+         priority: priorities.find((item) => item.id === 'no-priority')!,
          labels: [],
          createdAt: new Date().toISOString(),
          cycleId: '',
@@ -93,8 +106,12 @@ export function CreateNewIssue() {
    }, [createDefaultData]);
 
    const createIssue = async () => {
-      if (!addIssueForm.title) {
+      if (!addIssueForm.title.trim()) {
          toast.error('Title is required');
+         return;
+      }
+      if (workspace.configured && (!teamsReady || !teams.some((team) => team.key === teamKey))) {
+         toast.error('Choose a valid workspace team.');
          return;
       }
 
@@ -107,13 +124,15 @@ export function CreateNewIssue() {
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({
                   organizationSlug: workspace.organization.slug,
-                  teamKey: 'CORE',
-                  title: addIssueForm.title,
+                  teamKey,
+                  title: addIssueForm.title.trim(),
                   description: addIssueForm.description,
                   statusSlug: addIssueForm.status.id,
                   priority: addIssueForm.priority.id,
                   projectId: addIssueForm.project?.id ?? null,
                   milestoneId: addIssueForm.milestoneId ?? null,
+                  assigneeId: addIssueForm.assignee?.id ?? null,
+                  labelIds: addIssueForm.labels.map((label) => label.id),
                }),
             });
 
@@ -136,9 +155,7 @@ export function CreateNewIssue() {
       }
 
       toast.success('Issue created');
-      if (!createMore) {
-         closeModal();
-      }
+      if (!createMore) closeModal();
       setAddIssueForm(createDefaultData());
    };
 
@@ -148,10 +165,36 @@ export function CreateNewIssue() {
             <DialogHeader>
                <DialogTitle>
                   <div className="flex items-center px-4 pt-4 gap-2">
-                     <Button size="sm" variant="outline" className="gap-1.5">
-                        <Heart className="size-4 text-orange-500 fill-orange-500" />
-                        <span className="font-medium">CORE</span>
-                     </Button>
+                     {workspace.configured ? (
+                        <label className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-sm">
+                           <span
+                              className="size-2.5 rounded-full border"
+                              style={{
+                                 backgroundColor:
+                                    teams.find((team) => team.key === teamKey)?.color ?? 'transparent',
+                              }}
+                           />
+                           <span className="sr-only">Issue team</span>
+                           <select
+                              aria-label="Issue team"
+                              className="bg-transparent font-medium outline-none"
+                              value={teamKey}
+                              onChange={(event) => setTeamKey(event.target.value)}
+                              disabled={!teamsReady || submitting}
+                           >
+                              {teams.map((team) => (
+                                 <option key={team.id} value={team.key}>
+                                    {team.name} ({team.issuePrefix})
+                                 </option>
+                              ))}
+                           </select>
+                        </label>
+                     ) : (
+                        <Button size="sm" variant="outline" className="gap-1.5" disabled>
+                           <span className="size-2.5 rounded-full bg-orange-500" />
+                           <span className="font-medium">CORE</span>
+                        </Button>
+                     )}
                   </div>
                </DialogTitle>
             </DialogHeader>
@@ -161,15 +204,17 @@ export function CreateNewIssue() {
                   className="border-none w-full shadow-none outline-none text-2xl font-medium px-0 h-auto focus-visible:ring-0 overflow-hidden text-ellipsis whitespace-normal break-words"
                   placeholder="Issue title"
                   value={addIssueForm.title}
-                  onChange={(e) => setAddIssueForm({ ...addIssueForm, title: e.target.value })}
+                  onChange={(event) =>
+                     setAddIssueForm({ ...addIssueForm, title: event.target.value })
+                  }
                />
 
                <Textarea
                   className="border-none w-full shadow-none outline-none resize-none px-0 min-h-16 focus-visible:ring-0 break-words whitespace-normal overflow-wrap"
                   placeholder="Add description..."
                   value={addIssueForm.description}
-                  onChange={(e) =>
-                     setAddIssueForm({ ...addIssueForm, description: e.target.value })
+                  onChange={(event) =>
+                     setAddIssueForm({ ...addIssueForm, description: event.target.value })
                   }
                />
 
@@ -226,7 +271,14 @@ export function CreateNewIssue() {
                      <Label htmlFor="create-more">Create more</Label>
                   </div>
                </div>
-               <Button size="sm" disabled={submitting} onClick={() => void createIssue()}>
+               <Button
+                  size="sm"
+                  disabled={
+                     submitting ||
+                     (workspace.configured && (!teamsReady || teams.length === 0))
+                  }
+                  onClick={() => void createIssue()}
+               >
                   {submitting ? 'Creating…' : 'Create issue'}
                </Button>
             </div>

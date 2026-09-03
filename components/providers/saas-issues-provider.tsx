@@ -25,7 +25,11 @@ function supportedChanges(changes: Partial<WorkspaceIssue>) {
    };
 }
 
-async function mutation(url: string, method: 'PATCH' | 'DELETE', body?: object) {
+async function mutation(
+   url: string,
+   method: 'POST' | 'PATCH' | 'DELETE',
+   body?: object
+) {
    const response = await fetch(url, {
       method,
       credentials: 'same-origin',
@@ -49,6 +53,7 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
 
       const controller = new AbortController();
       const store = useIssuesStore.getState();
+      const organization = encodeURIComponent(workspace.organization.slug);
       const projectById = new Map(
          useProjectsStore.getState().projects.map((project) => [project.id, project])
       );
@@ -62,12 +67,24 @@ export function SaasIssuesProvider({ children }: { children: React.ReactNode }) 
          async delete(id) {
             await mutation(`/api/issues/${encodeURIComponent(id)}`, 'DELETE');
          },
+         async addLabel(issueId, labelId) {
+            await mutation(
+               `/api/issues/${encodeURIComponent(issueId)}/labels/${encodeURIComponent(labelId)}?organization=${organization}`,
+               'POST'
+            );
+         },
+         async removeLabel(issueId, labelId) {
+            await mutation(
+               `/api/issues/${encodeURIComponent(issueId)}/labels/${encodeURIComponent(labelId)}?organization=${organization}`,
+               'DELETE'
+            );
+         },
          onError(message) {
             toast.error(message);
          },
       });
 
-      void fetch(`/api/issues?organization=${encodeURIComponent(workspace.organization.slug)}`, {
+      void fetch(`/api/issues?organization=${organization}`, {
          credentials: 'same-origin',
          signal: controller.signal,
          headers: { Accept: 'application/json' },
