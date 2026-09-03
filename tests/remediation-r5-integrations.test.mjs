@@ -28,6 +28,7 @@ test('R5A API authenticates the workspace and filters integration reads by tenan
    const route = await readSource('app/api/integrations/route.ts');
    const server = await readSource('lib/workspace-members/server.ts');
    const database = await readSource('lib/supabase/database-with-integrations.ts');
+   const preferencesType = await readSource('lib/supabase/database-with-preferences.ts');
    const supabaseServer = await readSource('lib/supabase/server.ts');
 
    assert.match(route, /authorizeWorkspaceMemberAccess/);
@@ -38,7 +39,8 @@ test('R5A API authenticates the workspace and filters integration reads by tenan
    assert.match(server, /organization_members/);
    assert.match(database, /DatabaseWithInvitations/);
    assert.match(database, /integration_connections: IntegrationConnectionsTable/);
-   assert.match(supabaseServer, /DatabaseWithIntegrations/);
+   assert.match(preferencesType, /DatabaseWithIntegrations/);
+   assert.match(supabaseServer, /DatabaseWithPreferences/);
 });
 
 test('R5A/R5B settings surfaces render persisted state while the directory remains inert', async () => {
