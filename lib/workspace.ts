@@ -13,6 +13,7 @@ export type WorkspaceSession = {
       email: string;
       displayName: string;
       avatarUrl: string | null;
+      timezone: string;
       role: 'owner' | 'admin' | 'member' | 'guest';
    };
 };
@@ -29,6 +30,7 @@ export const demoWorkspace: WorkspaceSession = {
       email: 'demo@adisearchtech.com',
       displayName: 'Demo User',
       avatarUrl: null,
+      timezone: 'UTC',
       role: 'owner',
    },
 };
@@ -65,7 +67,7 @@ export async function getWorkspaceSession(slug: string): Promise<WorkspaceSessio
          .maybeSingle(),
       supabase
          .from('profiles')
-         .select('display_name, avatar_url')
+         .select('display_name, avatar_url, timezone')
          .eq('id', claims.sub)
          .maybeSingle(),
    ]);
@@ -83,6 +85,7 @@ export async function getWorkspaceSession(slug: string): Promise<WorkspaceSessio
          email,
          displayName: profile?.display_name || email.split('@')[0] || 'Workspace member',
          avatarUrl: profile?.avatar_url ?? null,
+         timezone: profile?.timezone ?? 'UTC',
          role: membership.role,
       },
    };
