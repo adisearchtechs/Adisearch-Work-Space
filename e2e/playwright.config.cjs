@@ -1,3 +1,4 @@
+const path = require('node:path');
 const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
@@ -20,6 +21,7 @@ module.exports = defineConfig({
   },
   webServer: {
     command: 'pnpm exec next start -H 127.0.0.1 -p 3000',
+    cwd: path.resolve(__dirname, '..'),
     url: 'http://127.0.0.1:3000/login',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
