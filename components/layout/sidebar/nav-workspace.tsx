@@ -5,6 +5,7 @@ import {
    Compass,
    ContactRound,
    Layers,
+   LayoutDashboard,
    LayoutList,
    LucideIcon,
    MoreHorizontal,
@@ -79,6 +80,14 @@ export function NavWorkspace() {
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
          <SidebarMenu>
+            <SidebarMenuItem>
+               <SidebarMenuButton asChild>
+                  <Link href={`/${orgId}`}>
+                     <LayoutDashboard />
+                     <span>Overview</span>
+                  </Link>
+               </SidebarMenuButton>
+            </SidebarMenuItem>
             {items.map((item) => (
                <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton asChild>
