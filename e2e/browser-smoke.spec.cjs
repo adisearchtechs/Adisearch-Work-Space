@@ -2,6 +2,14 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Adisearch Workspace browser certification baseline', () => {
+  test('health endpoint reports a non-cacheable application-ready response', async ({ request }) => {
+    const response = await request.get('/api/health');
+
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({ status: 'ok' });
+    expect(response.headers()['cache-control']).toContain('no-store');
+  });
+
   test('unconfigured root enters the local demo workspace and issue tabs navigate', async ({ page }) => {
     await page.goto('/');
 
