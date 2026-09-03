@@ -49,6 +49,7 @@ test('issue creation and details expose the real project milestone selector', as
       'components/common/issues/details/issue-properties-panel.tsx'
    );
    const provider = await readSource('components/providers/saas-issues-provider.tsx');
+   const issueStore = await readSource('store/issues-store.ts');
 
    assert.match(selector, /useProjectMilestones\(projectId\)/);
    assert.match(selector, /No milestone/);
@@ -57,7 +58,8 @@ test('issue creation and details expose the real project milestone selector', as
    assert.match(createIssue, /<MilestoneSelector/);
    assert.match(createIssue, /project: newProject,[\s\S]*milestoneId: null/);
    assert.match(properties, /workspace\.configured && \([\s\S]*<MilestoneSelector/);
-   assert.match(properties, /milestoneId: null/);
+   assert.match(properties, /updateIssueProject\(issue\.id, project\)/);
+   assert.match(issueStore, /updateIssueProject:[\s\S]*milestoneId: null/);
    assert.match(properties, /!workspace\.configured && issue\.project && detail\?\.milestone/);
    assert.match(provider, /'milestoneId' in changes/);
 });
