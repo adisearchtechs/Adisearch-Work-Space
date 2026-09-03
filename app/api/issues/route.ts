@@ -19,6 +19,7 @@ type IssueRow = {
    due_date: string | null;
    team_id: string;
    project_id: string | null;
+   milestone_id: string | null;
    assignee_id: string | null;
 };
 
@@ -56,6 +57,7 @@ function toDto(
       rank: row.rank,
       dueDate: row.due_date ?? undefined,
       projectId: row.project_id,
+      milestoneId: row.milestone_id,
       assignee: row.assignee_id
          ? {
               id: row.assignee_id,
@@ -95,7 +97,7 @@ export async function GET(request: NextRequest) {
       supabase
          .from('issues')
          .select(
-            'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
+            'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, milestone_id, assignee_id'
          )
          .eq('organization_id', organization.id)
          .order('rank', { ascending: false })
@@ -195,6 +197,20 @@ export async function POST(request: NextRequest) {
       if (!project) return NextResponse.json({ error: 'Invalid project.' }, { status: 400 });
    }
 
+   if (parsed.data.milestoneId) {
+      const { data: milestone, error: milestoneError } = await supabase
+         .from('project_milestones')
+         .select('id')
+         .eq('organization_id', organization.id)
+         .eq('project_id', parsed.data.projectId!)
+         .eq('id', parsed.data.milestoneId)
+         .maybeSingle();
+      if (milestoneError) {
+         return NextResponse.json({ error: 'Unable to create issue.' }, { status: 500 });
+      }
+      if (!milestone) return NextResponse.json({ error: 'Invalid milestone.' }, { status: 400 });
+   }
+
    const { data: issue, error } = await supabase
       .from('issues')
       .insert({
@@ -206,9 +222,10 @@ export async function POST(request: NextRequest) {
          priority: parsed.data.priority,
          creator_id: userId,
          project_id: parsed.data.projectId ?? null,
+         milestone_id: parsed.data.milestoneId ?? null,
       })
       .select(
-         'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, assignee_id'
+         'id, issue_number, title, description, status_id, priority, creator_id, created_at, updated_at, cycle_id, rank, due_date, team_id, project_id, milestone_id, assignee_id'
       )
       .single();
 
