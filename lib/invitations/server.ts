@@ -25,7 +25,8 @@ export function invitationRpcErrorStatus(message: string) {
    if (
       message.includes('ALREADY_MEMBER') ||
       message.includes('INVITATION_ALREADY_PENDING') ||
-      message.includes('INVITATION_ALREADY_ACCEPTED')
+      message.includes('INVITATION_ALREADY_ACCEPTED') ||
+      message.includes('INVITATION_REVOKED')
    ) {
       return 409;
    }
@@ -50,6 +51,7 @@ export function invitationRpcErrorMessage(message: string, fallback: string) {
    if (message.includes('ADMIN_CANNOT_INVITE_ADMIN')) return 'Only the workspace owner can invite another admin.';
    if (message.includes('ADMIN_CANNOT_MANAGE_ADMIN_INVITE')) return 'Only the workspace owner can manage admin invitations.';
    if (message.includes('INVITATION_ALREADY_ACCEPTED')) return 'This invitation has already been accepted.';
+   if (message.includes('INVITATION_REVOKED')) return 'This invitation has been revoked.';
    if (message.includes('INVITATION_NOT_FOUND')) return 'Invitation not found.';
    if (message.includes('INVITATION_EMAIL_MISMATCH')) return 'Sign in with the email address this invitation was sent to.';
    if (message.includes('INVITATION_INVALID')) return 'This invitation is invalid, expired, or has been revoked.';
