@@ -57,10 +57,96 @@ type IntegrationConnectionsTable = {
    Relationships: Relationship[];
 };
 
+type IntegrationAuthorizationStatesTable = {
+   Row: {
+      id: string;
+      organization_id: string;
+      actor_user_id: string;
+      provider: 'github';
+      state_hash: string;
+      candidate_external_id: string | null;
+      created_at: string;
+      expires_at: string;
+      consumed_at: string | null;
+   };
+   Insert: {
+      id?: string;
+      organization_id: string;
+      actor_user_id: string;
+      provider: 'github';
+      state_hash: string;
+      candidate_external_id?: string | null;
+      created_at?: string;
+      expires_at: string;
+      consumed_at?: string | null;
+   };
+   Update: {
+      candidate_external_id?: string | null;
+      consumed_at?: string | null;
+   };
+   Relationships: Relationship[];
+};
+
+type IntegrationFunctions = {
+   create_integration_authorization_state: {
+      Args: {
+         p_organization_id: string;
+         p_provider: string;
+         p_state_hash: string;
+         p_expires_at: string;
+      };
+      Returns: Array<{
+         authorization_id: string;
+         expires_at: string;
+      }>;
+   };
+   get_integration_authorization_state: {
+      Args: {
+         p_state_hash: string;
+      };
+      Returns: Array<{
+         authorization_id: string;
+         organization_id: string;
+         provider: string;
+         candidate_external_id: string | null;
+         expires_at: string;
+      }>;
+   };
+   record_integration_authorization_candidate: {
+      Args: {
+         p_state_hash: string;
+         p_external_id: string;
+      };
+      Returns: Array<{
+         authorization_id: string;
+         organization_id: string;
+         candidate_external_id: string;
+      }>;
+   };
+   complete_github_integration_authorization: {
+      Args: {
+         p_state_hash: string;
+         p_installation_id: string;
+         p_account_label: string;
+         p_scopes: string[];
+      };
+      Returns: Array<{
+         connection_id: string;
+         organization_id: string;
+         status: string;
+         external_account_id: string;
+         external_account_label: string;
+         connected_at: string;
+      }>;
+   };
+};
+
 export type DatabaseWithIntegrations = Omit<DatabaseWithInvitations, 'public'> & {
-   public: Omit<DatabaseWithInvitations['public'], 'Tables'> & {
+   public: Omit<DatabaseWithInvitations['public'], 'Tables' | 'Functions'> & {
       Tables: DatabaseWithInvitations['public']['Tables'] & {
          integration_connections: IntegrationConnectionsTable;
+         integration_authorization_states: IntegrationAuthorizationStatesTable;
       };
+      Functions: DatabaseWithInvitations['public']['Functions'] & IntegrationFunctions;
    };
 };

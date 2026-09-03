@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { mapIntegrationConnection } from '@/lib/integrations/contracts';
+import { githubAppReadiness } from '@/lib/integrations/github/server';
 import { isSupabaseConfigured } from '@/lib/supabase/env';
 import { authorizeWorkspaceMemberAccess } from '@/lib/workspace-members/server';
 
@@ -30,7 +31,10 @@ export async function GET(request: NextRequest) {
    }
 
    return NextResponse.json(
-      { connections: (data ?? []).map(mapIntegrationConnection) },
+      {
+         connections: (data ?? []).map(mapIntegrationConnection),
+         providers: { github: githubAppReadiness() },
+      },
       { headers: { 'Cache-Control': 'private, no-store' } }
    );
 }

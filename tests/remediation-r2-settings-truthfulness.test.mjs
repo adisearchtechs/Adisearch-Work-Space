@@ -30,11 +30,16 @@ test('R2 connected accounts never fabricate provider connection state', async ()
    assert.match(connections, /useIntegrationConnections/);
    assert.match(connections, /Not connected/);
    assert.match(connections, /server-authoritative/);
-   assert.match(connections, /not configured/);
+   assert.match(connections, /providers\.github\.available/);
+   assert.match(connections, /canAdministerConnections/);
+   assert.match(connections, /\/api\/integrations\/github\/start/);
+   assert.match(connections, /'Connect GitHub'/);
+   assert.match(connections, /'Reconnect GitHub'/);
    assert.doesNotMatch(connections, /ConnectedTrailing/);
    assert.doesNotMatch(connections, /@adisearchtechs/);
    assert.doesNotMatch(connections, /octo-relay/);
-   assert.doesNotMatch(connections, /<Button/);
+   assert.doesNotMatch(connections, />\s*Connect Slack\s*</);
+   assert.doesNotMatch(connections, />\s*Connect Notion\s*</);
 });
 
 test('R2 integration directory remains searchable without fake enabled or dead card controls', async () => {
@@ -43,7 +48,7 @@ test('R2 integration directory remains searchable without fake enabled or dead c
    assert.match(integrations, /Search integrations/);
    assert.match(integrations, /useIntegrationConnections/);
    assert.match(integrations, /Not connected/);
-   assert.match(integrations, /OAuth setup and disconnect flows are not released in R5A/);
+   assert.match(integrations, /server-authoritative connection state/);
    assert.match(integrations, /onClick=\{\(\) => setExpanded\(true\)\}/);
    assert.doesNotMatch(integrations, /ENABLED_INTEGRATIONS/);
    assert.doesNotMatch(integrations, /status === 'enabled'/);

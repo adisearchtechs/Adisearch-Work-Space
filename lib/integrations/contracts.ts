@@ -15,8 +15,18 @@ export type IntegrationConnectionDto = {
    lastErrorCode: string | null;
 };
 
+export type IntegrationProviderReadiness = {
+   available: boolean;
+   reason: string | null;
+};
+
+export type IntegrationProviders = {
+   github: IntegrationProviderReadiness;
+};
+
 export type IntegrationConnectionsResponse = {
    connections: IntegrationConnectionDto[];
+   providers: IntegrationProviders;
 };
 
 export function mapIntegrationConnection(row: {
