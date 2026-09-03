@@ -9,10 +9,14 @@ const readSource = (relativePath) => readFile(path.join(repositoryRoot, relative
 
 test('R6B workspace settings contract allows only a bounded organization name', async () => {
    const contract = await readSource('lib/workspace-settings/contracts.ts');
+   const patchSchemaSource = contract.slice(
+      contract.indexOf('workspaceSettingsPatchSchema'),
+      contract.indexOf('export type WorkspaceSettingsDto')
+   );
 
-   assert.match(contract, /name: z\.string\(\)\.trim\(\)\.min\(2\)\.max\(100\)/);
-   assert.match(contract, /\.strict\(\)/);
-   assert.doesNotMatch(contract, /slug:/);
+   assert.match(patchSchemaSource, /name: z\.string\(\)\.trim\(\)\.min\(2\)\.max\(100\)/);
+   assert.match(patchSchemaSource, /\.strict\(\)/);
+   assert.doesNotMatch(patchSchemaSource, /slug:/);
 });
 
 test('R6B workspace settings API requires membership and admin authority for writes', async () => {
