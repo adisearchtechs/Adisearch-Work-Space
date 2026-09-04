@@ -6,6 +6,7 @@ import {
    Compass,
    ContactRound,
    GitBranch,
+   GitCompareArrows,
    History,
    Layers,
    LayoutDashboard,
@@ -112,6 +113,14 @@ export function NavWorkspace() {
                   <Link href={`/${orgId}/status-history`}>
                      <History />
                      <span>Status history</span>
+                  </Link>
+               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+               <SidebarMenuButton asChild>
+                  <Link href={`/${orgId}/status-history/compare`}>
+                     <GitCompareArrows />
+                     <span>Compare snapshots</span>
                   </Link>
                </SidebarMenuButton>
             </SidebarMenuItem>
