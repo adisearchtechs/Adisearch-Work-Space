@@ -74,14 +74,18 @@ export async function GET(request: NextRequest) {
    );
    if ('response' in context) return context.response;
 
-   const scope = request.nextUrl.searchParams.get('scope');
+   const rawScope = request.nextUrl.searchParams.get('scope');
+   let scope: 'workspace' | 'team' | null = null;
+   if (rawScope === 'workspace' || rawScope === 'team') {
+      scope = rawScope;
+   } else if (rawScope) {
+      return NextResponse.json({ error: 'Invalid snapshot scope.' }, { status: 400 });
+   }
+
    const teamId = request.nextUrl.searchParams.get('teamId');
    const rawLimit = Number(request.nextUrl.searchParams.get('limit') ?? '50');
    const limit = Number.isFinite(rawLimit) ? Math.min(50, Math.max(1, Math.floor(rawLimit))) : 50;
 
-   if (scope && scope !== 'workspace' && scope !== 'team') {
-      return NextResponse.json({ error: 'Invalid snapshot scope.' }, { status: 400 });
-   }
    if (teamId && !isUuid(teamId)) {
       return NextResponse.json({ error: 'Invalid team.' }, { status: 400 });
    }
