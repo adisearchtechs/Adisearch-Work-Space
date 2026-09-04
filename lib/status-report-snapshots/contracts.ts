@@ -39,6 +39,11 @@ export type StatusReportSnapshotsResponse = {
    snapshots: StatusReportSnapshotDto[];
 };
 
+export type StatusReportSnapshotDetailResponse = {
+   snapshot: StatusReportSnapshotDto;
+   previous: StatusReportSnapshotDto | null;
+};
+
 export const createStatusReportSnapshotSchema = z
    .object({
       scope: z.enum(['workspace', 'team']),
