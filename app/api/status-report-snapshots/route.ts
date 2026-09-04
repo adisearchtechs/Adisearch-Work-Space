@@ -3,6 +3,7 @@ import { GET as getWorkspaceDashboard } from '@/app/api/dashboard/route';
 import { GET as getWorkspaceDependencies } from '@/app/api/dependencies/route';
 import { GET as getTeamDashboard } from '@/app/api/teams/[teamId]/dashboard/route';
 import { hasValidMutationOrigin, readJsonBody } from '@/lib/api/security';
+import type { Json } from '@/lib/supabase/database.types';
 import {
    createStatusReportSnapshotSchema,
    type StatusReportSnapshotDto,
@@ -23,7 +24,7 @@ type SnapshotRow = {
    schema_version: number;
    generated_at: string;
    created_at: string;
-   payload: unknown;
+   payload: Json;
 };
 
 function toDto(row: SnapshotRow): StatusReportSnapshotDto {
@@ -35,7 +36,7 @@ function toDto(row: SnapshotRow): StatusReportSnapshotDto {
       schemaVersion: 1,
       generatedAt: row.generated_at,
       createdAt: row.created_at,
-      payload: row.payload as StatusReportSnapshotPayload,
+      payload: row.payload as unknown as StatusReportSnapshotPayload,
    };
 }
 
@@ -43,7 +44,11 @@ function maxTimestamp(left: string, right: string) {
    return left > right ? left : right;
 }
 
-async function readResponse<T>(response: Response, failureMessage: string): Promise<T> {
+async function readResponse<T>(
+   response: Response | undefined,
+   failureMessage: string
+): Promise<T> {
+   if (!response) throw new Error(`${failureMessage}:500`);
    if (!response.ok) throw new Error(`${failureMessage}:${response.status}`);
    return (await response.json()) as T;
 }
@@ -182,7 +187,7 @@ export async function POST(request: NextRequest) {
          created_by: context.userId,
          schema_version: 1,
          generated_at: generatedAt,
-         payload,
+         payload: payload as unknown as Json,
       })
       .select('id, scope, team_id, created_by, schema_version, generated_at, created_at, payload')
       .single();
