@@ -322,6 +322,12 @@ export function StatusReportHistory() {
                                  ? `Delta compares with ${formatTimestamp(previous.createdAt)}. Positive and negative values are numeric differences only.`
                                  : 'No earlier snapshot exists for this scope, so no comparison is shown.'}
                            </p>
+                           <Link
+                              href={`/${workspace.organization.slug}/status-history/${snapshot.id}`}
+                              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+                           >
+                              View saved snapshot <ChevronRight className="size-4" />
+                           </Link>
                         </article>
                      );
                   })
