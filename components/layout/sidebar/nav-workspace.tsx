@@ -6,6 +6,7 @@ import {
    Compass,
    ContactRound,
    GitBranch,
+   History,
    Layers,
    LayoutDashboard,
    LayoutList,
@@ -103,6 +104,14 @@ export function NavWorkspace() {
                   <Link href={`/${orgId}/status-report`}>
                      <ClipboardList />
                      <span>Status report</span>
+                  </Link>
+               </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+               <SidebarMenuButton asChild>
+                  <Link href={`/${orgId}/status-history`}>
+                     <History />
+                     <span>Status history</span>
                   </Link>
                </SidebarMenuButton>
             </SidebarMenuItem>
