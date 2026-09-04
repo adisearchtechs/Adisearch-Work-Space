@@ -7,9 +7,12 @@ import { fileURLToPath } from 'node:url';
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const readSource = (relativePath) => readFile(path.join(repositoryRoot, relativePath), 'utf8');
 
-test('status snapshot persistence is tenant scoped and immutable through the authenticated role', async () => {
+test('status snapshot persistence is tenant scoped immutable and indexed for foreign keys', async () => {
    const migration = await readSource(
       'supabase/migrations/20260904064500_add_status_report_snapshots.sql'
+   );
+   const foreignKeyIndex = await readSource(
+      'supabase/migrations/20260904070000_cover_status_report_snapshots_team_foreign_key.sql'
    );
 
    assert.match(migration, /create table public\.status_report_snapshots/);
@@ -22,6 +25,7 @@ test('status snapshot persistence is tenant scoped and immutable through the aut
    assert.match(migration, /grant select, insert on table public\.status_report_snapshots to authenticated/);
    assert.doesNotMatch(migration, /grant .*update/i);
    assert.doesNotMatch(migration, /grant .*delete/i);
+   assert.match(foreignKeyIndex, /on public\.status_report_snapshots \(team_id, organization_id\)/);
 });
 
 test('snapshot capture is same-origin and server assembled from released read models', async () => {
