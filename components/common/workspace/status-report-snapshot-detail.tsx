@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Archive, ArrowLeft, Clipboard, Download, GitBranch, ListChecks } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '@/components/providers/workspace-provider';
@@ -192,10 +192,11 @@ export function StatusReportSnapshotDetail({ snapshotId }: { snapshotId: string 
       return () => controller.abort();
    }, [snapshotId, workspace.configured, workspace.organization.slug]);
 
-   const teamName = useMemo(() => {
-      if (!detail?.snapshot.teamId || workspaceSlug !== workspace.organization.slug) return 'Team';
-      return teams.find((team) => team.id === detail.snapshot.teamId)?.name ?? 'Team';
-   }, [detail?.snapshot.teamId, teams, workspace.organization.slug, workspaceSlug]);
+   const snapshotTeamId = detail?.snapshot.teamId ?? null;
+   const teamName =
+      snapshotTeamId && workspaceSlug === workspace.organization.slug
+         ? teams.find((team) => team.id === snapshotTeamId)?.name ?? 'Team'
+         : 'Team';
 
    if (!workspace.configured) {
       return (
@@ -279,7 +280,7 @@ export function StatusReportSnapshotDetail({ snapshotId }: { snapshotId: string 
                   {snapshot.scope === 'workspace' ? 'Workspace status snapshot' : `${teamName} status snapshot`}
                </h1>
                <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-                  Captured {formatTimestamp(snapshot.createdAt)} from source data generated {formatTimestamp(snapshot.generatedAt)}. This page renders the frozen saved payload, not today's workspace state.
+                  Captured {formatTimestamp(snapshot.createdAt)} from source data generated {formatTimestamp(snapshot.generatedAt)}. This page renders the frozen saved payload, not the current workspace state.
                </p>
             </div>
             <div className="flex flex-wrap gap-2">
