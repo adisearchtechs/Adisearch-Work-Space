@@ -1,38 +1,26 @@
-import AccountCodeReviews from '@/components/common/settings/account-code-reviews';
-import AccountConnections from '@/components/common/settings/account-connections';
-import AccountNotifications from '@/components/common/settings/account-notifications';
-import AccountSecurity from '@/components/common/settings/account-security';
-import AgentPersonalization from '@/components/common/settings/agent-personalization';
-import AiAgents from '@/components/common/settings/ai-agents';
-import Integrations from '@/components/common/settings/integrations';
-import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
-import IssueTemplatesSettings from '@/components/common/settings/issue-templates-settings';
+import SettingsSectionRuntime from '@/components/common/settings/settings-section-runtime';
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
-import Preferences from '@/components/common/settings/preferences';
-import Profile from '@/components/common/settings/profile';
-import ProjectStatusesSettings from '@/components/common/settings/project-statuses-settings';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
-import WorkspaceMembersSettings from '@/components/common/settings/workspace-members-settings';
 import MainLayout from '@/components/layout/main-layout';
 import Header from '@/components/layout/headers/settings/header';
 import { notFound } from 'next/navigation';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-const DEDICATED_SECTIONS: Record<string, ComponentType> = {
-   'agent-personalization': AgentPersonalization,
-   'ai': AiAgents,
-   'code-and-reviews': AccountCodeReviews,
-   'connected-accounts': AccountConnections,
-   'integrations': Integrations,
-   'issue-labels': IssueLabelsSettings,
-   'issue-templates': IssueTemplatesSettings,
-   'members': WorkspaceMembersSettings,
-   'notifications': AccountNotifications,
-   'preferences': Preferences,
-   'profile': Profile,
-   'project-statuses': ProjectStatusesSettings,
-   'security': AccountSecurity,
-};
+const DEDICATED_SECTIONS = new Set([
+   'agent-personalization',
+   'ai',
+   'code-and-reviews',
+   'connected-accounts',
+   'integrations',
+   'issue-labels',
+   'issue-templates',
+   'members',
+   'notifications',
+   'preferences',
+   'profile',
+   'project-statuses',
+   'security',
+]);
 
 export default async function SettingsSectionPage({
    params,
@@ -40,11 +28,10 @@ export default async function SettingsSectionPage({
    params: Promise<{ section: string }>;
 }) {
    const { section } = await params;
-   const DedicatedSection = DEDICATED_SECTIONS[section];
    const placeholder = PLACEHOLDER_SECTIONS[section];
    let content: ReactNode;
 
-   if (DedicatedSection) content = <DedicatedSection />;
+   if (DEDICATED_SECTIONS.has(section)) content = <SettingsSectionRuntime section={section} />;
    else if (placeholder) content = <SettingsPlaceholder config={placeholder} />;
    else notFound();
 
