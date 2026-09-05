@@ -1,4 +1,4 @@
-import ProjectActivity from '@/components/common/projects/details/project-activity';
+import ProjectActivityRuntime from '@/components/common/projects/details/project-activity-runtime';
 import Header from '@/components/layout/headers/project/header';
 import MainLayout from '@/components/layout/main-layout';
 
@@ -11,7 +11,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
    return (
       <MainLayout header={<Header projectId={projectId} />}>
-         <ProjectActivity projectId={projectId} />
+         <ProjectActivityRuntime projectId={projectId} />
       </MainLayout>
    );
 }
