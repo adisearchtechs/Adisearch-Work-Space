@@ -20,7 +20,8 @@ test('authentication and workspace switcher render the Adisearch mark', async ()
    const switcher = await readSource('components/layout/sidebar/org-switcher.tsx');
 
    assert.match(login, /src=\{brand\.logoPath\}/);
-   assert.match(login, /AdisearchAuthBackground/);
+   assert.match(login, /Private operating workspace/);
+   assert.match(login, /ADISEARCH \/ WORKSPACE/);
    assert.match(login, /AdisearchTechs/);
    assert.match(switcher, /src=\{brand\.logoPath\}/);
    assert.match(switcher, /user\.displayName/);
