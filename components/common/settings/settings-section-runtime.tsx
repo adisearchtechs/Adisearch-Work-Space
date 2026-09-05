@@ -9,9 +9,11 @@ import AiAgents from '@/components/common/settings/ai-agents';
 import Integrations from '@/components/common/settings/integrations';
 import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
 import IssueTemplatesSettings from '@/components/common/settings/issue-templates-settings';
+import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
 import Preferences from '@/components/common/settings/preferences';
 import Profile from '@/components/common/settings/profile';
 import ProjectStatusesSettings from '@/components/common/settings/project-statuses-settings';
+import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
 import WorkspaceMembersSettings from '@/components/common/settings/workspace-members-settings';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -166,9 +168,12 @@ function ConfiguredProfile() {
 }
 
 function ConfiguredUnavailable({ section }: { section: string }) {
+   const placeholder = PLACEHOLDER_SECTIONS[section];
    const copy = CONFIGURED_PLACEHOLDERS[section] ?? {
-      title: 'Settings',
-      description: 'This section is not backed by persisted production settings yet.',
+      title: placeholder?.title ?? 'Settings',
+      description:
+         placeholder?.description ??
+         'This section is not backed by persisted production settings yet.',
       status: 'Not available yet',
    };
 
@@ -196,7 +201,9 @@ export default function SettingsSectionRuntime({ section }: { section: string })
 
    if (!workspace.configured) {
       const DemoSection = DEMO_SECTIONS[section];
-      return DemoSection ? <DemoSection /> : null;
+      if (DemoSection) return <DemoSection />;
+      const placeholder = PLACEHOLDER_SECTIONS[section];
+      return placeholder ? <SettingsPlaceholder config={placeholder} /> : null;
    }
 
    if (section === 'issue-labels') return <IssueLabelsSettings />;
