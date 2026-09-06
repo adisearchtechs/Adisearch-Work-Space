@@ -2,15 +2,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useWorkspace } from '@/components/providers/workspace-provider';
+import type { ProjectMilestoneDto } from '@/lib/project-milestones/contracts';
 import type { Issue } from '@/mock-data/issues';
-import type { ProjectDetail } from '@/mock-data/project-details';
 import type { Project } from '@/mock-data/projects';
 import { useProjectsStore } from '@/store/projects-store';
-import { Calendar, CheckCircle2, Link2, Milestone, UsersRound } from 'lucide-react';
+import { Calendar, CheckCircle2, Link2, Loader2, Milestone, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
-function formatDate(value?: string) {
+function formatDate(value?: string | null) {
    if (!value) return 'Not set';
    const date = new Date(value);
    if (Number.isNaN(date.getTime())) return value;
@@ -23,11 +23,13 @@ function formatDate(value?: string) {
 
 export default function PersistentProjectPropertiesPanel({
    project,
-   detail,
+   milestones,
+   milestonesLoading,
    issues,
 }: {
    project: Project;
-   detail: ProjectDetail;
+   milestones: ProjectMilestoneDto[];
+   milestonesLoading: boolean;
    issues: Issue[];
 }) {
    const workspace = useWorkspace();
@@ -141,11 +143,15 @@ export default function PersistentProjectPropertiesPanel({
                   Manage
                </Link>
             </div>
-            {detail.milestones.length === 0 ? (
+            {milestonesLoading ? (
+               <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin" /> Loading milestones…
+               </p>
+            ) : milestones.length === 0 ? (
                <p className="mt-2 text-xs text-muted-foreground">No milestones yet.</p>
             ) : (
                <div className="mt-2 space-y-2">
-                  {detail.milestones.slice(0, 4).map((milestone) => (
+                  {milestones.slice(0, 4).map((milestone) => (
                      <div key={milestone.id} className="flex items-center gap-2 text-xs">
                         {milestone.completed ? (
                            <CheckCircle2 className="size-3.5 text-emerald-500" />
