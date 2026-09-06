@@ -10,7 +10,6 @@ import type {
    ProjectUpdateHealth,
    ProjectUpdateKind,
 } from '@/lib/project-updates/contracts';
-import { getProjectDetail } from '@/mock-data/project-details';
 import { useIssuesStore } from '@/store/issues-store';
 import { useProjectsStore } from '@/store/projects-store';
 import { Bot, Loader2 } from 'lucide-react';
@@ -113,7 +112,6 @@ function PersistentProjectActivity({ projectId }: { projectId: string }) {
       );
    }
 
-   const detail = getProjectDetail(project.id);
    const agentHref = `/${workspace.organization.slug}/agent`;
 
    return (
@@ -206,7 +204,7 @@ function PersistentProjectActivity({ projectId }: { projectId: string }) {
                </div>
             </div>
          </div>
-         <ProjectSidePanel project={project} detail={detail} issues={issues} />
+         <ProjectSidePanel project={project} issues={issues} />
       </div>
    );
 }
