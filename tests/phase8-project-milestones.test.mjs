@@ -48,8 +48,10 @@ test('configured project milestone UI is server-backed and supports create, comp
    assert.match(page, /workspace\.user\.role !== 'guest'/);
    assert.match(page, /Add milestone/);
    assert.match(page, /Mark \$\{milestone\.name\} complete/);
-   assert.match(sidePanel, /milestones: milestones\.map/);
-   assert.match(sidePanel, /if \(!workspace\.configured\) return detail/);
+   assert.match(sidePanel, /useProjectMilestones\(project\.id\)/);
+   assert.match(sidePanel, /milestones=\{milestones\}/);
+   assert.match(sidePanel, /milestonesLoading=\{milestonesLoading\}/);
+   assert.match(sidePanel, /if \(workspace\.configured\)/);
    assert.match(header, /\{ label: 'Milestones', segment: 'milestones' \}/);
 });
 
