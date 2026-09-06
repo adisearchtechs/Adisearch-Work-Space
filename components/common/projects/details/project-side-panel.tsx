@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { InsightsPanel } from '@/components/common/issues/insights-panel';
 import { useProjectMilestones } from '@/components/common/projects/details/use-project-milestones';
 import { useWorkspace } from '@/components/providers/workspace-provider';
@@ -13,7 +12,7 @@ import { ProjectPropertiesPanel } from './project-properties-panel';
 
 interface ProjectSidePanelProps {
    project: Project;
-   detail: ProjectDetail;
+   detail?: ProjectDetail;
    issues: Issue[];
    insightsIssues?: Issue[];
 }
@@ -26,32 +25,36 @@ export function ProjectSidePanel({
 }: ProjectSidePanelProps) {
    const workspace = useWorkspace();
    const { openPanel } = useRightPanelStore();
-   const { milestones } = useProjectMilestones(project.id);
-   const panelDetail = useMemo<ProjectDetail>(() => {
-      if (!workspace.configured) return detail;
-      return {
-         ...detail,
-         milestones: milestones.map((milestone) => ({
-            id: milestone.id,
-            name: milestone.name,
-            targetDate: milestone.targetDate ?? undefined,
-            completed: milestone.completed,
-         })),
-         activity: [],
-      };
-   }, [detail, milestones, workspace.configured]);
+   const { milestones, loading: milestonesLoading } = useProjectMilestones(project.id);
 
    if (openPanel === 'hidden') return null;
 
+   if (openPanel === 'insights') {
+      return (
+         <aside className="hidden xl:flex w-[380px] shrink-0 border-l h-full overflow-hidden bg-container">
+            <InsightsPanel issues={insightsIssues ?? issues} />
+         </aside>
+      );
+   }
+
+   if (workspace.configured) {
+      return (
+         <aside className="hidden xl:flex w-[380px] shrink-0 border-l h-full overflow-hidden bg-container">
+            <PersistentProjectPropertiesPanel
+               project={project}
+               milestones={milestones}
+               milestonesLoading={milestonesLoading}
+               issues={issues}
+            />
+         </aside>
+      );
+   }
+
+   if (!detail) return null;
+
    return (
       <aside className="hidden xl:flex w-[380px] shrink-0 border-l h-full overflow-hidden bg-container">
-         {openPanel === 'insights' ? (
-            <InsightsPanel issues={insightsIssues ?? issues} />
-         ) : workspace.configured ? (
-            <PersistentProjectPropertiesPanel project={project} detail={panelDetail} issues={issues} />
-         ) : (
-            <ProjectPropertiesPanel project={project} detail={panelDetail} issues={issues} />
-         )}
+         <ProjectPropertiesPanel project={project} detail={detail} issues={issues} />
       </aside>
    );
 }
