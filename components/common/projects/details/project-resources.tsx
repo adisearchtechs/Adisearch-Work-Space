@@ -24,18 +24,22 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
    const [url, setUrl] = useState('');
    const [submitting, setSubmitting] = useState(false);
    const canWrite = workspace.configured && workspace.user.role !== 'guest';
+   const organization = encodeURIComponent(workspace.organization.slug);
+   const encodedProjectId = encodeURIComponent(projectId);
 
-   const endpoint = useMemo(
-      () =>
-         `/api/projects/${encodeURIComponent(projectId)}/resources?organization=${encodeURIComponent(workspace.organization.slug)}`,
-      [projectId, workspace.organization.slug]
+   const collectionEndpoint = useMemo(
+      () => `/api/projects/${encodedProjectId}/resources?organization=${organization}`,
+      [encodedProjectId, organization]
    );
+
+   const itemEndpoint = (resourceId: string) =>
+      `/api/projects/${encodedProjectId}/resources/${encodeURIComponent(resourceId)}?organization=${organization}`;
 
    useEffect(() => {
       if (!workspace.configured) return;
       const controller = new AbortController();
       setLoading(true);
-      void fetch(endpoint, {
+      void fetch(collectionEndpoint, {
          credentials: 'same-origin',
          signal: controller.signal,
          headers: { Accept: 'application/json' },
@@ -55,7 +59,7 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
             if (!controller.signal.aborted) setLoading(false);
          });
       return () => controller.abort();
-   }, [endpoint, workspace.configured]);
+   }, [collectionEndpoint, workspace.configured]);
 
    const closeForm = () => {
       setFormOpen(false);
@@ -89,15 +93,15 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
 
       setSubmitting(true);
       try {
-         const target = editingId
-            ? `${endpoint}/${encodeURIComponent(editingId)}`
-            : endpoint;
-         const response = await fetch(target, {
-            method: editingId ? 'PATCH' : 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ label: nextLabel, url: nextUrl }),
-         });
+         const response = await fetch(
+            editingId ? itemEndpoint(editingId) : collectionEndpoint,
+            {
+               method: editingId ? 'PATCH' : 'POST',
+               credentials: 'same-origin',
+               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+               body: JSON.stringify({ label: nextLabel, url: nextUrl }),
+            }
+         );
          if (!response.ok) throw new Error(`Resource save failed with ${response.status}.`);
          const { resource } = (await response.json()) as { resource: ProjectResourceDto };
          setResources((current) =>
@@ -118,7 +122,7 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
       const previous = resources;
       setResources((current) => current.filter((item) => item.id !== resource.id));
       try {
-         const response = await fetch(`${endpoint}/${encodeURIComponent(resource.id)}`, {
+         const response = await fetch(itemEndpoint(resource.id), {
             method: 'DELETE',
             credentials: 'same-origin',
          });
@@ -164,10 +168,20 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
                         </a>
                         {canWrite && (
                            <span className="flex border-l">
-                              <button type="button" onClick={() => beginEdit(resource)} className="p-1 text-muted-foreground hover:text-foreground" aria-label={`Edit ${resource.label}`}>
+                              <button
+                                 type="button"
+                                 onClick={() => beginEdit(resource)}
+                                 className="p-1 text-muted-foreground hover:text-foreground"
+                                 aria-label={`Edit ${resource.label}`}
+                              >
                                  <Pencil className="size-3" />
                               </button>
-                              <button type="button" onClick={() => void deleteResource(resource)} className="p-1 text-muted-foreground hover:text-destructive" aria-label={`Delete ${resource.label}`}>
+                              <button
+                                 type="button"
+                                 onClick={() => void deleteResource(resource)}
+                                 className="p-1 text-muted-foreground hover:text-destructive"
+                                 aria-label={`Delete ${resource.label}`}
+                              >
                                  <Trash2 className="size-3" />
                               </button>
                            </span>
@@ -176,7 +190,11 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
                   ))
                )}
                {canWrite && (
-                  <button type="button" onClick={beginCreate} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                  <button
+                     type="button"
+                     onClick={beginCreate}
+                     className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
                      <Plus className="size-3.5" /> Add resource
                   </button>
                )}
@@ -189,17 +207,31 @@ export function ProjectResources({ projectId, demoResources }: ProjectResourcesP
                <div className="mt-2 grid gap-2 rounded-lg border bg-muted/20 p-3 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] sm:items-end">
                   <label className="grid gap-1 text-xs font-medium">
                      Label
-                     <Input value={label} onChange={(event) => setLabel(event.target.value)} maxLength={120} placeholder="Product brief" autoFocus />
+                     <Input
+                        value={label}
+                        onChange={(event) => setLabel(event.target.value)}
+                        maxLength={120}
+                        placeholder="Product brief"
+                        autoFocus
+                     />
                   </label>
                   <label className="grid gap-1 text-xs font-medium">
                      URL
-                     <Input type="url" value={url} onChange={(event) => setUrl(event.target.value)} maxLength={2048} placeholder="https://…" />
+                     <Input
+                        type="url"
+                        value={url}
+                        onChange={(event) => setUrl(event.target.value)}
+                        maxLength={2048}
+                        placeholder="https://…"
+                     />
                   </label>
                   <div className="flex gap-2">
                      <Button size="sm" onClick={() => void saveResource()} disabled={submitting}>
                         {submitting ? 'Saving…' : editingId ? 'Save' : 'Add'}
                      </Button>
-                     <Button size="sm" variant="outline" onClick={closeForm} disabled={submitting}>Cancel</Button>
+                     <Button size="sm" variant="outline" onClick={closeForm} disabled={submitting}>
+                        Cancel
+                     </Button>
                   </div>
                </div>
             )}
