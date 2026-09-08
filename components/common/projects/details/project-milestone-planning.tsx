@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { GroupedIssuesView } from '@/components/common/issues/grouped-issues-view';
 import { applyIssueFilters } from '@/components/common/issues/issue-filter-columns';
 import { IssueFilterBar } from '@/components/common/issues/issue-filter-bar';
+import { useWorkspaceStatuses } from '@/components/common/issues/use-workspace-statuses';
 import { useProjectMilestones } from '@/components/common/projects/details/use-project-milestones';
 import { useWorkspace } from '@/components/providers/workspace-provider';
 import { Button } from '@/components/ui/button';
@@ -47,15 +48,23 @@ export default function ProjectMilestonePlanning({
    const milestonesLoaded = useProjectMilestonesStore(
       (state) => state.loadedByProject[projectId] ?? false
    );
+   const {
+      statuses: workspaceStatuses,
+      loaded: statusesLoaded,
+      loadError: statusesLoadError,
+   } = useWorkspaceStatuses();
    const [view, setView] = useState<'board' | 'list'>('board');
-   const detail = getProjectDetail(projectId);
+   const detail = useMemo(
+      () => (workspace.configured ? null : getProjectDetail(projectId)),
+      [projectId, workspace.configured]
+   );
 
    const workspaceReady = !workspace.configured || workspaceSlug === workspace.organization.slug;
    const project = workspaceReady ? storedProject : undefined;
 
    const displayedMilestones = useMemo<ProjectMilestoneDto[]>(() => {
       if (workspace.configured) return milestones;
-      return detail.milestones.map((milestone, index) => ({
+      return (detail?.milestones ?? []).map((milestone, index) => ({
          id: milestone.id,
          projectId,
          name: milestone.name,
@@ -64,8 +73,9 @@ export default function ProjectMilestonePlanning({
          position: index,
          createdAt: milestone.targetDate ?? '2026-01-01',
       }));
-   }, [detail.milestones, milestones, projectId, workspace.configured]);
+   }, [detail, milestones, projectId, workspace.configured]);
 
+   const displayedStatuses = workspace.configured ? workspaceStatuses : displayOrderedStatus;
    const milestone = displayedMilestones.find((item) => item.id === milestoneId);
    const milestoneIssues = useMemo(
       () =>
@@ -96,10 +106,22 @@ export default function ProjectMilestonePlanning({
       );
    }
 
-   if (workspace.configured && !milestonesLoaded) {
+   if (workspace.configured && (!milestonesLoaded || !statusesLoaded)) {
       return (
          <div className="flex h-full items-center justify-center text-sm text-muted-foreground" role="status">
             Loading milestone plan…
+         </div>
+      );
+   }
+
+   if (workspace.configured && statusesLoadError) {
+      return (
+         <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+            <Flag className="size-8 text-muted-foreground/60" />
+            <h1 className="text-sm font-medium">Unable to load milestone workflow</h1>
+            <p className="max-w-md text-sm text-muted-foreground">
+               Refresh the page to retry the authenticated workspace status request.
+            </p>
          </div>
       );
    }
@@ -242,7 +264,7 @@ export default function ProjectMilestonePlanning({
                <GroupedIssuesView
                   issues={displayedIssues}
                   totalIssues={milestoneIssues}
-                  statuses={displayOrderedStatus}
+                  statuses={displayedStatuses}
                   isViewTypeGrid={view === 'board'}
                />
             )}

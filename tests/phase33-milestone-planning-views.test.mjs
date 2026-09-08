@@ -40,7 +40,11 @@ test('milestone planning supports board and list views over the existing issue s
    assert.match(planning, /useState<'board' \| 'list'>\('board'\)/);
    assert.match(planning, /<IssueFilterBar/);
    assert.match(planning, /<GroupedIssuesView/);
-   assert.match(planning, /statuses=\{displayOrderedStatus\}/);
+   assert.match(planning, /statuses=\{displayedStatuses\}/);
+   assert.match(
+      planning,
+      /displayedStatuses = workspace\.configured \? workspaceStatuses : displayOrderedStatus/
+   );
    assert.match(planning, /isViewTypeGrid=\{view === 'board'\}/);
    assert.match(planning, /No issues assigned to this milestone/);
 });
