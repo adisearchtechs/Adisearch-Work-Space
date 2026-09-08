@@ -122,7 +122,7 @@ export function LoginForm({
             )}
 
             <SubmitButton
-               label={mode === 'signin' ? 'Continue to workspace' : 'Create workspace account'}
+               label={mode === 'signin' ? 'Sign in securely' : 'Create workspace account'}
             />
          </form>
       </div>
