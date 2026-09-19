@@ -5,6 +5,7 @@ import NotificationPreferences from '@/components/common/settings/notification-p
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
 import PersistentPreferences from '@/components/common/settings/persistent-preferences';
 import Profile from '@/components/common/settings/profile';
+import ProjectStatusesSettings from '@/components/common/settings/project-statuses-settings';
 import SettingsNotice from '@/components/common/settings/settings-notice';
 import SettingsPlaceholder from '@/components/common/settings/settings-placeholder';
 import WorkspaceGeneralSettings from '@/components/common/settings/workspace-general-settings';
@@ -49,13 +50,6 @@ const IssueTemplatesNotice = () => (
       milestone="R6 feature-specific settings"
    />
 );
-const ProjectStatusesNotice = () => (
-   <SettingsNotice
-      title="Project statuses"
-      description="Project-status administration is not implemented. Existing project status values remain unchanged."
-      milestone="R6 feature-specific settings"
-   />
-);
 
 const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'agent-personalization': AgentPersonalizationNotice,
@@ -69,7 +63,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'notifications': NotificationPreferences,
    'preferences': PersistentPreferences,
    'profile': Profile,
-   'project-statuses': ProjectStatusesNotice,
+   'project-statuses': ProjectStatusesSettings,
    'security': SecurityNotice,
    'workspace': WorkspaceGeneralSettings,
 };
