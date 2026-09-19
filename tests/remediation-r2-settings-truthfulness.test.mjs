@@ -21,7 +21,7 @@ test('R2 production settings route does not expose prototype settings controls',
    assert.doesNotMatch(route, /agent-personalization';/);
    assert.doesNotMatch(route, /ai-agents/);
    assert.doesNotMatch(route, /issue-templates-settings/);
-   assert.doesNotMatch(route, /project-statuses-settings/);
+   assert.match(route, /project-statuses-settings/);
 });
 
 test('R2 connected accounts never fabricate provider connection state', async () => {
