@@ -105,6 +105,8 @@ create table public.issue_templates (
 
 create index issue_templates_org_position_idx
    on public.issue_templates (organization_id, position, name);
+create index issue_templates_created_by_idx
+   on public.issue_templates (created_by);
 
 create table public.projects (
    id uuid primary key default extensions.gen_random_uuid(),

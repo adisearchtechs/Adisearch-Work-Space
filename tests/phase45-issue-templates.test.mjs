@@ -13,6 +13,7 @@ test('Phase 45 issue templates are tenant-scoped and RLS protected', async () =>
    assert.match(migration, /enable row level security/);
    assert.match(migration, /private\.is_org_member\(organization_id\)/);
    assert.match(migration, /private\.is_org_admin\(organization_id\)/);
+   assert.match(migration, /create index issue_templates_created_by_idx[\s\S]*?\(created_by\)/);
 });
 
 test('Phase 45 API protects mutations and scopes every template write', async () => {
