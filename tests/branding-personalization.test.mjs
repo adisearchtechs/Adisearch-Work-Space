@@ -30,6 +30,9 @@ test('authentication and workspace switcher render the Adisearch mark', async ()
 test('sign-in brand animation is scoped, decorative, and reduced-motion safe', async () => {
    const background = await readSource('components/brand/adisearch-auth-background.tsx');
    const styles = await readSource('components/brand/adisearch-auth-background.module.css');
+   const login = await readSource('app/login/page.tsx');
+   const loginForm = await readSource('app/login/login-form.tsx');
+   const experience = await readSource('app/login/login-experience.module.css');
 
    assert.match(background, /aria-hidden="true"/);
    assert.match(background, /adisearch-mark\.svg/);
@@ -37,6 +40,13 @@ test('sign-in brand animation is scoped, decorative, and reduced-motion safe', a
    assert.match(styles, /@keyframes drift/);
    assert.match(styles, /@keyframes pixelFloat/);
    assert.match(styles, /prefers-reduced-motion: reduce/);
+   assert.match(login, /Portfolio signal/);
+   assert.match(login, /Workspace systems online/);
+   assert.match(loginForm, /Show password/);
+   assert.match(loginForm, /aria-pressed=\{showPassword\}/);
+   assert.match(experience, /@keyframes signalFlow/);
+   assert.match(experience, /@keyframes modeSwap/);
+   assert.match(experience, /prefers-reduced-motion: reduce/);
 });
 
 test('profile settings are session-backed instead of mock-user backed', async () => {
