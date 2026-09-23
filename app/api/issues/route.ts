@@ -165,13 +165,7 @@ export async function GET(request: NextRequest) {
    }
 
    const result = issueRows.map((issue) =>
-      toDto(
-         issue,
-         statusById,
-         prefixByTeamId,
-         assigneeById,
-         labelsByIssueId.get(issue.id) ?? []
-      )
+      toDto(issue, statusById, prefixByTeamId, assigneeById, labelsByIssueId.get(issue.id) ?? [])
    );
 
    return NextResponse.json(
@@ -220,6 +214,20 @@ export async function POST(request: NextRequest) {
    }
    if (!actorMembership || actorMembership.role === 'guest') {
       return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
+   }
+
+   if (parsed.data.templateId) {
+      const { data: template, error: templateError } = await supabase
+         .from('issue_templates')
+         .select('id')
+         .eq('organization_id', organization.id)
+         .eq('id', parsed.data.templateId)
+         .eq('active', true)
+         .maybeSingle();
+      if (templateError)
+         return NextResponse.json({ error: 'Unable to create issue.' }, { status: 500 });
+      if (!template)
+         return NextResponse.json({ error: 'Invalid issue template.' }, { status: 400 });
    }
 
    const [{ data: team, error: teamError }, { data: issueStatus, error: statusError }] =

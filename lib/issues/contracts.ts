@@ -26,6 +26,7 @@ export const createIssueSchema = z
       milestoneId: z.string().uuid().nullable().optional(),
       assigneeId: z.string().uuid().nullable().optional(),
       labelIds: z.array(z.string().uuid()).max(50).default([]),
+      templateId: z.string().uuid().nullable().optional(),
    })
    .strict()
    .refine(

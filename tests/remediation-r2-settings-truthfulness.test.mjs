@@ -20,7 +20,7 @@ test('R2 production settings route does not expose prototype settings controls',
    assert.doesNotMatch(route, /account-security/);
    assert.doesNotMatch(route, /agent-personalization';/);
    assert.doesNotMatch(route, /ai-agents/);
-   assert.doesNotMatch(route, /issue-templates-settings/);
+   assert.match(route, /issue-templates-settings/);
    assert.match(route, /project-statuses-settings/);
 });
 

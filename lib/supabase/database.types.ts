@@ -24,57 +24,284 @@ export type Database = {
    public: {
       Tables: {
          profiles: Table<
-            Timestamped & { id: string; display_name: string | null; avatar_url: string | null; timezone: string },
-            { id: string; display_name?: string | null; avatar_url?: string | null; timezone?: string; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               display_name: string | null;
+               avatar_url: string | null;
+               timezone: string;
+            },
+            {
+               id: string;
+               display_name?: string | null;
+               avatar_url?: string | null;
+               timezone?: string;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          organizations: Table<
             Timestamped & { id: string; name: string; slug: string; created_by: string },
-            { id?: string; name: string; slug: string; created_by: string; created_at?: string; updated_at?: string }
+            {
+               id?: string;
+               name: string;
+               slug: string;
+               created_by: string;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          organization_members: Table<
-            { organization_id: string; user_id: string; role: Database['public']['Enums']['organization_role']; created_at: string },
-            { organization_id: string; user_id: string; role?: Database['public']['Enums']['organization_role']; created_at?: string }
+            {
+               organization_id: string;
+               user_id: string;
+               role: Database['public']['Enums']['organization_role'];
+               created_at: string;
+            },
+            {
+               organization_id: string;
+               user_id: string;
+               role?: Database['public']['Enums']['organization_role'];
+               created_at?: string;
+            }
          >;
          teams: Table<
-            Timestamped & { id: string; organization_id: string; name: string; key: string; issue_prefix: string; color: string; next_issue_number: number },
-            { id?: string; organization_id: string; name: string; key: string; issue_prefix: string; color?: string; next_issue_number?: number; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               name: string;
+               key: string;
+               issue_prefix: string;
+               color: string;
+               next_issue_number: number;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               name: string;
+               key: string;
+               issue_prefix: string;
+               color?: string;
+               next_issue_number?: number;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          team_members: Table<
             { team_id: string; organization_id: string; user_id: string; created_at: string },
             { team_id: string; organization_id: string; user_id: string; created_at?: string }
          >;
          team_documents: Table<
-            Timestamped & { id: string; organization_id: string; team_id: string; created_by: string | null; title: string; body: string; pinned: boolean },
-            { id?: string; organization_id: string; team_id: string; created_by?: string | null; title: string; body?: string; pinned?: boolean; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               team_id: string;
+               created_by: string | null;
+               title: string;
+               body: string;
+               pinned: boolean;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               team_id: string;
+               created_by?: string | null;
+               title: string;
+               body?: string;
+               pinned?: boolean;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          saved_views: Table<
-            Timestamped & { id: string; organization_id: string; team_id: string | null; owner_id: string; name: string; description: string; icon: string; view_type: 'issue' | 'project'; filter: Json },
-            { id?: string; organization_id: string; team_id?: string | null; owner_id: string; name: string; description?: string; icon?: string; view_type: 'issue' | 'project'; filter?: Json; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               team_id: string | null;
+               owner_id: string;
+               name: string;
+               description: string;
+               icon: string;
+               view_type: 'issue' | 'project';
+               filter: Json;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               team_id?: string | null;
+               owner_id: string;
+               name: string;
+               description?: string;
+               icon?: string;
+               view_type: 'issue' | 'project';
+               filter?: Json;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          notifications: Table<
-            { id: string; organization_id: string; recipient_id: string; actor_id: string | null; issue_id: string | null; kind: 'assignment' | 'status'; content: string; read_at: string | null; created_at: string },
-            { id?: string; organization_id: string; recipient_id: string; actor_id?: string | null; issue_id?: string | null; kind: 'assignment' | 'status'; content?: string; read_at?: string | null; created_at?: string },
+            {
+               id: string;
+               organization_id: string;
+               recipient_id: string;
+               actor_id: string | null;
+               issue_id: string | null;
+               kind: 'assignment' | 'status';
+               content: string;
+               read_at: string | null;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               recipient_id: string;
+               actor_id?: string | null;
+               issue_id?: string | null;
+               kind: 'assignment' | 'status';
+               content?: string;
+               read_at?: string | null;
+               created_at?: string;
+            },
             { read_at?: string | null }
          >;
          statuses: Table<
-            Timestamped & { id: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position: number },
-            { id?: string; organization_id: string; name: string; slug: string; category: Database['public']['Enums']['status_category']; color: string; position?: number; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               name: string;
+               slug: string;
+               category: Database['public']['Enums']['status_category'];
+               color: string;
+               position: number;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               name: string;
+               slug: string;
+               category: Database['public']['Enums']['status_category'];
+               color: string;
+               position?: number;
+               created_at?: string;
+               updated_at?: string;
+            }
+         >;
+         issue_templates: Table<
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               name: string;
+               description: string;
+               title: string;
+               body: string;
+               active: boolean;
+               position: number;
+               created_by: string | null;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               name: string;
+               description?: string;
+               title?: string;
+               body?: string;
+               active?: boolean;
+               position?: number;
+               created_by?: string | null;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          projects: Table<
-            Timestamped & { id: string; organization_id: string; team_id: string; name: string; description: string; status: string; lead_id: string | null; target_date: string | null },
-            { id?: string; organization_id: string; team_id: string; name: string; description?: string; status?: string; lead_id?: string | null; target_date?: string | null; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               team_id: string;
+               name: string;
+               description: string;
+               status: string;
+               lead_id: string | null;
+               target_date: string | null;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               team_id: string;
+               name: string;
+               description?: string;
+               status?: string;
+               lead_id?: string | null;
+               target_date?: string | null;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          project_updates: Table<
-            { id: string; organization_id: string; project_id: string; author_id: string | null; kind: 'update' | 'comment'; health: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at: string },
-            { id?: string; organization_id: string; project_id: string; author_id?: string | null; kind?: 'update' | 'comment'; health?: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at?: string }
+            {
+               id: string;
+               organization_id: string;
+               project_id: string;
+               author_id: string | null;
+               kind: 'update' | 'comment';
+               health: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               project_id: string;
+               author_id?: string | null;
+               kind?: 'update' | 'comment';
+               health?: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at?: string;
+            }
          >;
          project_milestones: Table<
-            { id: string; organization_id: string; project_id: string; created_by: string | null; name: string; target_date: string | null; completed: boolean; position: number; created_at: string },
-            { id?: string; organization_id: string; project_id: string; created_by?: string | null; name: string; target_date?: string | null; completed?: boolean; position?: number; created_at?: string }
+            {
+               id: string;
+               organization_id: string;
+               project_id: string;
+               created_by: string | null;
+               name: string;
+               target_date: string | null;
+               completed: boolean;
+               position: number;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               project_id: string;
+               created_by?: string | null;
+               name: string;
+               target_date?: string | null;
+               completed?: boolean;
+               position?: number;
+               created_at?: string;
+            }
          >;
          project_resources: Table<
-            { id: string; organization_id: string; project_id: string; created_by: string | null; label: string; url: string; position: number; created_at: string },
-            { id?: string; organization_id: string; project_id: string; created_by?: string | null; label: string; url: string; position?: number; created_at?: string }
+            {
+               id: string;
+               organization_id: string;
+               project_id: string;
+               created_by: string | null;
+               label: string;
+               url: string;
+               position: number;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               project_id: string;
+               created_by?: string | null;
+               label: string;
+               url: string;
+               position?: number;
+               created_at?: string;
+            }
          >;
          project_labels: Table<
             { project_id: string; label_id: string; organization_id: string; created_at: string },
@@ -109,32 +336,143 @@ export type Database = {
             }
          >;
          initiative_projects: Table<
-            { initiative_id: string; project_id: string; organization_id: string; created_at: string },
-            { initiative_id: string; project_id: string; organization_id: string; created_at?: string }
+            {
+               initiative_id: string;
+               project_id: string;
+               organization_id: string;
+               created_at: string;
+            },
+            {
+               initiative_id: string;
+               project_id: string;
+               organization_id: string;
+               created_at?: string;
+            }
          >;
          initiative_labels: Table<
-            { initiative_id: string; label_id: string; organization_id: string; created_at: string },
-            { initiative_id: string; label_id: string; organization_id: string; created_at?: string }
+            {
+               initiative_id: string;
+               label_id: string;
+               organization_id: string;
+               created_at: string;
+            },
+            {
+               initiative_id: string;
+               label_id: string;
+               organization_id: string;
+               created_at?: string;
+            }
          >;
          initiative_updates: Table<
-            { id: string; organization_id: string; initiative_id: string; author_id: string | null; kind: 'update' | 'comment'; health: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at: string },
-            { id?: string; organization_id: string; initiative_id: string; author_id?: string | null; kind?: 'update' | 'comment'; health?: 'on-track' | 'at-risk' | 'off-track' | null; body: string; created_at?: string }
+            {
+               id: string;
+               organization_id: string;
+               initiative_id: string;
+               author_id: string | null;
+               kind: 'update' | 'comment';
+               health: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               initiative_id: string;
+               author_id?: string | null;
+               kind?: 'update' | 'comment';
+               health?: 'on-track' | 'at-risk' | 'off-track' | null;
+               body: string;
+               created_at?: string;
+            }
          >;
          initiative_resources: Table<
-            { id: string; organization_id: string; initiative_id: string; created_by: string | null; label: string; url: string; position: number; created_at: string },
-            { id?: string; organization_id: string; initiative_id: string; created_by?: string | null; label: string; url: string; position?: number; created_at?: string }
+            {
+               id: string;
+               organization_id: string;
+               initiative_id: string;
+               created_by: string | null;
+               label: string;
+               url: string;
+               position: number;
+               created_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               initiative_id: string;
+               created_by?: string | null;
+               label: string;
+               url: string;
+               position?: number;
+               created_at?: string;
+            }
          >;
          cycles: Table<
-            Timestamped & { id: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string },
-            { id?: string; organization_id: string; team_id: string; name: string; starts_at: string; ends_at: string; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               team_id: string;
+               name: string;
+               starts_at: string;
+               ends_at: string;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               team_id: string;
+               name: string;
+               starts_at: string;
+               ends_at: string;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          labels: Table<
             Timestamped & { id: string; organization_id: string; name: string; color: string },
-            { id?: string; organization_id: string; name: string; color: string; created_at?: string; updated_at?: string }
+            {
+               id?: string;
+               organization_id: string;
+               name: string;
+               color: string;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          issues: Table<
-            Timestamped & { id: string; organization_id: string; team_id: string; issue_number: number; title: string; description: string; status_id: string; priority: Database['public']['Enums']['issue_priority']; assignee_id: string | null; project_id: string | null; cycle_id: string | null; creator_id: string; rank: string; due_date: string | null },
-            { id?: string; organization_id: string; team_id: string; issue_number?: number; title: string; description?: string; status_id: string; priority?: Database['public']['Enums']['issue_priority']; assignee_id?: string | null; project_id?: string | null; cycle_id?: string | null; creator_id: string; rank?: string; due_date?: string | null; created_at?: string; updated_at?: string }
+            Timestamped & {
+               id: string;
+               organization_id: string;
+               team_id: string;
+               issue_number: number;
+               title: string;
+               description: string;
+               status_id: string;
+               priority: Database['public']['Enums']['issue_priority'];
+               assignee_id: string | null;
+               project_id: string | null;
+               cycle_id: string | null;
+               creator_id: string;
+               rank: string;
+               due_date: string | null;
+            },
+            {
+               id?: string;
+               organization_id: string;
+               team_id: string;
+               issue_number?: number;
+               title: string;
+               description?: string;
+               status_id: string;
+               priority?: Database['public']['Enums']['issue_priority'];
+               assignee_id?: string | null;
+               project_id?: string | null;
+               cycle_id?: string | null;
+               creator_id: string;
+               rank?: string;
+               due_date?: string | null;
+               created_at?: string;
+               updated_at?: string;
+            }
          >;
          issue_labels: Table<
             { issue_id: string; label_id: string; organization_id: string; created_at: string },
