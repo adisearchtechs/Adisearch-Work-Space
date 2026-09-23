@@ -20,32 +20,24 @@ test('authentication and workspace switcher render the Adisearch mark', async ()
    const switcher = await readSource('components/layout/sidebar/org-switcher.tsx');
 
    assert.match(login, /src=\{brand\.logoPath\}/);
-   assert.match(login, /AdisearchAuthBackground/);
    assert.match(login, /AdisearchTechs/);
    assert.match(switcher, /src=\{brand\.logoPath\}/);
    assert.match(switcher, /user\.displayName/);
    assert.match(switcher, /settings\/profile/);
 });
 
-test('sign-in brand animation is scoped, decorative, and reduced-motion safe', async () => {
-   const background = await readSource('components/brand/adisearch-auth-background.tsx');
-   const styles = await readSource('components/brand/adisearch-auth-background.module.css');
+test('sign-in motion is restrained and reduced-motion safe', async () => {
    const login = await readSource('app/login/page.tsx');
    const loginForm = await readSource('app/login/login-form.tsx');
    const experience = await readSource('app/login/login-experience.module.css');
 
-   assert.match(background, /aria-hidden="true"/);
-   assert.match(background, /adisearch-mark\.svg/);
-   assert.match(styles, /@keyframes orbit/);
-   assert.match(styles, /@keyframes drift/);
-   assert.match(styles, /@keyframes pixelFloat/);
-   assert.match(styles, /prefers-reduced-motion: reduce/);
-   assert.match(login, /Portfolio signal/);
-   assert.match(login, /Workspace systems online/);
+   assert.match(login, /Your work,/);
+   assert.match(login, /Projects/);
+   assert.doesNotMatch(login, /Portfolio signal/);
+   assert.doesNotMatch(login, /Workspace systems online/);
    assert.match(loginForm, /Show password/);
    assert.match(loginForm, /aria-pressed=\{showPassword\}/);
-   assert.match(experience, /@keyframes signalFlow/);
-   assert.match(experience, /@keyframes modeSwap/);
+   assert.match(experience, /@keyframes enterForm/);
    assert.match(experience, /prefers-reduced-motion: reduce/);
 });
 
