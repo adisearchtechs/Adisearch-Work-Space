@@ -34,8 +34,20 @@ const securityHeaders = [
    },
 ];
 
+// Vercel does not expose tracked .env files to Git-connected builds. These values are
+// intentionally browser-public; privileged Supabase credentials must never be added here.
+const vercelPublicEnv =
+   process.env.VERCEL === '1'
+      ? {
+           NEXT_PUBLIC_SUPABASE_URL: 'https://iwehjdgijlviwewbjwnn.supabase.co',
+           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_GrUJRedBpVqRZ7QKI2cjRw_2Yzb9Nx8',
+           NEXT_PUBLIC_SITE_URL: 'https://circle-eta-bice.vercel.app',
+        }
+      : undefined;
+
 const nextConfig: NextConfig = {
    devIndicators: false,
+   env: vercelPublicEnv,
    poweredByHeader: false,
    async headers() {
       return [

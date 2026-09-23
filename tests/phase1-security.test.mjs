@@ -92,12 +92,15 @@ test('browser bundles use a publishable Supabase key and never reference service
    const browserClient = await readSource('lib/supabase/client.ts');
    const envExample = await readSource('.env.example');
    const productionEnv = await readSource('.env.production');
-   const deployedPublicConfiguration = `${browserClient}\n${productionEnv}`;
+   const nextConfig = await readSource('next.config.ts');
+   const deployedPublicConfiguration = `${browserClient}\n${productionEnv}\n${nextConfig}`;
 
    assert.match(browserClient, /publishableKey/);
    assert.match(envExample, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
    assert.match(productionEnv, /^NEXT_PUBLIC_SUPABASE_URL=https:\/\//m);
    assert.match(productionEnv, /^NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_/m);
+   assert.match(nextConfig, /process\.env\.VERCEL === '1'/);
+   assert.match(nextConfig, /NEXT_PUBLIC_SITE_URL: 'https:\/\/circle-eta-bice\.vercel\.app'/);
    assert.doesNotMatch(deployedPublicConfiguration, /service[_-]?role|sb_secret_/i);
 });
 
