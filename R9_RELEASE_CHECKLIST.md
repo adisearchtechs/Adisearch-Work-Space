@@ -25,6 +25,7 @@ This checklist is the production release gate for Adisearch Workspace. A release
 - The production aliases resolve to that exact deployment.
 - Runtime error clusters are checked after deployment.
 - A protected production URL returning Vercel SSO is not considered an application browser test; use the authenticated browser suite for UI certification.
+- The monitoring baseline and evidence record in `PRODUCTION_OPERATIONS_RUNBOOK.md` are completed.
 
 ## External feature gates
 
@@ -47,4 +48,4 @@ Direct force pushes and branch deletion should be disabled. Administrators shoul
 
 ## Rollback
 
-If production smoke checks fail after a release, promote the most recent known-good Vercel production deployment rather than bypassing CI or rewriting `master`. Follow with a corrective pull request and repeat all three certification workflows.
+If production smoke checks fail after a release, follow `PRODUCTION_OPERATIONS_RUNBOOK.md`. Promote the most recent verified known-good Vercel production deployment rather than bypassing CI or rewriting `master`. Treat database recovery as a separate, explicitly approved procedure. Follow with a corrective pull request and repeat all three certification workflows.
