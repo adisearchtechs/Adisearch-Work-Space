@@ -26,6 +26,7 @@ import type { IssueDto } from '@/lib/issues/contracts';
 import { issueDtoToIssue } from '@/lib/issues/mapper';
 import type { WorkspaceIssue } from '@/lib/issues/types';
 import { useProjectsStore } from '@/store/projects-store';
+import type { IssueTemplateDto } from '@/lib/issue-templates/contracts';
 
 export function CreateIssueTrigger() {
    const openModal = useCreateIssueStore((state) => state.openModal);
@@ -49,6 +50,8 @@ export function CreateNewIssue() {
    const [createMore, setCreateMore] = useState(false);
    const [submitting, setSubmitting] = useState(false);
    const [teamKey, setTeamKey] = useState('CORE');
+   const [templates, setTemplates] = useState<IssueTemplateDto[]>([]);
+   const [templateId, setTemplateId] = useState('');
    const workspace = useWorkspace();
    const { isOpen, defaultStatus, openModal, closeModal } = useCreateIssueStore();
    const { addIssue, getAllIssues } = useIssuesStore();
@@ -65,6 +68,27 @@ export function CreateNewIssue() {
       if (teams.some((team) => team.key === teamKey)) return;
       setTeamKey(teams.find((team) => team.key === 'CORE')?.key ?? teams[0].key);
    }, [teamKey, teams, teamsReady, workspace.configured]);
+
+   useEffect(() => {
+      if (!isOpen || !workspace.configured) return;
+      const controller = new AbortController();
+      void fetch(
+         `/api/issue-templates?organization=${encodeURIComponent(workspace.organization.slug)}`,
+         {
+            credentials: 'same-origin',
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+         }
+      )
+         .then(async (response) =>
+            response.ok
+               ? ((await response.json()) as { templates: IssueTemplateDto[] })
+               : { templates: [] }
+         )
+         .then((result) => setTemplates(result.templates.filter((template) => template.active)))
+         .catch(() => setTemplates([]));
+      return () => controller.abort();
+   }, [isOpen, workspace.configured, workspace.organization.slug]);
 
    const generateUniqueIdentifier = useCallback(() => {
       const identifiers = getAllIssues().map((issue) => issue.identifier);
@@ -133,6 +157,7 @@ export function CreateNewIssue() {
                   milestoneId: addIssueForm.milestoneId ?? null,
                   assigneeId: addIssueForm.assignee?.id ?? null,
                   labelIds: addIssueForm.labels.map((label) => label.id),
+                  templateId: templateId || null,
                }),
             });
 
@@ -157,6 +182,7 @@ export function CreateNewIssue() {
       toast.success('Issue created');
       if (!createMore) closeModal();
       setAddIssueForm(createDefaultData());
+      setTemplateId('');
    };
 
    return (
@@ -171,7 +197,8 @@ export function CreateNewIssue() {
                               className="size-2.5 rounded-full border"
                               style={{
                                  backgroundColor:
-                                    teams.find((team) => team.key === teamKey)?.color ?? 'transparent',
+                                    teams.find((team) => team.key === teamKey)?.color ??
+                                    'transparent',
                               }}
                            />
                            <span className="sr-only">Issue team</span>
@@ -200,6 +227,34 @@ export function CreateNewIssue() {
             </DialogHeader>
 
             <div className="px-4 pb-0 space-y-3 w-full">
+               {workspace.configured && templates.length > 0 && (
+                  <label className="block text-xs text-muted-foreground">
+                     Template
+                     <select
+                        className="mt-1 h-9 w-full rounded-md border bg-background px-3 text-sm text-foreground"
+                        value={templateId}
+                        disabled={submitting}
+                        onChange={(event) => {
+                           const nextId = event.target.value;
+                           setTemplateId(nextId);
+                           const template = templates.find((item) => item.id === nextId);
+                           if (template)
+                              setAddIssueForm((current) => ({
+                                 ...current,
+                                 title: template.title,
+                                 description: template.body,
+                              }));
+                        }}
+                     >
+                        <option value="">No template</option>
+                        {templates.map((template) => (
+                           <option key={template.id} value={template.id}>
+                              {template.name}
+                           </option>
+                        ))}
+                     </select>
+                  </label>
+               )}
                <Input
                   className="border-none w-full shadow-none outline-none text-2xl font-medium px-0 h-auto focus-visible:ring-0 overflow-hidden text-ellipsis whitespace-normal break-words"
                   placeholder="Issue title"
@@ -274,8 +329,7 @@ export function CreateNewIssue() {
                <Button
                   size="sm"
                   disabled={
-                     submitting ||
-                     (workspace.configured && (!teamsReady || teams.length === 0))
+                     submitting || (workspace.configured && (!teamsReady || teams.length === 0))
                   }
                   onClick={() => void createIssue()}
                >

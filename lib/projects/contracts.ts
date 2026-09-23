@@ -60,6 +60,7 @@ export type ProjectDto = {
    name: string;
    description: string;
    status: ProjectStatus;
+   percentComplete: number;
    teamKey: string;
    createdAt: string;
    targetDate: string | null;

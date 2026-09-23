@@ -1,6 +1,7 @@
 import AccountConnections from '@/components/common/settings/account-connections';
 import Integrations from '@/components/common/settings/integrations';
 import IssueLabelsSettings from '@/components/common/settings/issue-labels-settings';
+import IssueTemplatesSettings from '@/components/common/settings/issue-templates-settings';
 import NotificationPreferences from '@/components/common/settings/notification-preferences';
 import { PLACEHOLDER_SECTIONS } from '@/components/common/settings/placeholder-sections';
 import PersistentPreferences from '@/components/common/settings/persistent-preferences';
@@ -43,13 +44,6 @@ const CodeReviewsNotice = () => (
       milestone="R5 Connected apps architecture"
    />
 );
-const IssueTemplatesNotice = () => (
-   <SettingsNotice
-      title="Issue templates"
-      description="Workspace issue templates are not implemented. No sample template is treated as production data."
-      milestone="R6 feature-specific settings"
-   />
-);
 
 const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'agent-personalization': AgentPersonalizationNotice,
@@ -58,7 +52,7 @@ const DEDICATED_SECTIONS: Record<string, ComponentType> = {
    'connected-accounts': AccountConnections,
    'integrations': Integrations,
    'issue-labels': IssueLabelsSettings,
-   'issue-templates': IssueTemplatesNotice,
+   'issue-templates': IssueTemplatesSettings,
    'members': WorkspaceMembersSettings,
    'notifications': NotificationPreferences,
    'preferences': PersistentPreferences,

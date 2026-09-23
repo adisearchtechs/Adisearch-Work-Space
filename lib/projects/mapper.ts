@@ -30,7 +30,7 @@ const projectStatusByStatusId: Record<string, ProjectStatus> = Object.fromEntrie
    ])
 ) as Record<string, ProjectStatus>;
 
-function statusFields(projectStatus: ProjectStatus) {
+function statusFields(projectStatus: ProjectStatus, percentComplete = 0) {
    return {
       status:
          status.find((item) => item.id === statusIdByProjectStatus[projectStatus]) ??
@@ -38,7 +38,7 @@ function statusFields(projectStatus: ProjectStatus) {
       health:
          health.find((item) => item.id === healthIdByProjectStatus[projectStatus]) ??
          health.find((item) => item.id === 'no-update')!,
-      percentComplete: projectStatus === 'completed' ? 100 : 0,
+      percentComplete: Math.min(100, Math.max(0, Math.round(percentComplete))),
    };
 }
 
@@ -77,7 +77,7 @@ export function projectDtoToProject(dto: ProjectDto): Project {
       id: dto.id,
       name: dto.name,
       description: dto.description,
-      ...statusFields(dto.status),
+      ...statusFields(dto.status, dto.percentComplete),
       icon: Cuboid,
       startDate: dto.createdAt.slice(0, 10),
       targetDate: dto.targetDate ?? undefined,
@@ -100,6 +100,10 @@ export function applyProjectUpdate(project: Project, changes: ProjectUpdate): Pr
       ...(changes.targetDate !== undefined && {
          targetDate: changes.targetDate ?? undefined,
       }),
-      ...(changes.status !== undefined && statusFields(changes.status)),
+      ...(changes.status !== undefined &&
+         statusFields(
+            changes.status,
+            changes.status === 'completed' ? 100 : project.percentComplete
+         )),
    };
 }
