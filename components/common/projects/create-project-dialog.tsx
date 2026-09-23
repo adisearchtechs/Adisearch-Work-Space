@@ -93,6 +93,7 @@ export function CreateProjectDialog() {
                name: trimmedName,
                description: '',
                status,
+               percentComplete: 0,
                teamKey,
                createdAt: new Date().toISOString(),
                targetDate: targetDate || null,
