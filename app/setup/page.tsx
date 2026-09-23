@@ -1,9 +1,36 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { brand } from '@/lib/brand';
 
 export const metadata: Metadata = { title: 'Deployment setup' };
 
-export default function SetupPage() {
+type SetupPageProps = {
+   searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstValue(value: string | string[] | undefined) {
+   return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function SetupPage({ searchParams }: SetupPageProps) {
+   const params = await searchParams;
+   const installationId = firstValue(params.installation_id);
+   const state = firstValue(params.state);
+
+   // GitHub installations created before the canonical integration Setup URL was
+   // corrected can still return to /setup. Preserve only the provider parameters
+   // understood by the verified handler; that handler remains responsible for
+   // state, PKCE, installation, membership, and authorization validation.
+   if (installationId && state) {
+      const integrationParams = new URLSearchParams({
+         installation_id: installationId,
+         state,
+      });
+      const setupAction = firstValue(params.setup_action);
+      if (setupAction) integrationParams.set('setup_action', setupAction);
+      redirect(`/api/integrations/github/setup?${integrationParams.toString()}`);
+   }
+
    return (
       <main className="mx-auto flex min-h-svh max-w-3xl flex-col justify-center px-6 py-16">
          <p className="text-sm font-medium text-primary">{brand.name}</p>
