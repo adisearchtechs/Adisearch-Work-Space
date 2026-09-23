@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import styles from './login-experience.module.css';
 
 const initialState: AuthActionState = { message: null };
@@ -17,14 +17,11 @@ function SubmitButton({ label }: { label: string }) {
 
    return (
       <Button
-         className="group h-12 w-full rounded-xl bg-indigo-600 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(79,70,229,0.22)] transition-[transform,box-shadow,background-color] hover:-translate-y-px hover:bg-indigo-500 hover:shadow-[0_14px_32px_rgba(79,70,229,0.28)]"
+         className="h-11 w-full rounded-lg bg-[#2f52c7] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#2445b1]"
          type="submit"
          disabled={pending}
       >
-         <span>{pending ? 'Verifying access…' : label}</span>
-         {!pending && (
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-         )}
+         {pending ? 'Signing in…' : label}
       </Button>
    );
 }
@@ -43,9 +40,9 @@ export function LoginForm({
    const state = mode === 'signin' ? signInState : signUpState;
 
    return (
-      <div className="space-y-7">
+      <div className="space-y-6">
          <div
-            className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-700 dark:bg-slate-800/70"
+            className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-800"
             aria-label="Authentication mode"
          >
             <Button
@@ -53,8 +50,8 @@ export function LoginForm({
                variant="ghost"
                className={
                   mode === 'signin'
-                     ? 'h-9 rounded-lg bg-white font-semibold text-slate-950 shadow-sm hover:bg-white dark:bg-slate-700 dark:text-white dark:hover:bg-slate-700'
-                     : 'h-9 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                     ? 'h-10 rounded-none border-b-2 border-[#2f52c7] bg-transparent px-0 font-semibold text-slate-950 shadow-none hover:bg-transparent dark:text-white'
+                     : 'h-10 rounded-none bg-transparent px-0 text-slate-500 hover:bg-transparent hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                }
                onClick={() => setMode('signin')}
                aria-pressed={mode === 'signin'}
@@ -66,8 +63,8 @@ export function LoginForm({
                variant="ghost"
                className={
                   mode === 'signup'
-                     ? 'h-9 rounded-lg bg-white font-semibold text-slate-950 shadow-sm hover:bg-white dark:bg-slate-700 dark:text-white dark:hover:bg-slate-700'
-                     : 'h-9 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                     ? 'h-10 rounded-none border-b-2 border-[#2f52c7] bg-transparent px-0 font-semibold text-slate-950 shadow-none hover:bg-transparent dark:text-white'
+                     : 'h-10 rounded-none bg-transparent px-0 text-slate-500 hover:bg-transparent hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                }
                onClick={() => setMode('signup')}
                aria-pressed={mode === 'signup'}
@@ -90,11 +87,7 @@ export function LoginForm({
                >
                   Work email
                </Label>
-               <div className={`${styles.inputWrap} relative`}>
-                  <Mail
-                     className={`${styles.inputIcon} absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400`}
-                     aria-hidden="true"
-                  />
+               <div className="relative">
                   <Input
                      id="email"
                      name="email"
@@ -103,7 +96,7 @@ export function LoginForm({
                      autoComplete="email"
                      maxLength={254}
                      placeholder="name@company.com"
-                     className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-3.5 shadow-none transition-[border-color,box-shadow,background-color] placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/50"
+                     className="h-11 rounded-lg border-slate-300 bg-white px-3.5 shadow-none placeholder:text-slate-400 focus-visible:border-[#2f52c7] focus-visible:ring-2 focus-visible:ring-[#2f52c7]/10 dark:border-slate-700 dark:bg-slate-900"
                      required
                   />
                </div>
@@ -121,11 +114,7 @@ export function LoginForm({
                      <span className="text-xs text-muted-foreground">Minimum 8 characters</span>
                   )}
                </div>
-               <div className={`${styles.inputWrap} relative`}>
-                  <KeyRound
-                     className={`${styles.inputIcon} absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400`}
-                     aria-hidden="true"
-                  />
+               <div className="relative">
                   <Input
                      id="password"
                      name="password"
@@ -134,12 +123,12 @@ export function LoginForm({
                      minLength={8}
                      maxLength={128}
                      placeholder="Enter your password"
-                     className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-11 shadow-none transition-[border-color,box-shadow,background-color] placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-950/50"
+                     className="h-11 rounded-lg border-slate-300 bg-white px-3.5 pr-11 shadow-none placeholder:text-slate-400 focus-visible:border-[#2f52c7] focus-visible:ring-2 focus-visible:ring-[#2f52c7]/10 dark:border-slate-700 dark:bg-slate-900"
                      required
                   />
                   <button
                      type="button"
-                     className="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                     className="absolute right-1 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f52c7] dark:hover:bg-slate-800 dark:hover:text-slate-200"
                      onClick={() => setShowPassword((visible) => !visible)}
                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                      aria-pressed={showPassword}
@@ -152,7 +141,7 @@ export function LoginForm({
             {state.message && (
                <Alert
                   aria-live="polite"
-                  className="rounded-xl border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100"
+                  className="rounded-lg border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100"
                >
                   <AlertDescription>{state.message}</AlertDescription>
                </Alert>
