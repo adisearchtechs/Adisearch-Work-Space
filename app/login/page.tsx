@@ -140,14 +140,14 @@ export default async function LoginPage({
                               ? 'Check your email'
                               : configured
                                 ? 'Sign in'
-                                : 'Connect Supabase'}
+                                : 'Connect Supabase to continue'}
                         </h1>
                         <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
                            {checkEmail
                               ? 'Confirm your email address before signing in.'
                               : configured
                                 ? 'Use your AdisearchTechs workspace account.'
-                                : 'Authentication is not configured for this deployment.'}
+                                : 'This deployment is running without authentication credentials.'}
                         </p>
                      </div>
 
