@@ -11,6 +11,11 @@
    animation: enterForm 420ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.formLogo {
+   transform-origin: 38% 62%;
+   animation: revealLogo 680ms 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .modeContent {
    animation: replaceForm 180ms ease-out both;
 }
@@ -44,9 +49,25 @@
    }
 }
 
+@keyframes revealLogo {
+   0% {
+      opacity: 0;
+      transform: translateY(8px) rotate(-7deg) scale(0.82);
+   }
+   62% {
+      opacity: 1;
+      transform: translateY(0) rotate(1.5deg) scale(1.04);
+   }
+   100% {
+      opacity: 1;
+      transform: translateY(0) rotate(0) scale(1);
+   }
+}
+
 @media (prefers-reduced-motion: reduce) {
    .brandRule,
    .formPanel,
+   .formLogo,
    .modeContent {
       animation: none !important;
    }
