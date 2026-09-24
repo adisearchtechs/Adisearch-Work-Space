@@ -130,7 +130,7 @@ export function LoginForm({
                      type="button"
                      className="absolute right-1 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f52c7] dark:hover:bg-slate-800 dark:hover:text-slate-200"
                      onClick={() => setShowPassword((visible) => !visible)}
-                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                     aria-label={showPassword ? 'Conceal entry' : 'Reveal entry'}
                      aria-pressed={showPassword}
                   >
                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
