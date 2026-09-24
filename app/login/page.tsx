@@ -53,7 +53,7 @@ export default async function LoginPage({
                <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-white p-1.5">
                      <Image
-                        src={brand.logoPath}
+                        src="/brand/adisearch-mark-dark.svg"
                         alt="Adisearch"
                         width={40}
                         height={40}
@@ -97,11 +97,11 @@ export default async function LoginPage({
                <p className="text-[11px] text-white/40">AdisearchTechs · Private workspace</p>
             </section>
 
-            <section className="flex min-h-svh flex-col px-5 py-6 sm:px-8 lg:px-12 lg:py-10 xl:px-20">
+            <section className="relative flex min-h-svh flex-col overflow-hidden px-5 py-6 sm:px-8 lg:px-12 lg:py-10 xl:px-20">
                <div className="flex items-center gap-3 lg:hidden">
                   <div className="flex size-10 items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900">
                      <Image
-                        src={brand.logoPath}
+                        src="/brand/adisearch-mark-dark.svg"
                         alt="Adisearch"
                         width={40}
                         height={40}
@@ -116,9 +116,22 @@ export default async function LoginPage({
                   </div>
                </div>
 
-               <div className="flex flex-1 items-center justify-center py-10">
+               <div className="relative z-10 flex flex-1 items-center justify-center py-10">
                   <div className={`${styles.formPanel} w-full max-w-[25rem]`}>
                      <div className="mb-9">
+                        <div
+                           className={`${styles.formLogo} mb-6 flex size-12 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-800 dark:bg-slate-900`}
+                        >
+                           <Image
+                              src={brand.logoPath}
+                              alt=""
+                              width={48}
+                              height={48}
+                              unoptimized
+                              className="size-8 object-contain"
+                              aria-hidden="true"
+                           />
+                        </div>
                         <p className="mb-3 text-xs font-medium text-[#4665d8] dark:text-indigo-300">
                            Private workspace
                         </p>
@@ -185,7 +198,7 @@ export default async function LoginPage({
                   </div>
                </div>
 
-               <div className="flex items-center justify-between border-t border-slate-200 pt-5 text-[11px] text-slate-400 dark:border-slate-800">
+               <div className="relative z-10 flex items-center justify-between border-t border-slate-200 pt-5 text-[11px] text-slate-400 dark:border-slate-800">
                   <span>© AdisearchTechs</span>
                   <span>Authorized access only</span>
                </div>
