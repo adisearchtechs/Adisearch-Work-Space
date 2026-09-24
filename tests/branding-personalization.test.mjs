@@ -33,11 +33,13 @@ test('sign-in motion is restrained and reduced-motion safe', async () => {
 
    assert.match(login, /Your work,/);
    assert.match(login, /Projects/);
+   assert.match(login, /adisearch-mark-dark\.svg/);
    assert.doesNotMatch(login, /Portfolio signal/);
    assert.doesNotMatch(login, /Workspace systems online/);
    assert.match(loginForm, /Show password/);
    assert.match(loginForm, /aria-pressed=\{showPassword\}/);
    assert.match(experience, /@keyframes enterForm/);
+   assert.match(experience, /@keyframes revealLogo/);
    assert.match(experience, /prefers-reduced-motion: reduce/);
 });
 
